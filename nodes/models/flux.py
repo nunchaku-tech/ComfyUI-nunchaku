@@ -269,7 +269,6 @@ class NunchakuFluxDiTLoader:
             self.model_path != model_path
             or self.device != device
             or self.cpu_offload != cpu_offload_enabled
-            or self.cache_threshold != cache_threshold
             or self.data_type != data_type
         ):
             if self.transformer is not None:
@@ -282,15 +281,14 @@ class NunchakuFluxDiTLoader:
                 offload=cpu_offload_enabled,
                 device=device,
                 torch_dtype=torch.float16 if data_type == "float16" else torch.bfloat16,
-            )
-            self.transformer = apply_cache_on_transformer(
-                transformer=self.transformer, residual_diff_threshold=cache_threshold
-            )
+            ) 
             self.model_path = model_path
             self.device = device
             self.cpu_offload = cpu_offload_enabled
-            self.cache_threshold = cache_threshold
-
+        self.transformer = apply_cache_on_transformer(
+            transformer=self.transformer, residual_diff_threshold=cache_threshold
+        )
+        self.cache_threshold = cache_threshold
         transformer = self.transformer
         if attention == "nunchaku-fp16":
             transformer.set_attention_impl("nunchaku-fp16")
