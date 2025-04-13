@@ -1,5 +1,6 @@
 import json
 import os
+import gc
 
 import torch
 from diffusers import FluxPipeline, FluxTransformer2DModel
@@ -118,6 +119,7 @@ class ComfyFluxWrapper(nn.Module):
                 txt_ids=txt_ids,
                 guidance=guidance if self.config["guidance_embed"] else None,
                     controlnet_block_samples=None if control is None else [y.to(x.dtype) for y in control["input"]],
+
                     controlnet_single_block_samples=None if control is None else [y.to(x.dtype) for y in control["output"]],
             ).sample
 
@@ -295,8 +297,12 @@ class NunchakuFluxDiTLoader:
             if self.transformer is not None:
                 transformer = self.transformer
                 self.transformer = None
+                transformer.to('cpu')
                 del transformer
+                gc.collect()
                 torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+
             self.transformer = NunchakuFluxTransformer2dModel.from_pretrained(
                 model_path,
                 offload=cpu_offload_enabled,
