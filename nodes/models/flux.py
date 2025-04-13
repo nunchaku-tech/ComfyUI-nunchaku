@@ -120,7 +120,6 @@ class ComfyFluxWrapper(nn.Module):
                 txt_ids=txt_ids,
                 guidance=guidance if self.config["guidance_embed"] else None,
                     controlnet_block_samples=None if control is None else [y.to(x.dtype) for y in control["input"]],
-
                     controlnet_single_block_samples=None if control is None else [y.to(x.dtype) for y in control["output"]],
             ).sample
 
