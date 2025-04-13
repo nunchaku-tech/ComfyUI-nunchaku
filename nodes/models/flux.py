@@ -148,7 +148,6 @@ class NunchakuFluxDiTLoader:
         self.patcher = None
         self.device = comfy.model_management.get_torch_device()
 
-
     @classmethod
     def INPUT_TYPES(s):
         prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
