@@ -95,6 +95,8 @@ class ComfyFluxWrapper(nn.Module):
                         model.reset_x_embedder()
                 model.update_lora_params(composed_lora)
 
+        controlnet_block_samples = None if control is None else [y.to(x.dtype) for y in control["input"]]
+        controlnet_single_block_samples = None if control is None else [y.to(x.dtype) for y in control["output"]]
         if getattr(model, "_is_cached", False):
             if self._prev_timestep is None or self._prev_timestep < timestep_float:
                 self._cache_context = create_cache_context()
@@ -107,8 +109,8 @@ class ComfyFluxWrapper(nn.Module):
                     img_ids=img_ids,
                     txt_ids=txt_ids,
                     guidance=guidance if self.config["guidance_embed"] else None,
-                    controlnet_block_samples=None if control is None else [y.to(x.dtype) for y in control["input"]],
-                    controlnet_single_block_samples=None if control is None else [y.to(x.dtype) for y in control["output"]],
+                    controlnet_block_samples=controlnet_block_samples,
+                    controlnet_single_block_samples=controlnet_single_block_samples,
                 ).sample
         else:
             out = model(
@@ -119,8 +121,8 @@ class ComfyFluxWrapper(nn.Module):
                 img_ids=img_ids,
                 txt_ids=txt_ids,
                 guidance=guidance if self.config["guidance_embed"] else None,
-                    controlnet_block_samples=None if control is None else [y.to(x.dtype) for y in control["input"]],
-                    controlnet_single_block_samples=None if control is None else [y.to(x.dtype) for y in control["output"]],
+                controlnet_block_samples=controlnet_block_samples,
+                controlnet_single_block_samples=controlnet_single_block_samples,
             ).sample
 
         out = rearrange(
@@ -237,7 +239,8 @@ class NunchakuFluxDiTLoader:
                     ["enabled", "always"],
                     {
                         "default": "enabled",
-                        "tooltip": "The GEMM implementation for 20-series GPUs—this option is only applicable to these GPUs.",
+                        "tooltip": "The GEMM implementation for 20-series GPUs"
+                                   "— this option is only applicable to these GPUs.",
                     },
                 )
             },
