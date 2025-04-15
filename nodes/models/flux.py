@@ -28,7 +28,17 @@ class ComfyFluxWrapper(nn.Module):
         self._prev_timestep = None  # for first-block cache
         self._cache_context = None
 
-    def forward(self, x, timestep, context, y, guidance, control=None, transformer_options={}, **kwargs):
+    def forward(
+        self,
+        x,
+        timestep,
+        context,
+        y,
+        guidance,
+        control=None,
+        transformer_options={},
+        **kwargs,
+    ):
         if isinstance(timestep, torch.Tensor):
             if timestep.numel() == 1:
                 timestep_float = timestep.item()
@@ -111,7 +121,14 @@ class ComfyFluxWrapper(nn.Module):
                 controlnet_single_block_samples=None if control is None else control["output"],
             ).sample
 
-        out = rearrange(out, "b (h w) (c ph pw) -> b c (h ph) (w pw)", h=h_len, w=w_len, ph=patch_size, pw=patch_size)
+        out = rearrange(
+            out,
+            "b (h w) (c ph pw) -> b c (h ph) (w pw)",
+            h=h_len,
+            w=w_len,
+            ph=patch_size,
+            pw=patch_size,
+        )
         out = out[:, :, :h, :w]
 
         self._prev_timestep = timestep_float
@@ -157,7 +174,10 @@ class NunchakuFluxDiTLoader:
 
         return {
             "required": {
-                "model_path": (model_paths, {"tooltip": "The SVDQuant quantized FLUX.1 models."}),
+                "model_path": (
+                    model_paths,
+                    {"tooltip": "The SVDQuant quantized FLUX.1 models."},
+                ),
                 "cache_threshold": (
                     "FLOAT",
                     {

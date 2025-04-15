@@ -70,7 +70,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
    ```shell
    cd custom_nodes
-   https://github.com/mit-han-lab/ComfyUI-nunchaku
+   git clone https://github.com/mit-han-lab/ComfyUI-nunchaku nunchaku_nodes
    ```
 
 ## Usage
