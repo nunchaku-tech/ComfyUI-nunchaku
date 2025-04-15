@@ -10,13 +10,18 @@ logger = logging.getLogger("NunchakuFluxLoraLoader")
 
 
 class NunchakuFluxLoraLoader:
-
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "model": ("MODEL", {"tooltip": "The diffusion model the LoRA will be applied to."}),
-                "lora_name": (folder_paths.get_filename_list("loras"), {"tooltip": "The name of the LoRA."}),
+                "model": (
+                    "MODEL",
+                    {"tooltip": "The diffusion model the LoRA will be applied to."},
+                ),
+                "lora_name": (
+                    folder_paths.get_filename_list("loras"),
+                    {"tooltip": "The name of the LoRA."},
+                ),
                 "lora_strength": (
                     "FLOAT",
                     {

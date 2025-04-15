@@ -15,7 +15,8 @@ class FluxDepthPreprocessor:
             [
                 folder
                 for folder in local_folders
-                if not folder.startswith(".") and os.path.isdir(os.path.join(prefix, folder))
+                if not folder.startswith(".")
+                and os.path.isdir(os.path.join(prefix, folder))
             ]
         )
         model_paths = local_folders + model_paths

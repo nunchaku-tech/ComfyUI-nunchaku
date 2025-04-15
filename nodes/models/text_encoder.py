@@ -64,10 +64,20 @@ class NunchakuTextEncoderLoader:
                 "text_encoder2": (folder_paths.get_filename_list("text_encoders"),),
                 "t5_min_length": (
                     "INT",
-                    {"default": 512, "min": 256, "max": 1024, "step": 128, "display": "number", "lazy": True},
+                    {
+                        "default": 512,
+                        "min": 256,
+                        "max": 1024,
+                        "step": 128,
+                        "display": "number",
+                        "lazy": True,
+                    },
                 ),
                 "use_4bit_t5": (["disable", "enable"],),
-                "int4_model": (model_paths, {"tooltip": "The name of the 4-bit T5 model."}),
+                "int4_model": (
+                    model_paths,
+                    {"tooltip": "The name of the 4-bit T5 model."},
+                ),
             }
         }
 
