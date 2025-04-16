@@ -5,6 +5,10 @@
 <a href="http://arxiv.org/abs/2411.05007"><b>原页</b></a> | <a href="https://hanlab.mit.edu/projects/svdquant"><b>网站</b></a> | <a href="https://hanlab.mit.edu/blog/svdquant"><b>博客</b></a> | <a href="https://svdquant.mit.edu"><b>演示</b></a> | <a href="https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c"><b>HuggingFace</b></a> | <a href="https://modelscope.cn/collections/svdquant-468e8f780c2641"><b>ModelScope</b></a>
 </h3>
 
+<h3 align="center">
+<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README.md"><b>English</b></a> |<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README_ZH.md"><b>中文</b></a>
+</h3>
+
 该储存库为[**Nunchaku**](https://github.com/mit-han-lab/nunchaku)提供了ComfyUI节点，这是一个用于使用[SVDQuant](http://arxiv.org/abs/2411.05007)量化的 4 位神经网络的高效推理引擎。有关量化库，请查看 [DeepCompressor](https://github.com/mit-han-lab/deepcompressor).
 
 加入我们，在[**Slack**](https://join.slack.com/t/nunchaku/shared_invite/zt-3170agzoz-NgZzWaTrEj~n2KEV3Hpl5Q), [**Discord**](https://discord.gg/Wk6PnwX9Sm) 和 [**微信**](https://github.com/mit-han-lab/nunchaku/blob/main/assets/wechat.jpg?raw=true) 上的社区群组进行讨论———详情点击[这里](https://github.com/mit-han-lab/nunchaku/issues/149). 如果您有任何问题、遇到问题或有兴趣做出贡献，请随时与我们分享您的想法！
