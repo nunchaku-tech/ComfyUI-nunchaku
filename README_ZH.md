@@ -6,7 +6,7 @@
 </h3>
 
 <h3 align="center">
-<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README.md"><b>English</b></a> |<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README_ZH.md"><b>中文</b></a>
+<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README.md"><b>English</b></a> | <a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README_ZH.md"><b>中文</b></a>
 </h3>
 
 该储存库为[**Nunchaku**](https://github.com/mit-han-lab/nunchaku)提供了ComfyUI节点，这是一个用于使用[SVDQuant](http://arxiv.org/abs/2411.05007)量化的 4 位神经网络的高效推理引擎。有关量化库，请查看 [DeepCompressor](https://github.com/mit-han-lab/deepcompressor).
