@@ -6,7 +6,7 @@
 </h3>
 
 <h3 align="center">
-<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README.md"><b>English</b></a> |<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README_ZH.md"><b>中文</b></a>
+<a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README.md"><b>English</b></a> | <a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/README_ZH.md"><b>中文</b></a>
 </h3>
 
 This repository provides the ComfyUI node for [**Nunchaku**](https://github.com/mit-han-lab/nunchaku), an efficient inference engine for 4-bit neural networks quantized with [SVDQuant](http://arxiv.org/abs/2411.05007). For the quantization library, check out [DeepCompressor](https://github.com/mit-han-lab/deepcompressor).
