@@ -20,7 +20,7 @@
 
 - **[2025-04-09]** 🎥 发布了[**英文**](https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0)和[**中文**](https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee)教程视频，协助安装和使用Nunchaku。
 - **[2025-04-09]** 📢 发布了 [4月更新计划](https://github.com/mit-han-lab/nunchaku/issues/266)和[常见问题解答](https://github.com/mit-han-lab/nunchaku/discussions/262)来帮助社区朋友快速入门并及时了解Nunchaku的发展情况。
-- **[2025-04-05]** 🚀 **v0.2.0发布!** 这个版本支持了[**多LoRA**](workflows/nunchaku-flux.1-dev.json)和[**ControlNet**](workflows/nunchaku-flux.1-dev-controlnet-union-pro.json)，并且使用FP16 attention和First-Block Cache来增强性能. 我们添加了对[**Invidia20系显卡**](examples/flux.1-dev-turing.py)的支持，并制作了[FLUX.1-redux](workflows/nunchaku-flux.1-redux-dev.json)的官方工作流。
+- **[2025-04-05]** 🚀 **v0.2.0发布!** 这个版本支持了[**多LoRA**](example_workflows/nunchaku-flux.1-dev.json)和[**ControlNet**](example_workflows/nunchaku-flux.1-dev-controlnet-union-pro.json)，并且使用FP16 attention和First-Block Cache来增强性能. 我们添加了对[**Invidia20系显卡**](examples/flux.1-dev-turing.py)的支持，并制作了[FLUX.1-redux](example_workflows/nunchaku-flux.1-redux-dev.json)的官方工作流。
 
 ## 安装方法
 
@@ -87,15 +87,15 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 1. **设置ComfyUI和Nunchaku**:
 
-     * Nunchaku的工作流可以在[`workflows`](./workflows)找到。想要找到它们，请将文件复制到ComfyUI的根目录中： `user/default/workflows`
+     * Nunchaku的工作流可以在[`workflows`](example_workflows)找到。想要找到它们，请将文件复制到ComfyUI的根目录中： `user/default/workflows`
        ```shell
        cd ComfyUI
        
-       # Create the workflows directory if it doesn't exist
-       mkdir -p user/default/workflows
+       # Create the example_workflows directory if it doesn't exist
+       mkdir -p user/default/example_workflows
        
        # Copy workflow configurations
-       cp custom_nodes/nunchaku_nodes/workflows/* user/default/workflows/
+       cp custom_nodes/nunchaku_nodes/example_workflows/* user/default/example_workflows/
        ```
 
      * 按照[本教程](https://github.com/ltdrdata/ComfyUI-Manager?tab=readme-ov-file#support-of-missing-nodes-installation).安装所有缺失节点 (例如 `comfyui-inpainteasy`) 

@@ -20,7 +20,7 @@ Join our user groups on [**Slack**](https://join.slack.com/t/nunchaku/shared_inv
 
 - **[2025-04-16]** 🎥 Released tutorial videos in both [**English**](https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0) and [**Chinese**](https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee) to assist installation and usage.
 - **[2025-04-09]** 📢 Published the [April roadmap](https://github.com/mit-han-lab/nunchaku/issues/266) and an [FAQ](https://github.com/mit-han-lab/nunchaku/discussions/262) to help the community get started and stay up to date with Nunchaku’s development.
-- **[2025-04-05]** 🚀 **Release v0.2.0!** This release introduces [**multi-LoRA**](workflows/nunchaku-flux.1-dev.json) and [**ControlNet**](workflows/nunchaku-flux.1-dev-controlnet-union-pro.json) support, with enhanced performance using FP16 attention and First-Block Cache. We've also added [**20-series GPU**](examples/flux.1-dev-turing.py) compatibility and official workflows for [FLUX.1-redux](workflows/nunchaku-flux.1-redux-dev.json)!
+- **[2025-04-05]** 🚀 **Release v0.2.0!** This release introduces [**multi-LoRA**](example_workflows/nunchaku-flux.1-dev.json) and [**ControlNet**](example_workflows/nunchaku-flux.1-dev-controlnet-union-pro.json) support, with enhanced performance using FP16 attention and First-Block Cache. We've also added [**20-series GPU**](examples/flux.1-dev-turing.py) compatibility and official workflows for [FLUX.1-redux](example_workflows/nunchaku-flux.1-redux-dev.json)!
 
 ## Installation
 
@@ -87,16 +87,16 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 1. **Set Up ComfyUI and Nunchaku**:
 
-     * Nunchaku workflows can be found at [`workflows`](./workflows). To use them, copy the files to `user/default/workflows` in the ComfyUI root directory:
+     * Nunchaku workflows can be found at [`workflows`](example_workflows). To use them, copy the files to `user/default/workflows` in the ComfyUI root directory:
 
        ```shell
        cd ComfyUI
        
-       # Create the workflows directory if it doesn't exist
-       mkdir -p user/default/workflows
+       # Create the example_workflows directory if it doesn't exist
+       mkdir -p user/default/example_workflows
        
        # Copy workflow configurations
-       cp custom_nodes/nunchaku_nodes/workflows/* user/default/workflows/
+       cp custom_nodes/nunchaku_nodes/example_workflows/* user/default/example_workflows/
        ```
 
      * Install any missing nodes (e.g., `comfyui-inpainteasy`) by following [this tutorial](https://github.com/ltdrdata/ComfyUI-Manager?tab=readme-ov-file#support-of-missing-nodes-installation).
