@@ -11,6 +11,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
         args: [ --allow-multiple-documents ]
+      - id: check-json
       - id: check-toml
       - id: check-ast
       - id: check-added-large-files
@@ -28,7 +29,6 @@ repos:
     hooks:
       - id: ruff
         args: [ --fixable=F401 ]
-        files: ^(nunchaku/|examples/|tests/|app/)
         exclude: \.ipynb$
   - repo: https://github.com/psf/black
     rev: 24.10.0
@@ -36,7 +36,7 @@ repos:
       - id: black-jupyter
       - id: black
         args: [ -l, "120" ]
-        files: ^(nunchaku/|examples/|tests/|app/)
+        files: ^(nodes/)
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:

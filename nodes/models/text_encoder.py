@@ -1,12 +1,12 @@
 import os
 import types
 
+import comfy.sd
+import folder_paths
 import torch
 from torch import nn
 from transformers import T5EncoderModel
 
-import comfy.sd
-import folder_paths
 from nunchaku import NunchakuT5EncoderModel
 
 

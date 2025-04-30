@@ -28,21 +28,21 @@ We provide tutorial videos to help you install and use Nunchaku on Windows, avai
 
 ### Prerequisites
 
-Please first install `nunchaku` following the instructions in [README.md](https://github.com/mit-han-lab/nunchaku?tab=readme-ov-file#installation). 
+Please first install `nunchaku` following the instructions in [README.md](https://github.com/mit-han-lab/nunchaku?tab=readme-ov-file#installation).
 
 ### Comfy-CLI
 
 You can easily use [`comfy-cli`](https://github.com/Comfy-Org/comfy-cli) to run ComfyUI with Nunchaku:
 
 ```shell
-pip install comfy-cli  # Install ComfyUI CLI  
-comfy install          # Install ComfyUI  
-comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku  
+pip install comfy-cli  # Install ComfyUI CLI
+comfy install          # Install ComfyUI
+comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 ```
 
 ### ComfyUI-Manager
 
-1. Install [ComfyUI](https://github.com/comfyanonymous/ComfyUI/tree/master) with 
+1. Install [ComfyUI](https://github.com/comfyanonymous/ComfyUI/tree/master) with
 
    ```shell
    git clone https://github.com/comfyanonymous/ComfyUI.git
@@ -60,7 +60,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 3. Launch ComfyUI
 
    ```shell
-   cd ..  # Return to the ComfyUI root directory  
+   cd ..  # Return to the ComfyUI root directory
    python main.py
    ```
 
@@ -91,10 +91,10 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
        ```shell
        cd ComfyUI
-       
+
        # Create the example_workflows directory if it doesn't exist
        mkdir -p user/default/example_workflows
-       
+
        # Copy workflow configurations
        cp custom_nodes/nunchaku_nodes/example_workflows/* user/default/example_workflows/
        ```
@@ -119,7 +119,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 **Note: We've renamed our nodes from 'SVDQuant XXX Loader' to 'Nunchaku XXX Loader'. Please update your workflows accordingly.**
 
-* **Nunchaku Flux DiT Loader**: A node for loading the FLUX diffusion model. 
+* **Nunchaku Flux DiT Loader**: A node for loading the FLUX diffusion model.
 
   * `model_path`: Specifies the model's location. You need to manually download the model folder from our [Hugging Face](https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c) or [ModelScope](https://modelscope.cn/collections/svdquant-468e8f780c2641) collection. For example, run
 
@@ -127,14 +127,14 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
     huggingface-cli download mit-han-lab/svdq-int4-flux.1-dev --local-dir models/diffusion_models/svdq-int4-flux.1-dev
     ```
 
-    After downloading, set `model_path` to the corresponding folder name. 
+    After downloading, set `model_path` to the corresponding folder name.
 
     **Note: If you rename the model folder, ensure that `comfy_config.json` is present in the folder. You can find this file in our corresponding repositories on [Hugging Face](https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c) or [ModelScope](https://modelscope.cn/collections/svdquant-468e8f780c2641).**
 
   * `cache_threshold`: Controls the [First-Block Cache](https://github.com/chengzeyi/ParaAttention?tab=readme-ov-file#first-block-cache-our-dynamic-caching) tolerance, similar to `residual_diff_threshold` in [WaveSpeed](https://github.com/chengzeyi/Comfy-WaveSpeed). Increasing this value improves speed but may reduce quality. A typical value is 0.12. Setting it to 0 disables the effect.
-    
+
   * `attention`: Defines the attention implementation method. You can choose between `flash-attention2` or `nunchaku-fp16`. Our `nunchaku-fp16` is approximately 1.2× faster than `flash-attention2` without compromising precision. For Turing GPUs (20-series), where `flash-attention2` is unsupported, you must use `nunchaku-fp16`.
-    
+
   * `cpu_offload`: Enables CPU offloading for the transformer model. While this reduces GPU memory usage, it may slow down inference.
 
     - When set to `auto`, it will automatically detect your available GPU memory. If your GPU has more than 14GiB of memory, offloading will be disabled. Otherwise, it will be enabled.
