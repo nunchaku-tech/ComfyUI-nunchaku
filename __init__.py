@@ -9,7 +9,7 @@ NODE_CLASS_MAPPINGS = {
     "NunchakuFluxLoraLoader": NunchakuFluxLoraLoader,
     "NunchakuDepthPreprocessor": FluxDepthPreprocessor,
     "NunchakuPulidApply": NunchakuPulidApply,
-    "NunchakuPulidLoader": NunchakuPulidLoader
+    "NunchakuPulidLoader": NunchakuPulidLoader,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

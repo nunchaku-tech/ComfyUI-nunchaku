@@ -5,6 +5,7 @@ import numpy as np
 from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
 from nunchaku.models.pulid.pulid_forward import pulid_forward
 
+
 class NunchakuPulidApply:
     def __init__(self):
         self.pulid_device = "cuda"
@@ -19,7 +20,7 @@ class NunchakuPulidApply:
                 "pulid": ("PULID", {"tooltip": "from Nunchaku Pulid Loader"}),
                 "image": ("IMAGE", {"tooltip": "The image to encode"}),
                 "model": ("MODEL", {"tooltip": "The nunchaku model."}),
-                "ip_weight": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01, "tooltip": "ip_weight"})
+                "ip_weight": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01, "tooltip": "ip_weight"}),
             }
         }
 
@@ -33,15 +34,9 @@ class NunchakuPulidApply:
         image = np.clip(image, 0, 255).astype(np.uint8)
         id_embeddings, _ = pulid.get_id_embedding(image)
         model.model.diffusion_model.model.forward = MethodType(
-        partial(
-            pulid_forward,
-            id_embeddings=id_embeddings,
-            id_weight=ip_weight
-            ), model.model.diffusion_model.model
+            partial(pulid_forward, id_embeddings=id_embeddings, id_weight=ip_weight), model.model.diffusion_model.model
         )
         return (model,)
-
-
 
 
 class NunchakuPulidLoader:
@@ -59,7 +54,10 @@ class NunchakuPulidLoader:
             }
         }
 
-    RETURN_TYPES = ("MODEL","PULID",)
+    RETURN_TYPES = (
+        "MODEL",
+        "PULID",
+    )
     FUNCTION = "load"
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku Pulid Loader"
@@ -73,4 +71,7 @@ class NunchakuPulidLoader:
         )
         pulid_model.load_pretrain(self.pretrained_model)
 
-        return (model, pulid_model,)
+        return (
+            model,
+            pulid_model,
+        )
