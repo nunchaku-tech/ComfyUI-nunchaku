@@ -1,5 +1,5 @@
 from .flux import NunchakuFluxDiTLoader
-from .text_encoder import NunchakuTextEncoderLoader
 from .pulid import NunchakuPulidApply, NunchakuPulidLoader
+from .text_encoder import NunchakuTextEncoderLoader
 
 __all__ = ["NunchakuFluxDiTLoader", "NunchakuTextEncoderLoader", "NunchakuPulidApply", "NunchakuPulidLoader"]

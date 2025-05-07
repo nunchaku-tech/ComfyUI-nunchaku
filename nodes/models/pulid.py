@@ -1,9 +1,11 @@
-from types import MethodType
 from functools import partial
-import torch
+from types import MethodType
+
 import numpy as np
-from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
+import torch
+
 from nunchaku.models.pulid.pulid_forward import pulid_forward
+from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
 
 
 class NunchakuPulidApply:
