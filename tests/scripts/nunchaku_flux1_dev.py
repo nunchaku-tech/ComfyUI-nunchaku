@@ -6,7 +6,6 @@ from typing import Any, Mapping, Sequence, Union
 import torch
 
 from nunchaku.utils import get_precision
-from .utils import get_clip_iqa
 
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
@@ -150,7 +149,7 @@ def main(precision: str) -> str:
 
         nunchakufluxditloader = NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"]()
         nunchakufluxditloader_45 = nunchakufluxditloader.load_model(
-            model_path="svdq-int4-flux.1-dev",
+            model_path=f"svdq-{precision}-flux.1-dev",
             cache_threshold=0,
             attention="nunchaku-fp16",
             cpu_offload="auto",
@@ -218,14 +217,11 @@ def main(precision: str) -> str:
 
             saveimage_9 = saveimage.save_images(filename_prefix="ComfyUI", images=get_value_at_index(vaedecode_8, 0))
             filename = saveimage_9["ui"]["images"][0]["filename"]
-        return os.path.join("output", filename)
 
-
-def test():
-    path = main(precision=get_precision())
-    clip_iqa = get_clip_iqa(path)
-    print(clip_iqa)
-    assert clip_iqa > 0.8
+        path = os.path.join("output", filename)
+        with open("image_path.txt", "w") as f:
+            f.write(path)
+        return path
 
 
 if __name__ == "__main__":
