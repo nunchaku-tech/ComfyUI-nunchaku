@@ -36,7 +36,7 @@ repos:
       - id: black-jupyter
       - id: black
         args: [ -l, "120" ]
-        files: ^(nodes/)
+        files: ^(nunchaku/|scripts/|tests/)
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:

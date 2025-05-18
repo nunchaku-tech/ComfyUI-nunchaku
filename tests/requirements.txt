@@ -1,0 +1,5 @@
+pytest
+torchmetrics
+mediapipe
+controlnet_aux
+git+https://github.com/asomoza/image_gen_aux.git
