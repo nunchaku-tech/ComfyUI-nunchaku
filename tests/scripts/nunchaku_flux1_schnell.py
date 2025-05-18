@@ -119,8 +119,11 @@ from nodes import NODE_CLASS_MAPPINGS
 def main(precision: str) -> str:
     import_custom_nodes()
     with torch.inference_mode():
+        emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
+        emptylatentimage_5 = emptylatentimage.generate(width=1024, height=1024, batch_size=1)
+
         nunchakutextencoderloader = NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoader"]()
-        nunchakutextencoderloader_44 = nunchakutextencoderloader.load_text_encoder(
+        nunchakutextencoderloader_31 = nunchakutextencoderloader.load_text_encoder(
             model_type="flux",
             text_encoder1="t5xxl_fp16.safetensors",
             text_encoder2="clip_l.safetensors",
@@ -131,8 +134,8 @@ def main(precision: str) -> str:
 
         cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
         cliptextencode_6 = cliptextencode.encode(
-            text="GHIBSKY style, a cyberpunk cat holding a neon sign that says 'SVDQuant is lite and fast!'",
-            clip=get_value_at_index(nunchakutextencoderloader_44, 0),
+            text="Pirate ship trapped in a cosmic maelstrom nebula, rendered in cosmic beach whirlpool engine, volumetric lighting, spectacular, ambient lights, light pollution, cinematic atmosphere, art nouveau style, illustration art artwork by SenseiJaye, intricate detail.",
+            clip=get_value_at_index(nunchakutextencoderloader_31, 0),
         )
 
         vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]()
@@ -144,12 +147,9 @@ def main(precision: str) -> str:
         randomnoise = NODE_CLASS_MAPPINGS["RandomNoise"]()
         randomnoise_25 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
 
-        emptysd3latentimage = NODE_CLASS_MAPPINGS["EmptySD3LatentImage"]()
-        emptysd3latentimage_27 = emptysd3latentimage.generate(width=1024, height=1024, batch_size=1)
-
         nunchakufluxditloader = NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"]()
-        nunchakufluxditloader_45 = nunchakufluxditloader.load_model(
-            model_path=f"svdq-{precision}-flux.1-dev",
+        nunchakufluxditloader_30 = nunchakufluxditloader.load_model(
+            model_path=f"svdq-{precision}-flux.1-schnell",
             cache_threshold=0,
             attention="nunchaku-fp16",
             cpu_offload="auto",
@@ -158,9 +158,6 @@ def main(precision: str) -> str:
             i2f_mode="enabled",
         )
 
-        nunchakufluxloraloader = NODE_CLASS_MAPPINGS["NunchakuFluxLoraLoader"]()
-        modelsamplingflux = NODE_CLASS_MAPPINGS["ModelSamplingFlux"]()
-        fluxguidance = NODE_CLASS_MAPPINGS["FluxGuidance"]()
         basicguider = NODE_CLASS_MAPPINGS["BasicGuider"]()
         basicscheduler = NODE_CLASS_MAPPINGS["BasicScheduler"]()
         samplercustomadvanced = NODE_CLASS_MAPPINGS["SamplerCustomAdvanced"]()
@@ -168,38 +165,16 @@ def main(precision: str) -> str:
         saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
 
         for q in range(1):
-            nunchakufluxloraloader_46 = nunchakufluxloraloader.load_lora(
-                lora_name="flux.1-turbo-alpha.safetensors",
-                lora_strength=1,
-                model=get_value_at_index(nunchakufluxditloader_45, 0),
-            )
-
-            nunchakufluxloraloader_47 = nunchakufluxloraloader.load_lora(
-                lora_name="flux.1-dev-ghibsky.safetensors",
-                lora_strength=1,
-                model=get_value_at_index(nunchakufluxloraloader_46, 0),
-            )
-
-            modelsamplingflux_30 = modelsamplingflux.patch(
-                max_shift=1.15,
-                base_shift=0.5,
-                width=1024,
-                height=1024,
-                model=get_value_at_index(nunchakufluxloraloader_47, 0),
-            )
-
-            fluxguidance_26 = fluxguidance.append(guidance=3.5, conditioning=get_value_at_index(cliptextencode_6, 0))
-
             basicguider_22 = basicguider.get_guider(
-                model=get_value_at_index(modelsamplingflux_30, 0),
-                conditioning=get_value_at_index(fluxguidance_26, 0),
+                model=get_value_at_index(nunchakufluxditloader_30, 0),
+                conditioning=get_value_at_index(cliptextencode_6, 0),
             )
 
             basicscheduler_17 = basicscheduler.get_sigmas(
                 scheduler="simple",
-                steps=8,
+                steps=4,
                 denoise=1,
-                model=get_value_at_index(modelsamplingflux_30, 0),
+                model=get_value_at_index(nunchakufluxditloader_30, 0),
             )
 
             samplercustomadvanced_13 = samplercustomadvanced.sample(
@@ -207,7 +182,7 @@ def main(precision: str) -> str:
                 guider=get_value_at_index(basicguider_22, 0),
                 sampler=get_value_at_index(ksamplerselect_16, 0),
                 sigmas=get_value_at_index(basicscheduler_17, 0),
-                latent_image=get_value_at_index(emptysd3latentimage_27, 0),
+                latent_image=get_value_at_index(emptylatentimage_5, 0),
             )
 
             vaedecode_8 = vaedecode.decode(
