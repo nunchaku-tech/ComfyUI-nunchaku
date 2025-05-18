@@ -220,6 +220,7 @@ def main(precision: str) -> str:
         path = os.path.join("output", filename)
         with open("image_path.txt", "w") as f:
             f.write(path)
+        print(path)
         return path
 
 

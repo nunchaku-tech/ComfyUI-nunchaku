@@ -131,7 +131,7 @@ def main(precision: str):
         cliptextencode_7 = cliptextencode.encode(text="", clip=get_value_at_index(dualcliploader_34, 0))
 
         loadimage = NODE_CLASS_MAPPINGS["LoadImage"]()
-        loadimage_17 = loadimage.load_image(image="logo_example.png")
+        loadimage_17 = loadimage.load_image(image="logo.png")
 
         cliptextencode_23 = cliptextencode.encode(
             text="ethereal fantasy concept art of A logo of 'MIT HAN Lab'. magnificent, celestial, ethereal, painterly, epic, majestic, magical, fantasy art, cover art, dreamy",
@@ -207,6 +207,7 @@ def main(precision: str):
         path = os.path.join("output", filename)
         with open("image_path.txt", "w") as f:
             f.write(path)
+        print(path)
         return path
 
 
