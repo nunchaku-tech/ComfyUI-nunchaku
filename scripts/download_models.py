@@ -89,6 +89,12 @@ def download_other():
         new_filename="controlnet-union-pro-2.0.safetensors",
     )
     download_file(
+        repo_id="jasperai/Flux.1-dev-Controlnet-Upscaler",
+        filename="diffusion_pytorch_model.safetensors",
+        sub_folder="controlnet",
+        new_filename="controlnet-upscaler.safetensors",
+    )
+    download_file(
         repo_id="black-forest-labs/FLUX.1-Redux-dev",
         filename="flux1-redux-dev.safetensors",
         sub_folder="diffusion_models",
