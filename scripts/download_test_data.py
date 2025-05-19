@@ -1,7 +1,8 @@
 import os
 
-import wget
 from tqdm import tqdm
+
+import wget
 
 if __name__ == "__main__":
     os.makedirs("input", exist_ok=True)

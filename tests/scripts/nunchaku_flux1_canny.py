@@ -4,6 +4,7 @@ import sys
 from typing import Any, Mapping, Sequence, Union
 
 import torch
+
 from nunchaku.utils import get_precision
 
 
@@ -96,9 +97,11 @@ def import_custom_nodes() -> None:
     creates a PromptQueue, and initializes the custom nodes.
     """
     import asyncio
+
     import execution
-    from nodes import init_extra_nodes
     import server
+
+    from nodes import init_extra_nodes
 
     # Creating a new event loop and setting it as the default loop
     loop = asyncio.new_event_loop()
