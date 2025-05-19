@@ -1,4 +1,4 @@
-name: test_ampere
+name: test_blackwell
 
 on:
   workflow_dispatch:
