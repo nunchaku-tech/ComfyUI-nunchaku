@@ -145,7 +145,6 @@ class NunchakuFluxDiTLoader:
         self.model_path = None
         self.device = None
         self.cpu_offload = None
-        self.cache_threshold = None
         self.data_type = None
         self.patcher = None
         self.device = comfy.model_management.get_torch_device()
@@ -322,7 +321,6 @@ class NunchakuFluxDiTLoader:
         self.transformer = apply_cache_on_transformer(
             transformer=self.transformer, residual_diff_threshold=cache_threshold
         )
-        self.cache_threshold = cache_threshold
         transformer = self.transformer
         if attention == "nunchaku-fp16":
             transformer.set_attention_impl("nunchaku-fp16")
