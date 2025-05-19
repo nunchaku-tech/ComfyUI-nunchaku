@@ -168,7 +168,7 @@ def main(precision: str):
 
         nunchakufluxditloader = NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"]()
         nunchakufluxditloader_42 = nunchakufluxditloader.load_model(
-            model_path="svdq-int4-flux.1-dev",
+            model_path=f"svdq-{precision}-flux.1-dev",
             cache_threshold=0,
             attention="nunchaku-fp16",
             cpu_offload="auto",
@@ -184,7 +184,7 @@ def main(precision: str):
 
         for q in range(1):
             nunchakufluxloraloader_43 = nunchakufluxloraloader.load_lora(
-                lora_name="canny.safetensors",
+                lora_name="flux1-canny-dev-lora.safetensors",
                 lora_strength=0.8500000000000002,
                 model=get_value_at_index(nunchakufluxditloader_42, 0),
             )
