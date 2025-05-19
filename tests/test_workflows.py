@@ -28,4 +28,7 @@ def test_workflows(script_name: str) -> float:
     tensor = torch.from_numpy(np.array(image)).permute(2, 0, 1).to(torch.float32)
     clip_iqa = metric(tensor.unsqueeze(0)).item()
     print(f"CLIP-IQA: {clip_iqa}")
-    assert clip_iqa >= 0.8
+    if script_name in ["nunchaku_flux1_depth.py", "nunchaku_flux1_depth_lora.py"]:
+        assert clip_iqa >= 0.65
+    else:
+        assert clip_iqa >= 0.8

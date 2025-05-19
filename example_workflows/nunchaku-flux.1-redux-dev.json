@@ -18,12 +18,21 @@
       "flags": {},
       "order": 0,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "localized_name": "sampler_name",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        }
+      ],
       "outputs": [
         {
           "localized_name": "SAMPLER",
           "name": "SAMPLER",
-          "shape": 3,
           "type": "SAMPLER",
           "links": [
             19
@@ -59,13 +68,21 @@
           "name": "conditioning",
           "type": "CONDITIONING",
           "link": 41
+        },
+        {
+          "localized_name": "guidance",
+          "name": "guidance",
+          "type": "FLOAT",
+          "widget": {
+            "name": "guidance"
+          },
+          "link": null
         }
       ],
       "outputs": [
         {
           "localized_name": "CONDITIONING",
           "name": "CONDITIONING",
-          "shape": 3,
           "type": "CONDITIONING",
           "slot_index": 0,
           "links": [
@@ -134,7 +151,6 @@
         {
           "localized_name": "output",
           "name": "output",
-          "shape": 3,
           "type": "LATENT",
           "slot_index": 0,
           "links": [
@@ -144,7 +160,6 @@
         {
           "localized_name": "denoised_output",
           "name": "denoised_output",
-          "shape": 3,
           "type": "LATENT",
           "links": null
         }
@@ -170,12 +185,21 @@
       "flags": {},
       "order": 1,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "localized_name": "noise_seed",
+          "name": "noise_seed",
+          "type": "INT",
+          "widget": {
+            "name": "noise_seed"
+          },
+          "link": null
+        }
+      ],
       "outputs": [
         {
           "localized_name": "NOISE",
           "name": "NOISE",
-          "shape": 3,
           "type": "NOISE",
           "links": [
             37
@@ -188,7 +212,7 @@
         "Node name for S&R": "RandomNoise"
       },
       "widgets_values": [
-        967481450471827,
+        913812923745252,
         "randomize"
       ],
       "color": "#2a363b",
@@ -252,7 +276,7 @@
         130
       ],
       "flags": {},
-      "order": 16,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -262,6 +286,25 @@
           "link": 125
         },
         {
+          "localized_name": "max_shift",
+          "name": "max_shift",
+          "type": "FLOAT",
+          "widget": {
+            "name": "max_shift"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "base_shift",
+          "name": "base_shift",
+          "type": "FLOAT",
+          "widget": {
+            "name": "base_shift"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width",
           "name": "width",
           "type": "INT",
           "widget": {
@@ -270,6 +313,7 @@
           "link": 115
         },
         {
+          "localized_name": "height",
           "name": "height",
           "type": "INT",
           "widget": {
@@ -282,7 +326,6 @@
         {
           "localized_name": "MODEL",
           "name": "MODEL",
-          "shape": 3,
           "type": "MODEL",
           "slot_index": 0,
           "links": [
@@ -319,6 +362,7 @@
       "mode": 0,
       "inputs": [
         {
+          "localized_name": "width",
           "name": "width",
           "type": "INT",
           "widget": {
@@ -327,19 +371,28 @@
           "link": 112
         },
         {
+          "localized_name": "height",
           "name": "height",
           "type": "INT",
           "widget": {
             "name": "height"
           },
           "link": 113
+        },
+        {
+          "localized_name": "batch_size",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
         }
       ],
       "outputs": [
         {
           "localized_name": "LATENT",
           "name": "LATENT",
-          "shape": 3,
           "type": "LATENT",
           "slot_index": 0,
           "links": [
@@ -458,6 +511,15 @@
           "name": "images",
           "type": "IMAGE",
           "link": 9
+        },
+        {
+          "localized_name": "filename_prefix",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
         }
       ],
       "outputs": [],
@@ -531,7 +593,7 @@
         78
       ],
       "flags": {},
-      "order": 15,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -545,6 +607,15 @@
           "name": "image",
           "type": "IMAGE",
           "link": 118
+        },
+        {
+          "localized_name": "crop",
+          "name": "crop",
+          "type": "COMBO",
+          "widget": {
+            "name": "crop"
+          },
+          "link": null
         }
       ],
       "outputs": [
@@ -565,75 +636,6 @@
       },
       "widgets_values": [
         "center"
-      ]
-    },
-    {
-      "id": 42,
-      "type": "StyleModelLoader",
-      "pos": [
-        400,
-        -180
-      ],
-      "size": [
-        340,
-        60
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "localized_name": "STYLE_MODEL",
-          "name": "STYLE_MODEL",
-          "type": "STYLE_MODEL",
-          "links": [
-            119
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.27",
-        "Node name for S&R": "StyleModelLoader"
-      },
-      "widgets_values": [
-        "flux1-redux-dev.safetensors"
-      ]
-    },
-    {
-      "id": 38,
-      "type": "CLIPVisionLoader",
-      "pos": [
-        60,
-        -410
-      ],
-      "size": [
-        370,
-        60
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "localized_name": "CLIP_VISION",
-          "name": "CLIP_VISION",
-          "type": "CLIP_VISION",
-          "slot_index": 0,
-          "links": [
-            117
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.27",
-        "Node name for S&R": "CLIPVisionLoader"
-      },
-      "widgets_values": [
-        "sigclip_vision_patch14_384.safetensors"
       ]
     },
     {
@@ -666,9 +668,26 @@
         {
           "localized_name": "clip_vision_output",
           "name": "clip_vision_output",
-          "shape": 7,
           "type": "CLIP_VISION_OUTPUT",
           "link": 120
+        },
+        {
+          "localized_name": "strength",
+          "name": "strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength_type",
+          "name": "strength_type",
+          "type": "COMBO",
+          "widget": {
+            "name": "strength_type"
+          },
+          "link": null
         }
       ],
       "outputs": [
@@ -724,7 +743,6 @@
         {
           "localized_name": "GUIDER",
           "name": "GUIDER",
-          "shape": 3,
           "type": "GUIDER",
           "slot_index": 0,
           "links": [
@@ -751,7 +769,7 @@
         182.3145294189453
       ],
       "flags": {},
-      "order": 8,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -761,51 +779,6 @@
       ],
       "color": "#432",
       "bgcolor": "#653"
-    },
-    {
-      "id": 6,
-      "type": "CLIPTextEncode",
-      "pos": [
-        384,
-        240
-      ],
-      "size": [
-        422.84503173828125,
-        164.31304931640625
-      ],
-      "flags": {},
-      "order": 14,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "link": 10
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "CONDITIONING",
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "slot_index": 0,
-          "links": [
-            41
-          ]
-        }
-      ],
-      "title": "CLIP Text Encode (Positive Prompt)",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.27",
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "cute anime girl with massive fluffy fennec ears"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
     },
     {
       "id": 17,
@@ -827,13 +800,39 @@
           "name": "model",
           "type": "MODEL",
           "link": 55
+        },
+        {
+          "localized_name": "scheduler",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "steps",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "denoise",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
         }
       ],
       "outputs": [
         {
           "localized_name": "SIGMAS",
           "name": "SIGMAS",
-          "shape": 3,
           "type": "SIGMAS",
           "links": [
             20
@@ -860,17 +859,54 @@
       ],
       "size": [
         315,
-        122
+        130
       ],
       "flags": {},
-      "order": 9,
+      "order": 7,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "localized_name": "clip_name1",
+          "name": "clip_name1",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name1"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "clip_name2",
+          "name": "clip_name2",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "type",
+          "name": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "device",
+          "name": "device",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          },
+          "link": null
+        }
+      ],
       "outputs": [
         {
           "localized_name": "CLIP",
           "name": "CLIP",
-          "shape": 3,
           "type": "CLIP",
           "slot_index": 0,
           "links": [
@@ -902,14 +938,23 @@
         60.429901123046875
       ],
       "flags": {},
-      "order": 10,
+      "order": 8,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "localized_name": "vae_name",
+          "name": "vae_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "vae_name"
+          },
+          "link": null
+        }
+      ],
       "outputs": [
         {
           "localized_name": "VAE",
           "name": "VAE",
-          "shape": 3,
           "type": "VAE",
           "slot_index": 0,
           "links": [
@@ -927,6 +972,153 @@
       ]
     },
     {
+      "id": 45,
+      "type": "NunchakuFluxDiTLoader",
+      "pos": [
+        83.87139129638672,
+        1020.9346313476562
+      ],
+      "size": [
+        315,
+        202
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model_path",
+          "name": "model_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "model_path"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cache_threshold",
+          "name": "cache_threshold",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cache_threshold"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "attention",
+          "name": "attention",
+          "type": "COMBO",
+          "widget": {
+            "name": "attention"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cpu_offload",
+          "name": "cpu_offload",
+          "type": "COMBO",
+          "widget": {
+            "name": "cpu_offload"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "device_id",
+          "name": "device_id",
+          "type": "INT",
+          "widget": {
+            "name": "device_id"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "data_type",
+          "name": "data_type",
+          "type": "COMBO",
+          "widget": {
+            "name": "data_type"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "i2f_mode",
+          "name": "i2f_mode",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "i2f_mode"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            125
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "NunchakuFluxDiTLoader"
+      },
+      "widgets_values": [
+        "svdq-fp4-flux.1-dev",
+        0,
+        "nunchaku-fp16",
+        "auto",
+        0,
+        "bfloat16",
+        "enabled"
+      ]
+    },
+    {
+      "id": 42,
+      "type": "StyleModelLoader",
+      "pos": [
+        400,
+        -180
+      ],
+      "size": [
+        340,
+        60
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "style_model_name",
+          "name": "style_model_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "style_model_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STYLE_MODEL",
+          "name": "STYLE_MODEL",
+          "type": "STYLE_MODEL",
+          "links": [
+            119
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "StyleModelLoader"
+      },
+      "widgets_values": [
+        "flux1-redux-dev.safetensors"
+      ]
+    },
+    {
       "id": 40,
       "type": "LoadImage",
       "pos": [
@@ -940,7 +1132,26 @@
       "flags": {},
       "order": 11,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "COMBO",
+          "widget": {
+            "name": "image"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "choose file to upload",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
+          "widget": {
+            "name": "upload"
+          },
+          "link": null
+        }
+      ],
       "outputs": [
         {
           "localized_name": "IMAGE",
@@ -963,48 +1174,108 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "flux_redux_model_example.png",
-        "image",
-        ""
+        "robot.png",
+        "image"
       ]
     },
     {
-      "id": 45,
-      "type": "NunchakuFluxDiTLoader",
+      "id": 38,
+      "type": "CLIPVisionLoader",
       "pos": [
-        83.87139129638672,
-        1020.9346313476562
+        60,
+        -410
       ],
       "size": [
-        315,
-        202
+        370,
+        60
       ],
       "flags": {},
       "order": 12,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "localized_name": "clip_name",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        }
+      ],
       "outputs": [
         {
-          "localized_name": "MODEL",
-          "name": "MODEL",
-          "type": "MODEL",
+          "localized_name": "CLIP_VISION",
+          "name": "CLIP_VISION",
+          "type": "CLIP_VISION",
+          "slot_index": 0,
           "links": [
-            125
+            117
           ]
         }
       ],
       "properties": {
-        "Node name for S&R": "NunchakuFluxDiTLoader"
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "CLIPVisionLoader"
       },
       "widgets_values": [
-        "svdq-int4-flux.1-dev",
-        0,
-        "nunchaku-fp16",
-        "auto",
-        0,
-        "bfloat16",
-        "enabled"
+        "sigclip_vision_patch14_384.safetensors"
       ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        387.3268737792969,
+        240.6169891357422
+      ],
+      "size": [
+        422.84503173828125,
+        164.31304931640625
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 10
+        },
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            41
+          ]
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.27",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "cute anime girl with massive fluffy fennec ears"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
     }
   ],
   "links": [
@@ -1117,7 +1388,7 @@
       35,
       0,
       30,
-      2,
+      4,
       "INT"
     ],
     [
@@ -1125,7 +1396,7 @@
       34,
       0,
       30,
-      1,
+      3,
       "INT"
     ],
     [
@@ -1211,10 +1482,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.1,
+      "scale": 0.9849732675807628,
       "offset": [
-        806.9864064691736,
-        -252.69362916013048
+        119.2340179032343,
+        397.00760656086226
       ]
     },
     "groupNodes": {
