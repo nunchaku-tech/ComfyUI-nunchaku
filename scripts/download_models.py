@@ -97,8 +97,13 @@ def download_other():
     download_file(
         repo_id="black-forest-labs/FLUX.1-Redux-dev",
         filename="flux1-redux-dev.safetensors",
-        sub_folder="diffusion_models",
+        sub_folder="style_models",
         new_filename="flux1-redux-dev.safetensors",
+    )
+    download_file(
+        repo_id="Comfy-Org/sigclip_vision_384",
+        filename="sigclip_vision_patch14_384.safetensors",
+        sub_folder="clip_vision",
     )
 
 

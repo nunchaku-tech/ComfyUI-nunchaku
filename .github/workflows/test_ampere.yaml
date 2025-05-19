@@ -1,4 +1,4 @@
-name: pr_test_blackwell
+name: test_blackwell
 
 on:
   workflow_dispatch:
