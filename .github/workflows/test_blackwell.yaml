@@ -142,6 +142,9 @@ jobs:
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           which python
+          pwd
+          ls
+          cd ../ComfyUI
           pytest -v nunchaku_tests/
 
   clean-up:
