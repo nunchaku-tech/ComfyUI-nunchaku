@@ -11,7 +11,7 @@ def download_file(
     sub_folder: str,
     new_filename: str | None = None,
 ) -> str:
-    assert os.path.isdir(os.path.join("models", sub_folder))
+    os.makedirs(os.path.join("models", sub_folder), exist_ok=True)
     target_folder = os.path.join("models", sub_folder)
     target_file = os.path.join(target_folder, filename if new_filename is None else new_filename)
     if not os.path.exists(target_file):
@@ -48,6 +48,7 @@ def download_svdquant_models():
         f"mit-han-lab/svdq-{precision}-flux.1-depth-dev",
         f"mit-han-lab/svdq-{precision}-flux.1-fill-dev",
     ]
+    os.makedirs(os.path.join("models", "diffusion_models"), exist_ok=True)
     for model_path in svdquant_models:
         snapshot_download(
             model_path, local_dir=os.path.join("models", "diffusion_models", os.path.basename(model_path))
