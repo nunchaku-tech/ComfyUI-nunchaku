@@ -1,8 +1,10 @@
+# isort: off
 import os
 
+import wget
 from tqdm import tqdm
 
-import wget
+# isort: on
 
 if __name__ == "__main__":
     os.makedirs("input", exist_ok=True)
