@@ -6,6 +6,24 @@ on:
       - main
       - dev
   pull_request:
+  workflow_dispatch:
+    inputs:
+      test_target:
+        description: 'What to test: "pr" or "branch"'
+        required: true
+        type: choice
+        options:
+          - pr
+          - branch
+
+      pr_number:
+        description: 'Pull Request Number (only if test_target == "pr")'
+        required: false
+
+      branch_name:
+        description: 'Branch name (only if test_target == "branch")'
+        default: 'main'
+        required: false
 
 jobs:
   lint:
