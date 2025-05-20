@@ -145,6 +145,7 @@ jobs:
           pwd
           ls
           cd ../ComfyUI
+          ls custom_nodes
           pytest -v nunchaku_tests/
 
   clean-up:
