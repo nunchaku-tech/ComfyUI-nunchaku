@@ -31,6 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show current commit
+        run: git log -1 --oneline
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -42,4 +45,4 @@ jobs:
           pre-commit install
 
       - name: Linting
-        run: pre-commit run --all-files
+        run: pre-commit run --all-files --show-diff-on-failure
