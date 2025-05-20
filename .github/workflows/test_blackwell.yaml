@@ -122,7 +122,7 @@ jobs:
           pwd
           cd ..
           pip install comfy-cli
-          echo y | comfy --here install --nvidia --skip-torch-or-directml --skip-manager --version 0.3.34
+          yes | comfy --here install --nvidia --skip-torch-or-directml --skip-manager --version 0.3.34
           cd ComfyUI
           rm -r models
           mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }}
