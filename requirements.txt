@@ -3,3 +3,7 @@ accelerate
 sentencepiece
 protobuf
 huggingface_hub
+insightface
+opencv-python
+facexlib
+onnxruntime
