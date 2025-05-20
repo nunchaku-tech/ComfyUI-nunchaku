@@ -132,6 +132,7 @@ jobs:
           cd custom_nodes
           ln -s ../../ComfyUI-nunchaku
           cd ..
+          pip install -r custom_nodes/ComfyUI-nunchaku/requirements.txt
           comfy node install comfyui_controlnet_aux
           comfy node install comfyui-inpainteasy
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
