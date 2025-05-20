@@ -110,6 +110,8 @@ jobs:
           git clone -b dev https://github.com/mit-han-lab/nunchaku.git
           cd nunchaku
           git log -1 --oneline
+          git submodule init
+          git submodule update
           NUNCHAKU_INSTALL_MODE=ALL python setup.py develop
 
       - name: Install ComfyUI and set up test environment
