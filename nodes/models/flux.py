@@ -98,19 +98,19 @@ class ComfyFluxWrapper(nn.Module):
         controlnet_block_samples = None if control is None else [y.to(x.dtype) for y in control["input"]]
         controlnet_single_block_samples = None if control is None else [y.to(x.dtype) for y in control["output"]]
         if getattr(model, "_is_cached", False):
-            # A more robust caching strategy 
+            # A more robust caching strategy
             cache_invalid = False
-            
-            # Check if timestamps have changed or are out of valid range 
+
+            # Check if timestamps have changed or are out of valid range
             if self._prev_timestep is None:
                 cache_invalid = True
-            elif abs(self._prev_timestep - timestep_float) > 1e-5:  # Add a tolerance 
+            elif abs(self._prev_timestep - timestep_float) > 1e-5:  # Add a tolerance
                 cache_invalid = True
-            
+
             if cache_invalid:
                 self._cache_context = create_cache_context()
-            
-            # Update the previous timestamp 
+
+            # Update the previous timestamp
             self._prev_timestep = timestep_float
             with cache_context(self._cache_context):
                 out = model(
