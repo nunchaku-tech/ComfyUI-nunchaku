@@ -16,7 +16,7 @@ line-length = 120
 [project]
 name = "ComfyUI-nunchaku"
 description = "Nunchaku ComfyUI Node. Nunchaku is the inference engine that supports SVDQuant. SVDQuant is a new post-training training quantization paradigm for diffusion models, which quantize both the weights and activations of FLUX.1 to 4 bits, achieving 3.5× memory and 8.7× latency reduction on a 16GB laptop 4090 GPU. See more details: https://github.com/mit-han-lab/nunchaku"
-version = "0.3.0dev1"
+version = "0.3.0dev2"
 license = { file = "LICENSE.txt" }
 dependencies = []
 requires-python = ">=3.10, <3.13"
