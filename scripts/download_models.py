@@ -80,6 +80,12 @@ def download_loras():
         filename="flux1-canny-dev-lora.safetensors",
         sub_folder="loras",
     )
+    download_file(
+        repo_id="RiverZ/normal-lora",
+        filename="pytorch_lora_weights.safetensors",
+        sub_folder="loras",
+        new_filename="icedit.safetensors",
+    )
 
 
 def download_other():
