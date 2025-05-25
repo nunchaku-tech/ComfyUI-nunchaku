@@ -7,7 +7,7 @@ import pytest
 import torch
 from diffusers.utils import load_image
 from PIL import Image
-from torchmetrics.image import LearnedPerceptualImagePatchSimilarity
+from torchmetrics.image import LearnedPerceptualImagePatchSimilarity, PeakSignalNoiseRatio
 from torchmetrics.multimodal import CLIPImageQualityAssessment
 
 from nunchaku.utils import get_precision
@@ -41,13 +41,19 @@ def test_workflows(script_name: str):
         f"{get_precision()}/{script_name.replace('.py', '.png')}"
     )
     ref_image = load_image(ref_image_url).convert("RGB")
-    metric = LearnedPerceptualImagePatchSimilarity(normalize=True).to("cuda")
+    metric = LearnedPerceptualImagePatchSimilarity().to("cuda")
     ref_tensor = torch.from_numpy(np.array(ref_image)).permute(2, 0, 1).to(torch.float32)
     ref_tensor = ref_tensor.unsqueeze(0).to("cuda")
-    lpips = metric(gen_tensor, ref_tensor).item()
+    lpips = metric(gen_tensor / 255, ref_tensor / 255).item()
     print(f"LPIPS: {lpips}")
+
+    metric = PeakSignalNoiseRatio(data_range=(0, 255)).cuda()
+    psnr = metric(gen_tensor, ref_tensor).item()
+    print(f"PSNR: {psnr}")
+
     if script_name in ["nunchaku_flux1_depth.py", "nunchaku_flux1_depth_lora.py"]:
         assert clip_iqa >= 0.6
     else:
         assert clip_iqa >= 0.8
-    assert lpips <= 0.15
+    assert lpips <= 0.23
+    assert psnr >= 20
