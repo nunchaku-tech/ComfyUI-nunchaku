@@ -272,7 +272,7 @@ class NunchakuFluxDiTLoader:
         data_type: str,
         **kwargs,
     ) -> tuple[FluxTransformer2DModel]:
-        device = f"cuda:{device_id}"
+        device = torch.device(f"cuda:{device_id}")
         prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
         for prefix in prefixes:
             if os.path.exists(os.path.join(prefix, model_path)):
