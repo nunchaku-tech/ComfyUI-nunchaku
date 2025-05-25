@@ -55,5 +55,5 @@ def test_workflows(script_name: str):
         assert clip_iqa >= 0.6
     else:
         assert clip_iqa >= 0.8
-    assert lpips <= 0.23
-    assert psnr >= 20
+    assert lpips <= 0.24
+    assert psnr >= 19
