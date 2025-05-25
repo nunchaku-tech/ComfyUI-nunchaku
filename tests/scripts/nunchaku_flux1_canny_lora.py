@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 from typing import Any, Mapping, Sequence, Union
 
@@ -194,7 +193,7 @@ def main(precision: str):
             )
 
             ksampler_3 = ksampler.sample(
-                seed=random.randint(1, 2**64),
+                seed=2367983337527674677,
                 steps=20,
                 cfg=1,
                 sampler_name="euler",

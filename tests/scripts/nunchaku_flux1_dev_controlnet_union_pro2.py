@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 from typing import Any, Mapping, Sequence, Union
 
@@ -136,7 +135,7 @@ def main(precision: str):
         )
 
         randomnoise = NODE_CLASS_MAPPINGS["RandomNoise"]()
-        randomnoise_7 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
+        randomnoise_7 = randomnoise.get_noise(noise_seed=13412377781951714641)
 
         emptysd3latentimage = NODE_CLASS_MAPPINGS["EmptySD3LatentImage"]()
         emptysd3latentimage_9 = emptysd3latentimage.generate(width=800, height=1200, batch_size=1)

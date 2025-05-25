@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 from typing import Any, Mapping, Sequence, Union
 
@@ -147,7 +146,7 @@ def main(precision: str) -> str:
         ksamplerselect_16 = ksamplerselect.get_sampler(sampler_name="euler")
 
         randomnoise = NODE_CLASS_MAPPINGS["RandomNoise"]()
-        randomnoise_25 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
+        randomnoise_25 = randomnoise.get_noise(noise_seed=17510806082866111786)
 
         nunchakufluxditloader = NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"]()
         nunchakufluxditloader_30 = nunchakufluxditloader.load_model(

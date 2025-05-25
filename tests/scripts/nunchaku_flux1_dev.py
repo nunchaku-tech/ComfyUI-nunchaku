@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 from typing import Any, Mapping, Sequence, Union
 
@@ -144,7 +143,7 @@ def main(precision: str) -> str:
         ksamplerselect_16 = ksamplerselect.get_sampler(sampler_name="euler")
 
         randomnoise = NODE_CLASS_MAPPINGS["RandomNoise"]()
-        randomnoise_25 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
+        randomnoise_25 = randomnoise.get_noise(noise_seed=5514567140446690435)
 
         emptysd3latentimage = NODE_CLASS_MAPPINGS["EmptySD3LatentImage"]()
         emptysd3latentimage_27 = emptysd3latentimage.generate(width=1024, height=1024, batch_size=1)
