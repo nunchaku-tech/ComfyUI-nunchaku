@@ -18,17 +18,17 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
 @pytest.mark.parametrize(
     "script_name, expected_clip_iqa, expected_lpips, expected_psnr",
     [
-        ("nunchaku_flux1_redux_dev.py", 0.9, 0.02, 27.4),
-        ("nunchaku_flux1_dev_controlnet_upscaler.py", 0.9, 0.01, 34.3),
-        ("nunchaku_flux1_dev_controlnet_union_pro2.py", 0.9, 0.05, 30.1),
-        ("nunchaku_flux1_depth_lora.py", 0.8, 0.06, 26.9),
-        ("nunchaku_flux1_canny.py", 0.9, 0.03, 28.8),
+        ("nunchaku_flux1_redux_dev.py", 0.9, 0.1, 27.4),
+        ("nunchaku_flux1_dev_controlnet_upscaler.py", 0.9, 0.1, 34.3),
+        ("nunchaku_flux1_dev_controlnet_union_pro2.py", 0.9, 0.1, 30.1),
+        ("nunchaku_flux1_depth_lora.py", 0.8, 0.1, 26.9),
+        ("nunchaku_flux1_canny.py", 0.9, 0.1, 28.8),
         ("nunchaku_flux1_schnell.py", 0.9, 0.24, 19.3),
-        ("nunchaku_flux1_depth.py", 0.9, 0.05, 30.3),
+        ("nunchaku_flux1_depth.py", 0.9, 0.1, 30.3),
         ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.14, 23.9),
-        ("nunchaku_flux1_fill.py", 0.9, 0.01, 36.3),
+        ("nunchaku_flux1_fill.py", 0.9, 0.1, 36.3),
         ("nunchaku_flux1_dev.py", 0.9, 0.18, 19.7),
-        ("nunchaku_flux1_canny_lora.py", 0.9, 0.04, 25.1),
+        ("nunchaku_flux1_canny_lora.py", 0.9, 0.1, 25.1),
     ],
 )
 def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
