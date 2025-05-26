@@ -31,9 +31,7 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku_flux1_canny_lora.py", 0.9, 0.04, 25.1),
     ],
 )
-def test_workflows(
-    script_name: str, expected_clip_iqa: float = 0.8, expected_lpips: float = 0.24, expected_psnr: float = 19
-):
+def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
     gc.collect()
     torch.cuda.empty_cache()
     script_path = os.path.join(script_dir, script_name)
