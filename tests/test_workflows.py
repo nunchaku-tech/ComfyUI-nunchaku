@@ -13,7 +13,6 @@ from torchmetrics.multimodal import CLIPImageQualityAssessment
 from nunchaku.utils import get_precision
 
 script_dir = os.path.join(os.path.dirname(__file__), "scripts")
-scripts = [f for f in os.listdir(script_dir) if f.endswith(".py")]
 
 
 @pytest.mark.parametrize(
