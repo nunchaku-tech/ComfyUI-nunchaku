@@ -16,8 +16,25 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
 scripts = [f for f in os.listdir(script_dir) if f.endswith(".py")]
 
 
-@pytest.mark.parametrize("script_name", scripts)
-def test_workflows(script_name: str):
+@pytest.mark.parametrize(
+    "script_name, expected_clip_iqa, expected_lpips, expected_psnr",
+    [
+        ("nunchaku_flux1_redux_dev.py", 0.9, 0.02, 27.4),
+        ("nunchaku_flux1_dev_controlnet_upscaler.py", 0.9, 0.01, 34.3),
+        ("nunchaku_flux1_dev_controlnet_union_pro2.py", 0.9, 0.05, 30.1),
+        ("nunchaku_flux1_depth_lora.py", 0.8, 0.06, 26.9),
+        ("nunchaku_flux1_canny.py", 0.9, 0.03, 28.8),
+        ("nunchaku_flux1_schnell.py", 0.9, 0.24, 19.3),
+        ("nunchaku_flux1_depth.py", 0.9, 0.05, 30.3),
+        ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.14, 23.9),
+        ("nunchaku_flux1_fill.py", 0.9, 0.01, 36.3),
+        ("nunchaku_flux1_dev.py", 0.9, 0.18, 19.7),
+        ("nunchaku_flux1_canny_lora.py", 0.9, 0.04, 25.1),
+    ],
+)
+def test_workflows(
+    script_name: str, expected_clip_iqa: float = 0.8, expected_lpips: float = 0.24, expected_psnr: float = 19
+):
     gc.collect()
     torch.cuda.empty_cache()
     script_path = os.path.join(script_dir, script_name)
@@ -51,9 +68,6 @@ def test_workflows(script_name: str):
     psnr = metric(gen_tensor, ref_tensor).item()
     print(f"PSNR: {psnr}")
 
-    if script_name in ["nunchaku_flux1_depth.py", "nunchaku_flux1_depth_lora.py"]:
-        assert clip_iqa >= 0.6
-    else:
-        assert clip_iqa >= 0.8
-    assert lpips <= 0.24
-    assert psnr >= 19
+    assert clip_iqa >= expected_clip_iqa * 0.9
+    assert lpips <= expected_lpips * 1.1
+    assert psnr >= expected_psnr * 0.9
