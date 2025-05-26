@@ -1,8 +1,16 @@
 import os
+from pathlib import Path
 
+import yaml
 from huggingface_hub import hf_hub_download, snapshot_download
 
 from nunchaku.utils import get_precision
+
+
+def load_yaml(path: str | Path) -> dict:
+    with open(path, "r", encoding="utf-8") as file:
+        data = yaml.safe_load(file)
+    return data
 
 
 def download_file(
@@ -56,36 +64,13 @@ def download_svdquant_models():
 
 
 def download_loras():
-    download_file(
-        repo_id="alimama-creative/FLUX.1-Turbo-Alpha",
-        filename="diffusion_pytorch_model.safetensors",
-        sub_folder="loras",
-        new_filename="flux.1-turbo-alpha.safetensors",
-    )
-
-    download_file(
-        repo_id="aleksa-codes/flux-ghibsky-illustration",
-        filename="lora.safetensors",
-        sub_folder="loras",
-        new_filename="flux.1-dev-ghibsky.safetensors",
-    )
-
-    download_file(
-        repo_id="black-forest-labs/FLUX.1-Depth-dev-lora",
-        filename="flux1-depth-dev-lora.safetensors",
-        sub_folder="loras",
-    )
-    download_file(
-        repo_id="black-forest-labs/FLUX.1-Canny-dev-lora",
-        filename="flux1-canny-dev-lora.safetensors",
-        sub_folder="loras",
-    )
-    download_file(
-        repo_id="RiverZ/normal-lora",
-        filename="pytorch_lora_weights.safetensors",
-        sub_folder="loras",
-        new_filename="icedit.safetensors",
-    )
+    data = load_yaml(Path(__file__).resolve().parent.parent / "test_data" / "loras.yaml")
+    for lora in data["loras"]:
+        repo_id = lora["repo_id"]
+        filename = lora["filename"]
+        sub_folder = lora.get("sub_folder", "loras")
+        new_filename = lora.get("new_filename", None)
+        download_file(repo_id=repo_id, filename=filename, sub_folder=sub_folder, new_filename=new_filename)
 
 
 def download_other():
