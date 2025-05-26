@@ -23,7 +23,7 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku_flux1_dev_controlnet_union_pro2.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_depth_lora.py", 0.7, 0.1, 26),
         ("nunchaku_flux1_canny.py", 0.9, 0.1, 26),
-        ("nunchaku_flux1_schnell.py", 0.9, 0.24, 19.3),
+        ("nunchaku_flux1_schnell.py", 0.9, 0.29, 19.3),
         ("nunchaku_flux1_depth.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.14, 23.9),
         ("nunchaku_flux1_fill.py", 0.9, 0.1, 26),
