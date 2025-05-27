@@ -1,6 +1,7 @@
 from functools import partial
 from types import MethodType
 
+import folder_paths
 import numpy as np
 import torch
 
@@ -70,6 +71,7 @@ class NunchakuPulidLoader:
             device=self.pulid_device,
             weight_dtype=self.weight_dtype,
             onnx_provider=self.onnx_provider,
+            folder_paths=folder_paths.models_dir,
         )
         pulid_model.load_pretrain(self.pretrained_model)
 
