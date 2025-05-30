@@ -44,7 +44,8 @@ class FluxDepthPreprocessor:
 
     def depth_preprocess(self, image, model_path):
         logger.warning(
-            "`FluxDepthPreprocessor` will be deprecated in v0.4. Please use `Depth Anything` directly within native ComfyUI instead."
+            "`FluxDepthPreprocessor` will be deprecated in v0.4. "
+            "Please use `Depth Anything` directly within native ComfyUI instead."
         )
         prefixes = folder_paths.folder_names_and_paths["checkpoints"][0]
         for prefix in prefixes:
