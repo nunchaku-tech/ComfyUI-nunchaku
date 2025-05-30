@@ -1,8 +1,16 @@
+import logging
 import os
 
 import folder_paths
 import numpy as np
 import torch
+
+# Get log level from environment variable (default to INFO)
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Configure logging
+logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 
 class FluxDepthPreprocessor:
@@ -35,6 +43,9 @@ class FluxDepthPreprocessor:
     TITLE = "FLUX.1 Depth Preprocessor"
 
     def depth_preprocess(self, image, model_path):
+        logger.warning(
+            "`FluxDepthPreprocessor` will be deprecated in v0.4. Please use `Depth Anything` directly within native ComfyUI instead."
+        )
         prefixes = folder_paths.folder_names_and_paths["checkpoints"][0]
         for prefix in prefixes:
             if os.path.exists(os.path.join(prefix, model_path)):

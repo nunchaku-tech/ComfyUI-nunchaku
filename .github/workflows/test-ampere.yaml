@@ -1,4 +1,4 @@
-name: test_blackwell
+name: Ampere Tests
 on:
   workflow_dispatch:
     inputs:
@@ -39,7 +39,7 @@ concurrency:
 jobs:
   check-comment:
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.pull_request && !github.event.pull_request.draft) }}
-    runs-on: [self-hosted, blackwell]
+    runs-on: [self-hosted, ampere]
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
@@ -53,7 +53,7 @@ jobs:
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
   run-tests:
-    runs-on: [self-hosted, blackwell]
+    runs-on: [self-hosted, ampere]
     needs: [check-comment]
     if: ${{ github.event_name != 'issue_comment' || needs.check-comment.outputs.should_run == 'true' }}
     steps:
@@ -114,8 +114,8 @@ jobs:
           yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.34
           cd ComfyUI
           rm -r models
-          mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }}
-          ln -s ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }} models
+          mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_AMPERE }}
+          ln -s ${{ secrets.COMFYUI_MODELS_ROOT_AMPERE }} models
           cp -r ../ComfyUI-nunchaku/tests nunchaku_tests
           pip install -r nunchaku_tests/requirements.txt
           cd custom_nodes
@@ -138,7 +138,7 @@ jobs:
   clean-up:
     if: always() && (github.event_name != 'issue_comment' || needs.check-comment.outputs.should_run == 'true')
     needs: [run-tests]
-    runs-on: [self-hosted, blackwell]
+    runs-on: [self-hosted, ampere]
     steps:
       - name: Clean up
         run: |
