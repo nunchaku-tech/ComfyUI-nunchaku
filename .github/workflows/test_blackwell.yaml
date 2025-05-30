@@ -1,5 +1,4 @@
 name: test_blackwell
-
 on:
   workflow_dispatch:
     inputs:
@@ -10,11 +9,9 @@ on:
         options:
           - pr
           - branch
-
       pr_number:
         description: 'Pull Request Number (only if test_target == "pr")'
         required: false
-
       branch_name:
         description: 'Branch name (only if test_target == "branch")'
         default: 'main'
@@ -36,15 +33,13 @@ on:
 #  issue_comment:
 #    types: [ created ]
 
-
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
 jobs:
   check-comment:
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.pull_request && !github.event.pull_request.draft) }}
-    runs-on: [ self-hosted, blackwell ]
+    runs-on: [self-hosted, blackwell]
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
@@ -57,10 +52,9 @@ jobs:
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
-
   run-tests:
-    runs-on: [ self-hosted, blackwell ]
-    needs: [ check-comment ]
+    runs-on: [self-hosted, blackwell]
+    needs: [check-comment]
     if: ${{ github.event_name != 'issue_comment' || needs.check-comment.outputs.should_run == 'true' }}
     steps:
       - name: Determine ref
@@ -76,16 +70,13 @@ jobs:
         with:
           ref: ${{ steps.set-ref.outputs.ref }}
           submodules: true
-
       - name: Show current commit
         run: git log -1 --oneline
-
       - name: Set up Python
         run: |
           which python
           echo "Setting up Python with Conda"
           conda create -n test_env python=3.12 -y
-
       - name: Install dependencies
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
@@ -95,7 +86,6 @@ jobs:
           echo "Installing dependencies"
           pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
           pip install ninja wheel diffusers transformers accelerate sentencepiece protobuf huggingface_hub
-
       - name: Install Nunchaku
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
@@ -113,7 +103,6 @@ jobs:
           git submodule init
           git submodule update
           NUNCHAKU_INSTALL_MODE=ALL python setup.py develop
-
       - name: Install ComfyUI and set up test environment
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
@@ -137,7 +126,6 @@ jobs:
           comfy node install comfyui-inpainteasy
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
-
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
@@ -147,12 +135,10 @@ jobs:
           pwd
           python nunchaku_tests/scripts/nunchaku_flux1_dev.py
           pytest -v nunchaku_tests/
-
   clean-up:
     if: always() && (github.event_name != 'issue_comment' || needs.check-comment.outputs.should_run == 'true')
-    needs: [ run-tests ]
-    runs-on: [ self-hosted, blackwell ]
-
+    needs: [run-tests]
+    runs-on: [self-hosted, blackwell]
     steps:
       - name: Clean up
         run: |

@@ -1,5 +1,4 @@
 name: Lint
-
 on:
   push:
     branches:
@@ -15,34 +14,27 @@ on:
         options:
           - pr
           - branch
-
       pr_number:
         description: 'Pull Request Number (only if test_target == "pr")'
         required: false
-
       branch_name:
         description: 'Branch name (only if test_target == "branch")'
         default: 'main'
         required: false
-
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Show current commit
         run: git log -1 --oneline
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
       - name: Install pre-commit hook
         run: |
           python -m pip install pre-commit
           pre-commit install
-
       - name: Linting
         run: pre-commit run --all-files --show-diff-on-failure
