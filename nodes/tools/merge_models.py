@@ -26,7 +26,8 @@ class MergeNunchakuModelFolderToSafetensor:
             }
         }
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("status",)
     FUNCTION = "run"
     CATEGORY = "Nunchaku"
     TITLE = "Merge Nunchaku Model Folder to A Single Safetensor"
@@ -54,3 +55,4 @@ class MergeNunchakuModelFolderToSafetensor:
         if not save_name.endswith((".safetensors", ".sft")):
             save_path = save_path.with_suffix(".safetensors")
         save_file(state_dict, save_path, metadata=metadata)
+        return (f"Merge {model_path} to {save_path}",)
