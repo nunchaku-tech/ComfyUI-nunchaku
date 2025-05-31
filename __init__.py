@@ -2,7 +2,7 @@
 from .nodes.lora import NunchakuFluxLoraLoader
 from .nodes.models import NunchakuFluxDiTLoader, NunchakuPulidApply, NunchakuPulidLoader, NunchakuTextEncoderLoader
 from .nodes.preprocessors import FluxDepthPreprocessor
-from .nodes.tools import MergeNunchakuModelFolderToSafetensor
+from .nodes.tools import NunchakuModelMerger
 
 NODE_CLASS_MAPPINGS = {
     "NunchakuFluxDiTLoader": NunchakuFluxDiTLoader,
@@ -11,7 +11,7 @@ NODE_CLASS_MAPPINGS = {
     "NunchakuDepthPreprocessor": FluxDepthPreprocessor,
     "NunchakuPulidApply": NunchakuPulidApply,
     "NunchakuPulidLoader": NunchakuPulidLoader,
-    "MergeNunchakuModelFolderToSafetensor": MergeNunchakuModelFolderToSafetensor,
+    "MergeNunchakuModelFolderToSafetensor": NunchakuModelMerger,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

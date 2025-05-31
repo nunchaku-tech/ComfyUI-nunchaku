@@ -1,3 +1,3 @@
-from .merge_models import MergeNunchakuModelFolderToSafetensor
+from .merge_safetensors import NunchakuModelMerger
 
-__all__ = ["MergeNunchakuModelFolderToSafetensor"]
+__all__ = ["NunchakuModelMerger"]

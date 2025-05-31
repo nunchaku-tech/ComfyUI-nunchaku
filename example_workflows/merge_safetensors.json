@@ -5,40 +5,6 @@
   "last_link_id": 2,
   "nodes": [
     {
-      "id": 1,
-      "type": "MergeNunchakuModelFolderToSafetensor",
-      "pos": [
-        257.7658386230469,
-        120.34205627441406
-      ],
-      "size": [
-        435.3052673339844,
-        82
-      ],
-      "flags": {
-        "collapsed": false
-      },
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "status",
-          "type": "STRING",
-          "links": [
-            2
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "MergeNunchakuModelFolderToSafetensor"
-      },
-      "widgets_values": [
-        "svdq-fp4-flux.1-dev",
-        "svdq-fp4_r32-flux.1-dev"
-      ]
-    },
-    {
       "id": 4,
       "type": "PreviewAny",
       "pos": [
@@ -79,7 +45,7 @@
         124.8914794921875
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -89,6 +55,40 @@
       ],
       "color": "#432",
       "bgcolor": "#653"
+    },
+    {
+      "id": 1,
+      "type": "MergeNunchakuModelFolderToSafetensor",
+      "pos": [
+        257.7658386230469,
+        120.34205627441406
+      ],
+      "size": [
+        435.3052673339844,
+        82
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MergeNunchakuModelFolderToSafetensor"
+      },
+      "widgets_values": [
+        "svdq-fp4-flux.1-dev",
+        "svdq-fp4_r32-flux.1-dev"
+      ]
     }
   ],
   "links": [
