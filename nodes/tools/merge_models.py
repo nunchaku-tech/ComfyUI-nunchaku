@@ -43,7 +43,7 @@ class MergeNunchakuModelFolderToSafetensor:
 
         comfy_config_path = None
         if not (model_path / "comfy_config.json").exists():
-            default_config_root = Path(__file__).parent / "models" / "configs"
+            default_config_root = Path(__file__).parent.parent / "models" / "configs"
             config_name = model_path.name.replace("svdq-int4-", "").replace("svdq-fp4-", "")
             comfy_config_path = default_config_root / f"{config_name}.json"
 
@@ -55,4 +55,4 @@ class MergeNunchakuModelFolderToSafetensor:
         if not save_name.endswith((".safetensors", ".sft")):
             save_path = save_path.with_suffix(".safetensors")
         save_file(state_dict, save_path, metadata=metadata)
-        return (f"Merge {model_path} to {save_path}",)
+        return (f"Merge {model_path} to {save_path}.",)
