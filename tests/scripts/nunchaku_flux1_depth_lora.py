@@ -171,7 +171,7 @@ def main(precision: str) -> str:
 
         nunchakufluxditloader = NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"]()
         nunchakufluxditloader_52 = nunchakufluxditloader.load_model(
-            model_path=f"svdq-{precision}-flux.1-dev",
+            model_path=f"svdq-{precision}_r32-flux.1-dev.safetensors",
             cache_threshold=0,
             attention="nunchaku-fp16",
             cpu_offload="auto",
