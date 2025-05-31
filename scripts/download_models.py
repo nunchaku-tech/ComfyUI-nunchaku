@@ -45,7 +45,7 @@ def download_original_models():
     )
 
 
-def download_svdquant_models():
+def download_nunchaku_models():
     precision = get_precision()
     svdquant_models = [
         f"mit-han-lab/svdq-{precision}-shuttle-jaguar",
@@ -61,6 +61,13 @@ def download_svdquant_models():
         snapshot_download(
             model_path, local_dir=os.path.join("models", "diffusion_models", os.path.basename(model_path))
         )
+    data = load_yaml(Path(__file__).resolve().parent.parent / "test_data" / "nunchaku_models.yaml")
+    for lora in data["loras"]:
+        repo_id = lora["repo_id"]
+        filename = lora["filename"].format(precision=precision)
+        sub_folder = lora.get("sub_folder", "loras")
+        new_filename = lora.get("new_filename", None)
+        download_file(repo_id=repo_id, filename=filename, sub_folder=sub_folder, new_filename=new_filename)
 
 
 def download_loras():
@@ -101,6 +108,6 @@ def download_other():
 
 if __name__ == "__main__":
     download_original_models()
-    download_svdquant_models()
+    download_nunchaku_models()
     download_loras()
     download_other()
