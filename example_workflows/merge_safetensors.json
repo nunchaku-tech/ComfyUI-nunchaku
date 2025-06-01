@@ -1,8 +1,8 @@
 {
   "id": "d1f50cbf-9a19-4468-87f2-51635bceee09",
   "revision": 0,
-  "last_node_id": 6,
-  "last_link_id": 2,
+  "last_node_id": 7,
+  "last_link_id": 3,
   "nodes": [
     {
       "id": 4,
@@ -22,7 +22,7 @@
         {
           "name": "source",
           "type": "*",
-          "link": 2
+          "link": 3
         }
       ],
       "outputs": [],
@@ -37,8 +37,8 @@
       "id": 6,
       "type": "Note",
       "pos": [
-        258.06866455078125,
-        262.96875
+        327.0765380859375,
+        289.9415588378906
       ],
       "size": [
         435.1649169921875,
@@ -57,19 +57,17 @@
       "bgcolor": "#653"
     },
     {
-      "id": 1,
-      "type": "MergeNunchakuModelFolderToSafetensor",
+      "id": 7,
+      "type": "NunchakuModelMerger",
       "pos": [
-        257.7658386230469,
-        120.34205627441406
+        322.8587951660156,
+        118.55458068847656
       ],
       "size": [
-        435.3052673339844,
+        328.3153076171875,
         82
       ],
-      "flags": {
-        "collapsed": false
-      },
+      "flags": {},
       "order": 1,
       "mode": 0,
       "inputs": [],
@@ -78,12 +76,12 @@
           "name": "status",
           "type": "STRING",
           "links": [
-            2
+            3
           ]
         }
       ],
       "properties": {
-        "Node name for S&R": "MergeNunchakuModelFolderToSafetensor"
+        "Node name for S&R": "NunchakuModelMerger"
       },
       "widgets_values": [
         "svdq-fp4-flux.1-dev",
@@ -93,8 +91,8 @@
   ],
   "links": [
     [
-      2,
-      1,
+      3,
+      7,
       0,
       4,
       0,

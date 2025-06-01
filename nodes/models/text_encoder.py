@@ -230,6 +230,7 @@ def load_text_encoder_state_dicts(
                 transformer.forward = types.MethodType(nunchaku_t5_forward, transformer)
                 transformer.shared = WrappedEmbedding(transformer.shared)
                 m.transformer = transformer
+                m.logit_scale = nn.Parameter(torch.zeros_like(m.logit_scale, device=device))
 
     for state_dict, metadata in zip(state_dicts, metadata_list):
         if metadata is not None and metadata.get("model_class", None) == "NunchakuT5EncoderModel":
@@ -240,6 +241,10 @@ def load_text_encoder_state_dicts(
 
         if len(u) > 0:
             logging.debug("clip unexpected: {}".format(u))
+
+    for n, p in clip.cond_stage_model.named_parameters():
+        assert p.device.type != "meta", f"Parameter {n} is still on meta device, expected it to be on {device}."
+
     return clip
 
 

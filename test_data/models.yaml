@@ -1,8 +1,35 @@
-diffusion_models:
+models:
+  # loras
+  - repo_id: "alimama-creative/FLUX.1-Turbo-Alpha"
+    filename: "diffusion_pytorch_model.safetensors"
+    sub_folder: "loras"
+    new_filename: "flux.1-turbo-alpha.safetensors"
+  - repo_id: "aleksa-codes/flux-ghibsky-illustration"
+    filename: "lora.safetensors"
+    sub_folder: "loras"
+    new_filename: "flux.1-dev-ghibsky.safetensors"
+  - repo_id: "black-forest-labs/FLUX.1-Depth-dev-lora"
+    filename: "flux1-depth-dev-lora.safetensors"
+    sub_folder: "loras"
+    new_filename: "flux1-depth-dev-lora.safetensors"
+  - repo_id: "black-forest-labs/FLUX.1-Canny-dev-lora"
+    filename: "flux1-canny-dev-lora.safetensors"
+    sub_folder: "loras"
+    new_filename: "flux1-canny-dev-lora.safetensors"
+  - repo_id: "RiverZ/normal-lora"
+    filename: "pytorch_lora_weights.safetensors"
+    sub_folder: "loras"
+    new_filename: "icedit.safetensors"
+  - repo_id: "lrzjason/ObjectRemovalFluxFill"
+    filename: "removal_timestep_alpha-2-1740.safetensors"
+    sub_folder: "loras"
+    new_filename: "removalV2.safetensors"
+  # nunchaku text encoders
   - repo_id: "mit-han-lab/nunchaku-t5"
     filename: "awq-int4-flux.1-t5xxl.safetensors"
     sub_folder: "text_encoders"
     new_filename: null
+  # nunchaku diffusion models
   - repo_id: "mit-han-lab/nunchaku-flux.1-dev"
     filename: "svdq-{precision}_r32-flux.1-dev.safetensors"
     sub_folder: "diffusion_models"
