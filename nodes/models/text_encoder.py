@@ -220,10 +220,10 @@ class NunchakuTextEncoderLoaderV2:
             }
         }
 
-    def load_text_encoder(self, model_type: str, text_encoder1: str, text_encoder2: str):
+    def load_text_encoder(self, model_type: str, text_encoder1: str, text_encoder2: str, t5_min_length: int):
         text_encoder_path1 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder1)
         text_encoder_path2 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder2)
-        if model_type == "flux":
+        if model_type == "flux.1":
             clip_type = comfy.sd.CLIPType.FLUX
         else:
             raise ValueError(f"Unknown type {model_type}")
