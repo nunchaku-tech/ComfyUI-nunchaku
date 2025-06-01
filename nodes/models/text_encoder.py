@@ -152,46 +152,89 @@ class NunchakuTextEncoderLoader:
 
 
 def load_text_encoder_state_dicts(
-    state_dicts=[], metadata_list=[], embedding_directory=None, clip_type=comfy.sd.CLIPType.FLUX, model_options={}
+    paths: list[str | os.PathLike[str]],
+    embedding_directory: str | os.PathLike[str] | None = None,
+    clip_type=comfy.sd.CLIPType.FLUX,
+    model_options: dict = {},
 ):
-    clip_data = state_dicts
+    state_dicts, metadata_list = [], []
+
+    for p in paths:
+        sd, metadata = comfy.utils.load_torch_file(p, safe_load=True, return_metadata=True)
+        state_dicts.append(sd)
+        metadata_list.append(metadata)
 
     class EmptyClass:
         pass
 
-    for i in range(len(clip_data)):
-        if "transformer.resblocks.0.ln_1.weight" in clip_data[i]:
-            clip_data[i] = comfy.utils.clip_text_transformers_convert(clip_data[i], "", "")
+    for i in range(len(state_dicts)):
+        if "transformer.resblocks.0.ln_1.weight" in state_dicts[i]:
+            state_dicts[i] = comfy.utils.clip_text_transformers_convert(state_dicts[i], "", "")
         else:
-            if "text_projection" in clip_data[i]:
+            if "text_projection" in state_dicts[i]:
                 # old models saved with the CLIPSave node
-                clip_data[i]["text_projection.weight"] = clip_data[i]["text_projection"].transpose(0, 1)
+                state_dicts[i]["text_projection.weight"] = state_dicts[i]["text_projection"].transpose(0, 1)
 
     tokenizer_data = {}
     clip_target = EmptyClass()
     clip_target.params = {}
-    if len(clip_data) == 2:
+
+    nunchaku_model_id = None
+    for i, metadata in enumerate(metadata_list):
+        if metadata is not None and metadata.get("model_class", None) == "NunchakuT5EncoderModel":
+            nunchaku_model_id = i
+            break
+
+    if len(state_dicts) == 2:
         if clip_type == comfy.sd.CLIPType.FLUX:
-            clip_target.clip = comfy.text_encoders.flux.flux_clip(**comfy.sd.t5xxl_detect(clip_data))
+            if nunchaku_model_id is None:
+                clip_target.clip = comfy.text_encoders.flux.flux_clip(**comfy.sd.t5xxl_detect(state_dicts))
+            else:
+                clip_target.clip = comfy.text_encoders.flux.flux_clip(dtype_t5=torch.float16)
             clip_target.tokenizer = comfy.text_encoders.flux.FluxTokenizer
     else:
         raise NotImplementedError(f"Clip type {clip_type} not implemented.")
 
     parameters = 0
-    for c in clip_data:
+    for c in state_dicts:
         parameters += comfy.utils.calculate_parameters(c)
         tokenizer_data, model_options = comfy.text_encoders.long_clipl.model_options_long_clip(
             c, tokenizer_data, model_options
         )
-    clip = comfy.sd.CLIP(
-        clip_target,
-        embedding_directory=embedding_directory,
-        parameters=parameters,
-        tokenizer_data=tokenizer_data,
-        model_options=model_options,
-    )
-    for c in clip_data:
-        m, u = clip.load_sd(c)
+    with torch.device("meta"):
+        clip = comfy.sd.CLIP(
+            clip_target,
+            embedding_directory=embedding_directory,
+            parameters=parameters,
+            tokenizer_data=tokenizer_data,
+            model_options=model_options,
+        )
+
+    device = model_options.get("load_device", comfy.model_management.text_encoder_device())
+    if nunchaku_model_id is None:
+        clip.cond_stage_model.to_empty(
+            device=model_options.get("load_device", comfy.model_management.text_encoder_device())
+        )
+    else:
+        for n, m in clip.cond_stage_model.named_children():
+            if n != "t5xxl":
+                m.to_empty(device=device)
+            else:
+                transformer = m.transformer
+                param = next(transformer.parameters())
+                dtype = param.dtype
+
+                transformer = NunchakuT5EncoderModel.from_pretrained(
+                    paths[nunchaku_model_id], device=device, torch_dtype=dtype
+                )
+                transformer.forward = types.MethodType(nunchaku_t5_forward, transformer)
+                transformer.shared = WrappedEmbedding(transformer.shared)
+                m.transformer = transformer
+
+    for state_dict, metadata in zip(state_dicts, metadata_list):
+        if metadata is not None and metadata.get("model_class", None) == "NunchakuT5EncoderModel":
+            continue  # Skip Nunchaku T5 model loading here, handled separately above
+        m, u = clip.load_sd(state_dict)
         if len(m) > 0:
             logging.warning("clip missing: {}".format(m))
 
@@ -228,16 +271,8 @@ class NunchakuTextEncoderLoaderV2:
         else:
             raise ValueError(f"Unknown type {model_type}")
 
-        clip_data, metadata_list = [], []
-
-        for p in [text_encoder_path1, text_encoder_path2]:
-            sd, metadata = comfy.utils.load_torch_file(p, safe_load=True, return_metadata=True)
-            clip_data.append(sd)
-            metadata_list.append(metadata)
-
         clip = load_text_encoder_state_dicts(
-            clip_data,
-            metadata_list=metadata_list,
+            [text_encoder_path1, text_encoder_path2],
             embedding_directory=folder_paths.get_folder_paths("embeddings"),
             clip_type=clip_type,
             model_options={},
