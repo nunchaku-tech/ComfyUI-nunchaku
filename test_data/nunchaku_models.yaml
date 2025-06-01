@@ -1,4 +1,4 @@
-loras:
+diffusion_models:
   - repo_id: "mit-han-lab/nunchaku-t5"
     filename: "awq-int4-flux.1-t5xxl.safetensors"
     sub_folder: "text_encoders"

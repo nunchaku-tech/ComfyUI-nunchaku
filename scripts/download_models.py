@@ -62,11 +62,11 @@ def download_nunchaku_models():
             model_path, local_dir=os.path.join("models", "diffusion_models", os.path.basename(model_path))
         )
     data = load_yaml(Path(__file__).resolve().parent.parent / "test_data" / "nunchaku_models.yaml")
-    for lora in data["loras"]:
-        repo_id = lora["repo_id"]
-        filename = lora["filename"].format(precision=precision)
-        sub_folder = lora.get("sub_folder", "loras")
-        new_filename = lora.get("new_filename", None)
+    for model in data["diffusion_models"]:
+        repo_id = model["repo_id"]
+        filename = model["filename"].format(precision=precision)
+        sub_folder = model.get("sub_folder", "diffusion_models")
+        new_filename = model.get("new_filename", None)
         download_file(repo_id=repo_id, filename=filename, sub_folder=sub_folder, new_filename=new_filename)
 
 
