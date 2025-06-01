@@ -152,7 +152,7 @@ class NunchakuTextEncoderLoader:
 
 
 def load_text_encoder_state_dicts(
-    state_dicts=[], metadatas=[], embedding_directory=None, clip_type=comfy.sd.CLIPType.FLUX, model_options={}
+    state_dicts=[], metadata_list=[], embedding_directory=None, clip_type=comfy.sd.CLIPType.FLUX, model_options={}
 ):
     clip_data = state_dicts
 
@@ -228,12 +228,16 @@ class NunchakuTextEncoderLoaderV2:
         else:
             raise ValueError(f"Unknown type {model_type}")
 
-        clip_data = []
+        clip_data, metadata_list = [], []
+
         for p in [text_encoder_path1, text_encoder_path2]:
-            clip_data.append(comfy.utils.load_torch_file(p, safe_load=True))
+            sd, metadata = comfy.utils.load_torch_file(p, safe_load=True, return_metadata=True)
+            clip_data.append(sd)
+            metadata_list.append(metadata)
 
         clip = load_text_encoder_state_dicts(
             clip_data,
+            metadata_list=metadata_list,
             embedding_directory=folder_paths.get_folder_paths("embeddings"),
             clip_type=clip_type,
             model_options={},
