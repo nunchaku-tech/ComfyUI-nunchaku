@@ -120,7 +120,9 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 - **Nunchaku Flux DiT Loader**: A node for loading the FLUX diffusion model.
 
-  - `model_path`: Specifies the model's location. You need to manually download the model folder from our [Hugging Face](https://huggingface.co/collections/mit-han-lab/nunchaku-6837e7498f680552f7bbb5ad) or [ModelScope](https://modelscope.cn/collections/Nunchaku-519fed7f9de94e) collection. After downloading, set `model_path` to the corresponding model.
+  - `model_path`: Path to the model folder. You must manually download the model from our [Hugging Face collection](https://huggingface.co/collections/mit-han-lab/nunchaku-6837e7498f680552f7bbb5ad) or [ModelScope collection](https://modelscope.cn/collections/Nunchaku-519fed7f9de94e). Once downloaded, set `model_path` to the corresponding directory.
+
+    > **Note**: Legacy model folders are still supported but will be deprecated in v0.4. To migrate, use our [`merge_safetensors.json`](example_workflows/merge_safetensors.json) workflow to merge your legacy folder into a single `.safetensors` file or redownload the model from the above collections.
 
   - `cache_threshold`: Controls the [First-Block Cache](https://github.com/chengzeyi/ParaAttention?tab=readme-ov-file#first-block-cache-our-dynamic-caching) tolerance, similar to `residual_diff_threshold` in [WaveSpeed](https://github.com/chengzeyi/Comfy-WaveSpeed). Increasing this value improves speed but may reduce quality. A typical value is 0.12. Setting it to 0 disables the effect.
 
