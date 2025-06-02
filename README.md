@@ -118,19 +118,9 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 ## Nunchaku Nodes
 
-**Note: We've renamed our nodes from 'SVDQuant XXX Loader' to 'Nunchaku XXX Loader'. Please update your workflows accordingly.**
-
 - **Nunchaku Flux DiT Loader**: A node for loading the FLUX diffusion model.
 
-  - `model_path`: Specifies the model's location. You need to manually download the model folder from our [Hugging Face](https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c) or [ModelScope](https://modelscope.cn/collections/svdquant-468e8f780c2641) collection. For example, run
-
-    ```shell
-    huggingface-cli download mit-han-lab/svdq-int4-flux.1-dev --local-dir models/diffusion_models/svdq-int4-flux.1-dev
-    ```
-
-    After downloading, set `model_path` to the corresponding folder name.
-
-    **Note: If you rename the model folder, ensure that `comfy_config.json` is present in the folder. You can find this file in our corresponding repositories on [Hugging Face](https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c) or [ModelScope](https://modelscope.cn/collections/svdquant-468e8f780c2641).**
+  - `model_path`: Specifies the model's location. You need to manually download the model folder from our [Hugging Face](https://huggingface.co/collections/mit-han-lab/nunchaku-6837e7498f680552f7bbb5ad) or [ModelScope](https://modelscope.cn/collections/Nunchaku-519fed7f9de94e) collection. After downloading, set `model_path` to the corresponding model.
 
   - `cache_threshold`: Controls the [First-Block Cache](https://github.com/chengzeyi/ParaAttention?tab=readme-ov-file#first-block-cache-our-dynamic-caching) tolerance, similar to `residual_diff_threshold` in [WaveSpeed](https://github.com/chengzeyi/Comfy-WaveSpeed). Increasing this value improves speed but may reduce quality. A typical value is 0.12. Setting it to 0 disables the effect.
 
@@ -154,7 +144,12 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
   - You can connect **multiple LoRA nodes** together.
   - **Note**: Starting from version 0.2.0, there is no need to convert LoRAs. Simply provide the **original LoRA files** to the loader.
 
-- **Nunchaku Text Encoder Loader**: A node for loading the text encoders.
+- **Nunchaku Text Encoder Loader V2**: A node for loading the text encoders.
+
+  - Select the CLIP and T5 models to use as `text_encoder1` and `text_encoder2`, following the same convention as in `DualCLIPLoader`. In addition, you may choose to use our enhanced [4-bit T5XXL model](https://huggingface.co/mit-han-lab/nunchaku-t5/resolve/main/awq-int4-flux.1-t5xxl.safetensors) for saving more GPU memory.
+  - `t5_min_length`: Sets the minimum sequence length for T5 text embeddings. The default in `DualCLIPLoader` is hardcoded to 256, but for better image quality, use 512 here.
+
+- **Nunchaku Text Encoder Loader (will be deprecated in v0.4)**: A node for loading the text encoders.
 
   - For FLUX, use the following files:
 
@@ -173,9 +168,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
     After downloading, specify the corresponding folder name as the `int4_model`.
 
-    - **Note**: Currently, loading the **4-bit T5 model** consumes excessive memory. **We will optimize this later.**
-
-- **FLUX.1 Depth Preprocessor (deprecated)** : A legacy node for loading a depth estimation model and producing a corresponding depth map. The `model_path` parameter specifies the location of the model checkpoint. You can manually download the model repository from [Hugging Face](https://huggingface.co/LiheYoung/depth-anything-large-hf) and place it under the `models/checkpoints` directory. Alternatively, use the following CLI command:
+- **FLUX.1 Depth Preprocessor (will be deprecated in v0.4)** : A legacy node for loading a depth estimation model and producing a corresponding depth map. The `model_path` parameter specifies the location of the model checkpoint. You can manually download the model repository from [Hugging Face](https://huggingface.co/LiheYoung/depth-anything-large-hf) and place it under the `models/checkpoints` directory. Alternatively, use the following CLI command:
 
   ```shell
   huggingface-cli download LiheYoung/depth-anything-large-hf --local-dir models/checkpoints/depth-anything-large-hf
