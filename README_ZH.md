@@ -150,6 +150,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 - **Nunchaku Text Encoder Loader V2**：用于加载文本编码器的节点。
 
 - 选择 CLIP 和 T5 模型作为 `text_encoder1` 和 `text_encoder2`，遵循与 `DualCLIPLoader` 相同的方式。此外，您可以选择使用我们增强的 [4 位 T5XXL 模型](https://huggingface.co/mit-han-lab/nunchaku-t5/resolve/main/awq-int4-flux.1-t5xxl.safetensors)，以节省更多 GPU 内存。
+
 - `t5_min_length`：设置 T5 文本嵌入的最小序列长度。`DualCLIPLoader` 中的默认值硬编码为 256，但为了获得更好的图像质量，此处请使用 512。
 
 - **Nunchaku Text Encoder Loader (将在v0.4版本弃用)**：用于加载文本编码器的节点。
