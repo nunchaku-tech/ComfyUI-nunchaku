@@ -19,7 +19,8 @@
 
 ## 最新消息
 
-- **[2025-04-09]** 🎥 发布了[**英文**](https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0)和[**中文**](https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee)教程视频，协助安装和使用Nunchaku。
+- **[2025-06-01]** 🚀 **发布 v0.3.0 版本！** 本次更新新增了对多批次推理的支持，集成了 [**ControlNet-Union-Pro 2.0**](https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro-2.0) 并初步整合了 [**PuLID**](https://github.com/ToTheBeginning/PuLID)。您现在可以将 Nunchaku FLUX 模型作为单个文件加载，而我们升级后的 [**4位 T5 编码器**](https://huggingface.co/mit-han-lab/nunchaku-t5) 在质量上已可媲美 **FP8 T5**！
+- **[2025-04-16]** 🎥 发布了[**英文**](https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0)和[**中文**](https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee)教程视频，协助安装和使用Nunchaku。
 - **[2025-04-09]** 📢 发布了 [4月更新计划](https://github.com/mit-han-lab/nunchaku/issues/266)和[常见问题解答](https://github.com/mit-han-lab/nunchaku/discussions/262)来帮助社区朋友快速入门并及时了解Nunchaku的发展情况。
 - **[2025-04-05]** 🚀 **v0.2.0发布!** 这个版本支持了[**多LoRA**](example_workflows/nunchaku-flux.1-dev.json)和[**ControlNet**](example_workflows/nunchaku-flux.1-dev-controlnet-union-pro.json)，并且使用FP16 attention和First-Block Cache来增强性能. 我们添加了对[**Invidia20系显卡**](examples/flux.1-dev-turing.py)的支持，并制作了[FLUX.1-redux](example_workflows/nunchaku-flux.1-redux-dev.json)的官方工作流。
 
@@ -118,19 +119,11 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 ## Nunchaku节点
 
-**注:我们已将“SVDQuant XXX Loader”节点重命名为“Nunchaku XXX Loader”，请更新工作流。**
-
 - **Nunchaku Flux DiT Loader节点**：用于加载Flux扩散模型的节点
 
   - `model_path`：指定模型的位置。您需要从我们的[Hugging Face](https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c)或者[ModelScope](https://modelscope.cn/collections/svdquant-468e8f780c2641)中手动下载模型文件夹。例如：运行
 
-    ```shell
-    huggingface-cli download mit-han-lab/svdq-int4-flux.1-dev --local-dir models/diffusion_models/svdq-int4-flux.1-dev
-    ```
-
-    下载完成后, 把`model_path`设置为对应的文件夹名称。
-
-    **注：如果重命名模型文件夹，确保文件夹中包含`comfy_config.json`.您可以在[Hugging Face](https://huggingface.co/collections/mit-han-lab/svdquant-67493c2c2e62a1fc6e93f45c)或者[ModelScope](https://modelscope.cn/collections/svdquant-468e8f780c2641)上的相应存储库中找到此文件。**
+    > **注意**：旧版模型文件夹仍然受支持，但将在 v0.4 中弃用。要迁移，请使用我们的 [`merge_safetensors.json`](example_workflows/merge_safetensors.json) 工作流程将旧版文件夹合并为单个 `.safetensors` 文件，或从上述集合中重新下载模型。
 
   - `cache_threshold`：控制[First-Block Cache](https://github.com/chengzeyi/ParaAttention?tab=readme-ov-file#first-block-cache-our-dynamic-caching)的容差，类似于[WaveSpeed](https://github.com/chengzeyi/Comfy-WaveSpeed)中的`residual_diff_threshold`。增加此值可以提高速度，但可能会降低质量。典型值为 0.12。将其设置为 0 将禁用该效果。
 
@@ -138,9 +131,8 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
   - `cpu_offload`：为transformer模型启用CPU卸载。虽然这减少了GPU内存的使用，但它可能会减慢推理速度。
 
-    -当设置为`auto`的时候，它将自动检测您的可用 GPU 内存。如果您的GPU内存超过14GiB，则将禁用卸载。否则，它将启用。
-
-    - **以后将在节点中进一步优化内存使用。**
+    - 当设置为`auto`的时候，它将自动检测您的可用 GPU 内存。如果您的GPU内存超过14GiB，则将禁用卸载。否则，它将启用。
+    - **将来将在节点中进一步优化内存使用。**
 
   - `device_id`：模型运行时使用的GPU ID。
 
@@ -155,7 +147,12 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
   - 您可以将多个**multiple LoRA nodes**模型连接使用
   - **注**：从0.2.0版本开始，不需要转换LoRA了。可以在加载器中加载原始的LoRA文件
 
-- **Nunchaku Text Encoder Loader**：用于加载文本编码器的节点。
+- **Nunchaku Text Encoder Loader V2**：用于加载文本编码器的节点。
+
+- 选择 CLIP 和 T5 模型作为 `text_encoder1` 和 `text_encoder2`，遵循与 `DualCLIPLoader` 相同的方式。此外，您可以选择使用我们增强的 [4 位 T5XXL 模型](https://huggingface.co/mit-han-lab/nunchaku-t5/resolve/main/awq-int4-flux.1-t5xxl.safetensors)，以节省更多 GPU 内存。
+- `t5_min_length`：设置 T5 文本嵌入的最小序列长度。`DualCLIPLoader` 中的默认值硬编码为 256，但为了获得更好的图像质量，此处请使用 512。
+
+- **Nunchaku Text Encoder Loader (将在v0.4版本弃用)**：用于加载文本编码器的节点。
 
   - 对于FLUX，请使用以下文件：
 
@@ -174,9 +171,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
     After downloading, specify the corresponding folder name as the `int4_model`.
 
-  **注意**：目前，加载**4-bit T5 model**会消耗过多内存. **我们将在以后对其进行优化**
-
-- **FLUX.1 Depth Preprocessor (已弃用)**：一个用于加载depth模型并生成相应深度图的旧节点。`model_path`参数指定checkpoint模型的位置。您可以从[Hugging Face](https://huggingface.co/LiheYoung/depth-anything-large-hf) 下载模型并放在`models/checkpoints`目录中。或者，使用以下CLI命令：
+- **FLUX.1 Depth Preprocessor (将在v0.4版本弃用)**：一个用于加载depth模型并生成相应深度图的旧节点。`model_path`参数指定checkpoint模型的位置。您可以从[Hugging Face](https://huggingface.co/LiheYoung/depth-anything-large-hf) 下载模型并放在`models/checkpoints`目录中。或者，使用以下CLI命令：
 
   ```shell
   huggingface-cli download LiheYoung/depth-anything-large-hf --local-dir models/checkpoints/depth-anything-large-hf
