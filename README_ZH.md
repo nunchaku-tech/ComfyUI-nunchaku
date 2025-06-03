@@ -177,4 +177,4 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
   huggingface-cli download LiheYoung/depth-anything-large-hf --local-dir models/checkpoints/depth-anything-large-hf
   ```
 
-  **注意**：此节点已弃用，并将在未来发行版中删除。请改用更新后的\*\*"Depth Anything"\*\*节点来替代加载`depth_anything_vitl14.pth`。
+  **注意**：此节点已弃用，并将在未来发行版中删除。请改用更新后的 **"Depth Anything"** 节点来替代加载`depth_anything_vitl14.pth`。
