@@ -3,6 +3,8 @@ accelerate
 sentencepiece
 protobuf
 huggingface_hub
+
+# PuLID dependencies
 insightface
 opencv-python
 facexlib
