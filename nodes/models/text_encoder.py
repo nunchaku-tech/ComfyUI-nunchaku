@@ -290,4 +290,5 @@ class NunchakuTextEncoderLoaderV2:
             clip_type=clip_type,
             model_options={},
         )
+        clip.tokenizer.t5xxl.min_length = t5_min_length
         return (clip,)
