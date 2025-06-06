@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 import types
@@ -33,9 +34,35 @@ def nunchaku_t5_forward(
     assert attention_mask is None
     assert intermediate_output is None
     assert final_layer_norm_intermediate
+
+    def get_device(tensors: list[torch.Tensor]) -> torch.device:
+        for t in tensors:
+            if t is not None:
+                return t.device
+        return torch.device("cpu")
+
+    original_device = None
+    if get_device([input_ids, attention_mask, embeds]) != "cuda":
+        original_device = get_device([input_ids, attention_mask, embeds])
+        logger.warning(
+            "Currently, Nunchaku T5 encoder requires CUDA for processing. "
+            f"Input tensor is not on {str(original_device)}, moving to CUDA for T5 encoder processing."
+        )
+        input_ids = input_ids.to(torch.cuda.current_device()) if input_ids is not None else None
+        embeds = embeds.to(torch.cuda.current_device()) if embeds is not None else None
+        attention_mask = attention_mask.to(torch.cuda.current_device()) if attention_mask is not None else None
+        self.encoder = self.encoder.to(torch.cuda.current_device())
     outputs = self.encoder(input_ids=input_ids, inputs_embeds=embeds, attention_mask=attention_mask)
+
     hidden_states = outputs["last_hidden_state"]
     hidden_states = hidden_states.to(dtype=dtype)
+    if original_device is not None:
+        hidden_states = hidden_states.to(original_device)
+        self.encoder = self.encoder.to(original_device)
+
+        gc.collect()
+        torch.cuda.empty_cache()
+
     return hidden_states, None
 
 
