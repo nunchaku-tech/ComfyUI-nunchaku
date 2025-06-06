@@ -22,30 +22,30 @@ try:
 
     NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoader"] = NunchakuTextEncoderLoader
     NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoaderV2"] = NunchakuTextEncoderLoaderV2
-except ImportError as e:
-    logger.warning(f"Optional nodes `NunchakuTextEncoderLoader` and `NunchakuTextEncoderLoaderV2` import failed:\n{e}")
+except ImportError:
+    logger.exception("Optional nodes `NunchakuTextEncoderLoader` and `NunchakuTextEncoderLoaderV2` import failed:")
 
 try:
     from .nodes.preprocessors.depth import FluxDepthPreprocessor
 
     NODE_CLASS_MAPPINGS["NunchakuDepthPreprocessor"] = FluxDepthPreprocessor
-except ImportError as e:
-    logger.warning(f"Optional node `NunchakuDepthPreprocessor` import failed:\n{e}")
+except ImportError:
+    logger.exception("Optional node `NunchakuDepthPreprocessor` import failed:")
 
 try:
     from .nodes.models.pulid import NunchakuPulidApply, NunchakuPulidLoader
 
     NODE_CLASS_MAPPINGS["NunchakuPulidApply"] = NunchakuPulidApply
     NODE_CLASS_MAPPINGS["NunchakuPulidLoader"] = NunchakuPulidLoader
-except ImportError as e:
-    logger.warning(f"Optional nodes `NunchakuPulidApply` and `NunchakuPulidLoader` import failed:\n{e}")
+except ImportError:
+    logger.exception("Optional nodes `NunchakuPulidApply` and `NunchakuPulidLoader` import failed:")
 
 try:
     from .nodes.tools.merge_safetensors import NunchakuModelMerger
 
     NODE_CLASS_MAPPINGS["NunchakuModelMerger"] = NunchakuModelMerger
-except ImportError as e:
-    logger.warning(f"Optional node `NunchakuModelMerger` import failed:\n{e}")
+except ImportError:
+    logger.exception("Optional node `NunchakuModelMerger` import failed:")
 
 NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
