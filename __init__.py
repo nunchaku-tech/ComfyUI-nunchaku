@@ -1,9 +1,6 @@
 import logging
 import os
 
-from .nodes.lora.flux import NunchakuFluxLoraLoader
-from .nodes.models.flux import NunchakuFluxDiTLoader
-
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -11,6 +8,12 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+from .utils import get_package_metadata
+
+logger.info(get_package_metadata("nunchaku"))
+
+from .nodes.lora.flux import NunchakuFluxLoraLoader
+from .nodes.models.flux import NunchakuFluxDiTLoader
 
 NODE_CLASS_MAPPINGS = {
     "NunchakuFluxDiTLoader": NunchakuFluxDiTLoader,
