@@ -42,3 +42,6 @@ def get_plugin_version() -> str:
         data = tomllib.load(f)
         project_version = data["project"]["version"]
         return project_version
+
+
+supported_versions = ["v0.3.0", "v0.3.1"]

@@ -8,10 +8,17 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-from .utils import get_package_metadata, get_plugin_version
+from .utils import get_package_metadata, get_package_version, get_plugin_version, supported_versions
 
 logger.info(get_package_metadata("nunchaku"))
 logger.info(f"ComfyUI-nunchaku version: {get_plugin_version()}")
+
+nunchaku_version = get_package_version("nunchaku")
+if nunchaku_version not in supported_versions:
+    logger.warning(
+        f"ComfyUI-nunchaku {get_plugin_version()} is not compatible with nunchaku {nunchaku_version}. "
+        f"Please update nunchaku to a supported version in {supported_versions}."
+    )
 
 from .nodes.lora.flux import NunchakuFluxLoraLoader
 from .nodes.models.flux import NunchakuFluxDiTLoader
