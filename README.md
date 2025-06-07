@@ -15,7 +15,7 @@ Join our user groups on [**Slack**](https://join.slack.com/t/nunchaku/shared_inv
 
 # Nunchaku ComfyUI Node
 
-![comfyui](https://cas-bridge.xethub.hf.co/xet-bridge-us/6809c14d122d22df4c286c5c/75aba8411336c4e6d52636912289086d19a0dc01438b9953e9e6fc40032cd5fc?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20250602%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250602T052600Z&X-Amz-Expires=3600&X-Amz-Signature=bb4114b8cb92ce976305c327a9ff82556bd93557092bbeb4a9daa564ebb0cc79&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=63129589bbaa385279d1826e&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27comfyui.jpg%3B+filename%3D%22comfyui.jpg%22%3B&response-content-type=image%2Fjpeg&x-id=GetObject&Expires=1748845560&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc0ODg0NTU2MH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82ODA5YzE0ZDEyMmQyMmRmNGMyODZjNWMvNzVhYmE4NDExMzM2YzRlNmQ1MjYzNjkxMjI4OTA4NmQxOWEwZGMwMTQzOGI5OTUzZTllNmZjNDAwMzJjZDVmYyoifV19&Signature=atydH0AEc4QZUDZ1Qz4qkgQ2EiU-34-1tEgw4wN27hbsW1SDyD63RyDFiWphxYDAN74l9hghmHDkma7ddfUox5Ckl9Jw3zFOtW26I0FLSoM7L6czyD5ob0qBvbAY7A5oWHpzUgxR9L-uhFdWuFgIpCvHqe0y%7EEH3dtlmvXzOcltE2XnFRgfJTwtVJxJXqcklHtMPz1pI92KSUiOZUwLjbwnTdKvbl8ysng8tkWkP9N2c9P-vvibMdyolR2zqK3rHCAV709m8wqOKrTpc%7EciQEKTjsJy%7Ek68wUGDjy3usNjMSC9D5xeV7U3456jX6MjyMj%7EEGzzsEUYmqf989Kk%7EF9Q__&Key-Pair-Id=K2L8F4GPSG1IFC)
+![comfyui](https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/assets/comfyui.jpg)
 
 ## News
 
