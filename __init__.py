@@ -8,15 +8,20 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-from .utils import get_package_metadata, get_package_version, get_plugin_version, supported_versions
+logger.info("=" * 40 + " ComfyUI-nunchaku Initialization " + "=" * 40)
 
-logger.info(get_package_metadata("nunchaku"))
+from .utils import get_package_version, get_plugin_version, supported_versions
+
+nunchaku_full_version = get_package_version("nunchaku").split("+")[0].strip()
+
+logger.info(f"Nunchaku version: {nunchaku_full_version}")
 logger.info(f"ComfyUI-nunchaku version: {get_plugin_version()}")
 
-nunchaku_version = get_package_version("nunchaku")
-if nunchaku_version not in supported_versions:
+nunchaku_version = nunchaku_full_version.split("+")[0].strip()
+nunchaku_major_minor_patch_version = ".".join(nunchaku_version.split(".")[:3])
+if f"v{nunchaku_major_minor_patch_version}" not in supported_versions:
     logger.warning(
-        f"ComfyUI-nunchaku {get_plugin_version()} is not compatible with nunchaku {nunchaku_version}. "
+        f"ComfyUI-nunchaku {get_plugin_version()} is not compatible with nunchaku {nunchaku_full_version}. "
         f"Please update nunchaku to a supported version in {supported_versions}."
     )
 
@@ -67,3 +72,4 @@ except ImportError:
 
 NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+logger.info("=" * (80 + len(" ComfyUI-nunchaku Initialization ")))
