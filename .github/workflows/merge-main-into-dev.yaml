@@ -1,4 +1,4 @@
-name: Auto-merge main into dev
+name: Merge main into dev
 on:
   workflow_dispatch:
   push:
