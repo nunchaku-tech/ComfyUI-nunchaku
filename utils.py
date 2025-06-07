@@ -1,4 +1,10 @@
 from importlib.metadata import PackageNotFoundError, distribution, metadata
+from pathlib import Path
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
 
 
 def get_package_metadata(package_name) -> str:
@@ -30,4 +36,9 @@ def get_package_version(package_name) -> str:
 
 
 def get_plugin_version() -> str:
-    pass
+    cur_path = Path(__file__)
+    toml_path = cur_path.parent / "pyproject.toml"
+    with open(toml_path, "rb") as f:
+        data = tomllib.load(f)
+        project_version = data["project"]["version"]
+        return project_version

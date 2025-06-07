@@ -8,9 +8,10 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-from .utils import get_package_metadata
+from .utils import get_package_metadata, get_plugin_version
 
 logger.info(get_package_metadata("nunchaku"))
+logger.info(f"ComfyUI-nunchaku version: {get_plugin_version()}")
 
 from .nodes.lora.flux import NunchakuFluxLoraLoader
 from .nodes.models.flux import NunchakuFluxDiTLoader
