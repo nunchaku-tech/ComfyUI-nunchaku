@@ -58,5 +58,12 @@ try:
 except ImportError:
     logger.exception("Optional node `NunchakuModelMerger` import failed:")
 
+try:
+    from .nodes.tools.installers import NunchakuWheelInstaller
+
+    NODE_CLASS_MAPPINGS["NunchakuWheelInstaller"] = NunchakuWheelInstaller
+except ImportError:
+    logger.exception("Optional node `NunchakuWheelInstaller` import failed:")
+
 NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
