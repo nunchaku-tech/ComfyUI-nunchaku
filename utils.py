@@ -27,3 +27,7 @@ def get_package_version(package_name) -> str:
 
     except PackageNotFoundError:
         return f"Package '{package_name}' not found."
+
+
+def get_plugin_version() -> str:
+    pass
