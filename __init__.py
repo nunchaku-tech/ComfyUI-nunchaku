@@ -25,13 +25,22 @@ if f"v{nunchaku_major_minor_patch_version}" not in supported_versions:
         f"Please update nunchaku to a supported version in {supported_versions}."
     )
 
-from .nodes.lora.flux import NunchakuFluxLoraLoader
-from .nodes.models.flux import NunchakuFluxDiTLoader
+NODE_CLASS_MAPPINGS = {}
 
-NODE_CLASS_MAPPINGS = {
-    "NunchakuFluxDiTLoader": NunchakuFluxDiTLoader,
-    "NunchakuFluxLoraLoader": NunchakuFluxLoraLoader,
-}
+try:
+    from .nodes.models.flux import NunchakuFluxDiTLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"] = NunchakuFluxDiTLoader
+except ImportError:
+    logger.exception("Node `NunchakuFluxDiTLoader` import failed:")
+
+try:
+    from .nodes.lora.flux import NunchakuFluxLoraLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuFluxLoraLoader"] = NunchakuFluxLoraLoader
+except ImportError:
+    logger.exception("Node `NunchakuFluxLoraLoader` import failed:")
+
 
 try:
     from .nodes.models.text_encoder import NunchakuTextEncoderLoader, NunchakuTextEncoderLoaderV2
@@ -39,14 +48,14 @@ try:
     NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoader"] = NunchakuTextEncoderLoader
     NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoaderV2"] = NunchakuTextEncoderLoaderV2
 except ImportError:
-    logger.exception("Optional nodes `NunchakuTextEncoderLoader` and `NunchakuTextEncoderLoaderV2` import failed:")
+    logger.exception("Nodes `NunchakuTextEncoderLoader` and `NunchakuTextEncoderLoaderV2` import failed:")
 
 try:
     from .nodes.preprocessors.depth import FluxDepthPreprocessor
 
     NODE_CLASS_MAPPINGS["NunchakuDepthPreprocessor"] = FluxDepthPreprocessor
 except ImportError:
-    logger.exception("Optional node `NunchakuDepthPreprocessor` import failed:")
+    logger.exception("Node `NunchakuDepthPreprocessor` import failed:")
 
 try:
     from .nodes.models.pulid import NunchakuPulidApply, NunchakuPulidLoader
@@ -54,21 +63,21 @@ try:
     NODE_CLASS_MAPPINGS["NunchakuPulidApply"] = NunchakuPulidApply
     NODE_CLASS_MAPPINGS["NunchakuPulidLoader"] = NunchakuPulidLoader
 except ImportError:
-    logger.exception("Optional nodes `NunchakuPulidApply` and `NunchakuPulidLoader` import failed:")
+    logger.exception("Nodes `NunchakuPulidApply` and `NunchakuPulidLoader` import failed:")
 
 try:
     from .nodes.tools.merge_safetensors import NunchakuModelMerger
 
     NODE_CLASS_MAPPINGS["NunchakuModelMerger"] = NunchakuModelMerger
 except ImportError:
-    logger.exception("Optional node `NunchakuModelMerger` import failed:")
+    logger.exception("Node `NunchakuModelMerger` import failed:")
 
 try:
     from .nodes.tools.installers import NunchakuWheelInstaller
 
     NODE_CLASS_MAPPINGS["NunchakuWheelInstaller"] = NunchakuWheelInstaller
 except ImportError:
-    logger.exception("Optional node `NunchakuWheelInstaller` import failed:")
+    logger.exception("Node `NunchakuWheelInstaller` import failed:")
 
 NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
