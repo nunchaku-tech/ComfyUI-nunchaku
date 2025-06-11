@@ -24,6 +24,10 @@ models:
     filename: "removal_timestep_alpha-2-1740.safetensors"
     sub_folder: "loras"
     new_filename: "removalV2.safetensors"
+  - repo_id: "mit-han-lab/nunchaku-test-models"
+    filename: "hand_drawn_game.safetensors"
+    sub_folder: "loras"
+    new_filename: null
   # nunchaku text encoders
   - repo_id: "mit-han-lab/nunchaku-t5"
     filename: "awq-int4-flux.1-t5xxl.safetensors"
