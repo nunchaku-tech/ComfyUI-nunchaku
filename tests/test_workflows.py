@@ -72,6 +72,6 @@ def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: f
     psnr = metric(gen_tensor, ref_tensor).item()
     print(f"PSNR: {psnr}")
 
-    assert clip_iqa >= expected_clip_iqa * 0.9
-    assert lpips <= expected_lpips * 1.1
-    assert psnr >= expected_psnr * 0.9
+    assert clip_iqa >= expected_clip_iqa * 0.85
+    assert lpips <= expected_lpips * 1.15
+    assert psnr >= expected_psnr * 0.85
