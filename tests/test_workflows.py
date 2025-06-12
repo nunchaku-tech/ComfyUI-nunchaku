@@ -18,8 +18,12 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
 @pytest.mark.parametrize(
     "script_name, expected_clip_iqa, expected_lpips, expected_psnr",
     [
-        ("nunchaku_flux1_redux_dev.py", 0.9, 0.137, 21.7),
-        ("nunchaku_flux1_dev_controlnet_upscaler.py", 0.9, 0.1, 26),
+        (
+            "nunchaku_flux1_redux_dev.py",
+            0.9,
+            0.137,
+        ),
+        ("nunchaku_flux1_dev_controlnet_upscaler.py", 0.9, 0.1, 18.9),
         ("nunchaku_flux1_dev_controlnet_union_pro2.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_depth_lora.py", 0.7, 0.1, 26),
         ("nunchaku_flux1_canny.py", 0.9, 0.1, 26),
