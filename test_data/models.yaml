@@ -54,3 +54,8 @@ models:
     filename: "svdq-{precision}_r32-shuttle-jaguar.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
+  # pulid related
+  - repo_id: "guozinan/PuLID"
+    filename: "pulid_flux_v0.9.1.safetensors"
+    sub_folder: "pulid"
+    new_filename: null
