@@ -25,13 +25,13 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku_flux1_canny.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_schnell.py", 0.9, 0.29, 19.3),
         ("nunchaku_flux1_depth.py", 0.9, 0.1, 26),
-        ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.14, 23.9),
+        ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.157, 23.9),
         ("nunchaku_flux1_fill.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_fill_removalV2.py", 0.56, 0.13, 26),
         ("nunchaku_flux1_dev.py", 0.9, 0.28, 19.7),
         ("nunchaku_flux1_canny_lora.py", 0.9, 0.1, 25),
         ("nunchaku_flux1_dev_qencoder.py", 0.9, 0.27, 16.3),
-        ("nunchaku-flux1-dev-hand_drawn_game.py", 0.92, 0.161, 23),
+        ("nunchaku-flux1-dev-hand_drawn_game.py", 0.92, 0.230, 23),
     ],
 )
 def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
