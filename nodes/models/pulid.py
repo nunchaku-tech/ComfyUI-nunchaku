@@ -38,7 +38,7 @@ class NunchakuPulidApply:
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "apply"
     CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku Pulid Apply"
+    TITLE = "Nunchaku Pulid Apply (Deprecated)"
 
     def apply(self, pulid, image, model, ip_weight):
         logger.warning(
@@ -75,7 +75,7 @@ class NunchakuPulidLoader:
     )
     FUNCTION = "load"
     CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku Pulid Loader"
+    TITLE = "Nunchaku Pulid Loader (Deprecated)"
 
     def load(self, model):
         logger.warning(
@@ -121,3 +121,6 @@ class NunchakuFLUXPuLIDApply:
     FUNCTION = "apply"
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku FLUX PuLID Apply"
+
+    def apply(self):
+        raise NotImplementedError()

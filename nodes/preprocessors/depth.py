@@ -40,7 +40,7 @@ class FluxDepthPreprocessor:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "depth_preprocess"
     CATEGORY = "Nunchaku"
-    TITLE = "FLUX.1 Depth Preprocessor"
+    TITLE = "FLUX.1 Depth Preprocessor (Deprecated)"
 
     def depth_preprocess(self, image, model_path):
         logger.warning(

@@ -1,4 +1,4 @@
-diffusers>=0.32.2
+diffusers>=0.33.1
 accelerate
 sentencepiece
 protobuf
