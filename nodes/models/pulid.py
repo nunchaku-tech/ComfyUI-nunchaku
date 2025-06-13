@@ -308,6 +308,7 @@ class NunchakuFLUXPuLIDApply:
             "sigma_end": sigma_end,
             "mask": attn_mask,
         }
+        patch_kwargs
 
         # ca_idx = 0
         # for i in range(19):
