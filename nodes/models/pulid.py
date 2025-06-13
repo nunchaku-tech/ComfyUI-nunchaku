@@ -7,24 +7,19 @@ import os
 from functools import partial
 from types import MethodType
 
-import comfy
 import cv2
-import folder_paths
 import numpy as np
 import torch
-from comfy import model_management
 from insightface.utils import face_align
 from torchvision import transforms
 from torchvision.transforms import functional
 
+import comfy
+import folder_paths
+from comfy import model_management
 from nunchaku.models.pulid.pulid_forward import pulid_forward
 from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
-
-from .encoders_flux import IDFormer, PerceiverAttentionCA
-from .eva_clip.constants import OPENAI_DATASET_MEAN, OPENAI_DATASET_STD
-from .face_restoration_helper import FaceRestoreHelper, draw_on, get_face_by_index
-from .patch_util import PatchKeys, add_model_patch_option, set_model_patch
-from .PulidFluxHook import pulid_enter, pulid_forward_orig, pulid_patch_double_blocks_after, set_model_dit_patch_replace
+from .pulid_utils.face_restoration_helper import FaceRestoreHelper, get_face_by_index
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -106,10 +101,7 @@ class NunchakuPulidLoader:
         )
         pulid_model.load_pretrain(self.pretrained_model)
 
-        return (
-            model,
-            pulid_model,
-        )
+        return (model, pulid_model)
 
 
 def tensor_to_image(tensor):
@@ -174,6 +166,10 @@ class NunchakuFLUXPuLIDApply:
         options={},
         unique_id=None,
     ):
+        import ipdb
+
+        ipdb.set_trace()
+
         device = comfy.model_management.get_torch_device()
         dtype = model.model.diffusion_model.dtype
         # Issue: https://github.com/balazik/ComfyUI-PuLID-Flux/issues/6
@@ -308,7 +304,6 @@ class NunchakuFLUXPuLIDApply:
             "sigma_end": sigma_end,
             "mask": attn_mask,
         }
-        patch_kwargs
 
         # ca_idx = 0
         # for i in range(19):
