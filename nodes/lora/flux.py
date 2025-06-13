@@ -50,6 +50,8 @@ class NunchakuFluxLoraLoader:
     )
 
     def load_lora(self, model, lora_name: str, lora_strength: float):
+        if abs(lora_strength) < 1e-5:
+            return (model,)
         model_wrapper = model.model.diffusion_model
         assert isinstance(model_wrapper, ComfyFluxWrapper)
 

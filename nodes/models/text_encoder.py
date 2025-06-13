@@ -1,10 +1,13 @@
+import gc
 import logging
 import os
 import types
+from typing import Callable
 
 import comfy
 import folder_paths
 import torch
+from comfy.text_encoders.flux import FluxClipModel
 from torch import nn
 from transformers import T5EncoderModel
 
@@ -31,9 +34,35 @@ def nunchaku_t5_forward(
     assert attention_mask is None
     assert intermediate_output is None
     assert final_layer_norm_intermediate
+
+    def get_device(tensors: list[torch.Tensor]) -> torch.device:
+        for t in tensors:
+            if t is not None:
+                return t.device
+        return torch.device("cpu")
+
+    original_device = None
+    if get_device([input_ids, attention_mask, embeds]) != "cuda":
+        original_device = get_device([input_ids, attention_mask, embeds])
+        logger.warning(
+            "Currently, Nunchaku T5 encoder requires CUDA for processing. "
+            f"Input tensor is not on {str(original_device)}, moving to CUDA for T5 encoder processing."
+        )
+        input_ids = input_ids.to(torch.cuda.current_device()) if input_ids is not None else None
+        embeds = embeds.to(torch.cuda.current_device()) if embeds is not None else None
+        attention_mask = attention_mask.to(torch.cuda.current_device()) if attention_mask is not None else None
+        self.encoder = self.encoder.to(torch.cuda.current_device())
     outputs = self.encoder(input_ids=input_ids, inputs_embeds=embeds, attention_mask=attention_mask)
+
     hidden_states = outputs["last_hidden_state"]
     hidden_states = hidden_states.to(dtype=dtype)
+    if original_device is not None:
+        hidden_states = hidden_states.to(original_device)
+        self.encoder = self.encoder.to(original_device)
+
+        gc.collect()
+        torch.cuda.empty_cache()
+
     return hidden_states, None
 
 
@@ -151,6 +180,39 @@ class NunchakuTextEncoderLoader:
         return (clip,)
 
 
+def nunchaku_flux_clip(nunchaku_t5_path: str | os.PathLike[str], dtype_t5=None) -> Callable:
+    class NunchakuFluxClipModel(FluxClipModel):
+
+        def __init__(
+            self,
+            dtype_t5=None,
+            device="cpu",
+            dtype=None,
+            model_options={},
+        ):
+            super(FluxClipModel, self).__init__()
+            dtype_t5 = comfy.model_management.pick_weight_dtype(dtype_t5, dtype, device)
+            self.clip_l = comfy.sd1_clip.SDClipModel(
+                device=device, dtype=dtype, return_projected_pooled=False, model_options=model_options
+            )
+
+            # We are using meta device for T5XXL to avoid loading it into memory and then replacing it
+            with torch.device("meta"):
+                self.t5xxl = comfy.text_encoders.sd3_clip.T5XXLModel(
+                    device=device, dtype=dtype_t5, model_options=model_options
+                )
+
+            transformer = NunchakuT5EncoderModel.from_pretrained(nunchaku_t5_path, device=device, torch_dtype=dtype_t5)
+            transformer.forward = types.MethodType(nunchaku_t5_forward, transformer)
+            transformer.shared = WrappedEmbedding(transformer.shared)
+            self.t5xxl.transformer = transformer
+            self.t5xxl.logit_scale = nn.Parameter(torch.zeros_like(self.t5xxl.logit_scale, device=device))
+
+            self.dtypes = set([dtype, dtype_t5])
+
+    return NunchakuFluxClipModel
+
+
 def load_text_encoder_state_dicts(
     paths: list[str | os.PathLike[str]],
     embedding_directory: str | os.PathLike[str] | None = None,
@@ -190,7 +252,7 @@ def load_text_encoder_state_dicts(
             if nunchaku_model_id is None:
                 clip_target.clip = comfy.text_encoders.flux.flux_clip(**comfy.sd.t5xxl_detect(state_dicts))
             else:
-                clip_target.clip = comfy.text_encoders.flux.flux_clip(dtype_t5=torch.float16)
+                clip_target.clip = nunchaku_flux_clip(nunchaku_t5_path=paths[nunchaku_model_id], dtype_t5=torch.float16)
             clip_target.tokenizer = comfy.text_encoders.flux.FluxTokenizer
     else:
         raise NotImplementedError(f"Clip type {clip_type} not implemented.")
@@ -201,37 +263,13 @@ def load_text_encoder_state_dicts(
         tokenizer_data, model_options = comfy.text_encoders.long_clipl.model_options_long_clip(
             c, tokenizer_data, model_options
         )
-    with torch.device("meta"):
-        clip = comfy.sd.CLIP(
-            clip_target,
-            embedding_directory=embedding_directory,
-            parameters=parameters,
-            tokenizer_data=tokenizer_data,
-            model_options=model_options,
-        )
-
-    device = model_options.get("load_device", comfy.model_management.text_encoder_device())
-    if nunchaku_model_id is None:
-        clip.cond_stage_model.to_empty(
-            device=model_options.get("load_device", comfy.model_management.text_encoder_device())
-        )
-    else:
-        for n, m in clip.cond_stage_model.named_children():
-            if n != "t5xxl":
-                m.to_empty(device=device)
-            else:
-                transformer = m.transformer
-                param = next(transformer.parameters())
-                dtype = param.dtype
-
-                transformer = NunchakuT5EncoderModel.from_pretrained(
-                    paths[nunchaku_model_id], device=device, torch_dtype=dtype
-                )
-                transformer.forward = types.MethodType(nunchaku_t5_forward, transformer)
-                transformer.shared = WrappedEmbedding(transformer.shared)
-                m.transformer = transformer
-                m.logit_scale = nn.Parameter(torch.zeros_like(m.logit_scale, device=device))
-
+    clip = comfy.sd.CLIP(
+        clip_target,
+        embedding_directory=embedding_directory,
+        parameters=parameters,
+        tokenizer_data=tokenizer_data,
+        model_options=model_options,
+    )
     for state_dict, metadata in zip(state_dicts, metadata_list):
         if metadata is not None and metadata.get("model_class", None) == "NunchakuT5EncoderModel":
             continue  # Skip Nunchaku T5 model loading here, handled separately above
@@ -241,9 +279,6 @@ def load_text_encoder_state_dicts(
 
         if len(u) > 0:
             logging.debug("clip unexpected: {}".format(u))
-
-    for n, p in clip.cond_stage_model.named_parameters():
-        assert p.device.type != "meta", f"Parameter {n} is still on meta device, expected it to be on {device}."
 
     return clip
 
@@ -282,4 +317,5 @@ class NunchakuTextEncoderLoaderV2:
             clip_type=clip_type,
             model_options={},
         )
+        clip.tokenizer.t5xxl.min_length = t5_min_length
         return (clip,)

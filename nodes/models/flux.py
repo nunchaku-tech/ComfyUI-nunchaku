@@ -105,7 +105,7 @@ class ComfyFluxWrapper(nn.Module):
             # Check if timestamps have changed or are out of valid range
             if self._prev_timestep is None:
                 cache_invalid = True
-            elif abs(self._prev_timestep - timestep_float) > 1e-5:  # Add a tolerance
+            elif self._prev_timestep < timestep_float + 1e-5:  # allow a small tolerance to reuse the cache
                 cache_invalid = True
 
             if cache_invalid:

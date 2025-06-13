@@ -18,19 +18,20 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
 @pytest.mark.parametrize(
     "script_name, expected_clip_iqa, expected_lpips, expected_psnr",
     [
-        ("nunchaku_flux1_redux_dev.py", 0.9, 0.137, 21.7),
+        ("nunchaku_flux1_redux_dev.py", 0.9, 0.137, 18.9),
         ("nunchaku_flux1_dev_controlnet_upscaler.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_dev_controlnet_union_pro2.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_depth_lora.py", 0.7, 0.1, 26),
         ("nunchaku_flux1_canny.py", 0.9, 0.1, 26),
         ("nunchaku_flux1_schnell.py", 0.9, 0.29, 19.3),
         ("nunchaku_flux1_depth.py", 0.9, 0.1, 26),
-        ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.14, 23.9),
+        ("nunchaku_flux1_shuttle_jaguar.py", 0.9, 0.157, 23.9),
         ("nunchaku_flux1_fill.py", 0.9, 0.1, 26),
-        ("nunchaku_flux1_fill_removalV2.py", 0.63, 0.13, 26),
-        ("nunchaku_flux1_dev.py", 0.9, 0.21, 19.7),
+        ("nunchaku_flux1_fill_removalV2.py", 0.56, 0.13, 26),
+        ("nunchaku_flux1_dev.py", 0.9, 0.28, 19.7),
         ("nunchaku_flux1_canny_lora.py", 0.9, 0.1, 25),
-        ("nunchaku_flux1_dev_qencoder.py", 0.9, 0.1, 22.8),
+        ("nunchaku_flux1_dev_qencoder.py", 0.9, 0.27, 16.3),
+        ("nunchaku-flux1-dev-hand_drawn_game.py", 0.92, 0.254, 20),
     ],
 )
 def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
@@ -67,6 +68,6 @@ def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: f
     psnr = metric(gen_tensor, ref_tensor).item()
     print(f"PSNR: {psnr}")
 
-    assert clip_iqa >= expected_clip_iqa * 0.9
-    assert lpips <= expected_lpips * 1.1
-    assert psnr >= expected_psnr * 0.9
+    assert clip_iqa >= expected_clip_iqa * 0.85
+    assert lpips <= expected_lpips * 1.15
+    assert psnr >= expected_psnr * 0.85

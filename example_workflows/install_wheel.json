@@ -1,0 +1,115 @@
+{
+  "id": "e33d94b5-334c-4607-8ef0-6ca542730844",
+  "revision": 0,
+  "last_node_id": 3,
+  "last_link_id": 1,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "PreviewAny",
+      "pos": [
+        659.4140625,
+        253.45053100585938
+      ],
+      "size": [
+        418.6068115234375,
+        88
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 1
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.39",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 1,
+      "type": "NunchakuWheelInstaller",
+      "pos": [
+        299.934814453125,
+        255.38197326660156
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "NunchakuWheelInstaller"
+      },
+      "widgets_values": [
+        "ModelScope",
+        "v0.3.0"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "Note",
+      "pos": [
+        310.68572998046875,
+        429.6354064941406
+      ],
+      "size": [
+        250.13458251953125,
+        121.31512451171875
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "This workflow will automatically install the compatible Nunchaku wheels from GitHub Releases, Hugging Face, or ModelScope. Once installation is complete, please restart ComfyUI."
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "*"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1,
+      "offset": [
+        286.0416564941406,
+        72.68229675292969
+      ]
+    },
+    "frontendVersion": "1.20.7"
+  },
+  "version": 0.4
+}
