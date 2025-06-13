@@ -7,12 +7,15 @@ import os
 from functools import partial
 from types import MethodType
 
+import comfy
 import folder_paths
 import numpy as np
 import torch
 
 from nunchaku.models.pulid.pulid_forward import pulid_forward
 from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
+
+from ...wrappers.flux import ComfyFluxWrapper
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -95,12 +98,6 @@ class NunchakuPulidLoader:
 
 
 class NunchakuPuLIDLoaderV2:
-    # def __init__(self):
-    #     self.pulid_device = "cuda"
-    #     self.weight_dtype = torch.bfloat16
-    #     self.onnx_provider = "gpu"
-    #     self.pretrained_model = None
-
     @classmethod
     def INPUT_TYPES(s):
         pulid_files = folder_paths.get_filename_list("pulid")
@@ -110,10 +107,7 @@ class NunchakuPuLIDLoaderV2:
                 "model": ("MODEL", {"tooltip": "The nunchaku model."}),
                 "pulid_file": (pulid_files, {"tooltip": "Path to the PuLID model."}),
                 "eva_clip_file": (clip_files, {"tooltip": "Path to the EVA clip model."}),
-                "insight_face_provider": (
-                    ["CPU", "CUDA", "ROCM"],
-                    {"default": "gpu", "tooltip": "InsightFace ONNX provider."},
-                ),
+                "insight_face_provider": (["gpu", "cpu"], {"default": "gpu", "tooltip": "InsightFace ONNX provider."}),
             }
         }
 
@@ -122,13 +116,28 @@ class NunchakuPuLIDLoaderV2:
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku PuLID Loader V2"
 
-    def load(self, model):
+    def load(self, model, pulid_file: str, evala_clip_file: str, insight_face_provider: str):
+        wrapper = model.model.diffusion_model
+        assert isinstance(wrapper, ComfyFluxWrapper)
+        transformer = wrapper.model
+
+        device = comfy.model_management.get_torch_device()
+        weight_dtype = next(transformer.parameters()).dtype
+
+        pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
+        eva_clip_path = folder_paths.get_full_path_or_raise("clip", evala_clip_file)
+        insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
+        facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
 
         pulid_pipline = PuLIDPipeline(
-            dit=model.model.diffusion_model.model,
-            device=self.pulid_device,
-            weight_dtype=self.weight_dtype,
-            onnx_provider=self.onnx_provider,
+            dit=transformer,
+            device=device,
+            weight_dtype=weight_dtype,
+            onnx_provider=insight_face_provider,
+            pulid_path=pulid_path,
+            eva_clip_path=eva_clip_path,
+            insightface_dirpath=insightface_dirpath,
+            facexlib_dirpath=facexlib_dirpath,
         )
 
         return (model, pulid_pipline)
