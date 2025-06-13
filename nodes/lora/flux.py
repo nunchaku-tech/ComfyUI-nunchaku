@@ -5,7 +5,7 @@ import folder_paths
 
 from nunchaku.lora.flux import to_diffusers
 
-from ..models.flux import ComfyFluxWrapper
+from ...wrappers.flux import ComfyFluxWrapper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NunchakuFluxLoraLoader")

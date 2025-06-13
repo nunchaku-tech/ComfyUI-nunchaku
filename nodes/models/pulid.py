@@ -7,10 +7,10 @@ import os
 from functools import partial
 from types import MethodType
 
+import folder_paths
 import numpy as np
 import torch
 
-import folder_paths
 from nunchaku.models.pulid.pulid_forward import pulid_forward
 from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
 
@@ -74,10 +74,7 @@ class NunchakuPulidLoader:
             }
         }
 
-    RETURN_TYPES = (
-        "MODEL",
-        "PULID",
-    )
+    RETURN_TYPES = ("MODEL", "PULID")
     FUNCTION = "load"
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku Pulid Loader (Deprecated)"
