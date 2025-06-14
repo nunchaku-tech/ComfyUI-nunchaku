@@ -1,3 +1,5 @@
+from typing import Callable
+
 import torch
 from comfy.ldm.common_dit import pad_to_patch_size
 from diffusers import FluxPipeline
@@ -7,16 +9,28 @@ from torch import nn
 from nunchaku import NunchakuFluxTransformer2dModel
 from nunchaku.caching.utils import cache_context, create_cache_context
 from nunchaku.lora.flux.compose import compose_lora
+from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
 from nunchaku.utils import load_state_dict_in_safetensors
 
 
 class ComfyFluxWrapper(nn.Module):
-    def __init__(self, model: NunchakuFluxTransformer2dModel, config):
+    def __init__(
+        self,
+        model: NunchakuFluxTransformer2dModel,
+        config,
+        pulid_pipeline: PuLIDPipeline | None = None,
+        customized_forward: Callable = None,
+        forward_kwargs: dict | None = {},
+    ):
         super(ComfyFluxWrapper, self).__init__()
         self.model = model
         self.dtype = next(model.parameters()).dtype
         self.config = config
         self.loras = []
+
+        self.pulid_pipeline = pulid_pipeline
+        self.customized_forward = customized_forward
+        self.forward_kwargs = {} if forward_kwargs is None else forward_kwargs
 
         self._prev_timestep = None  # for first-block cache
         self._cache_context = None
@@ -104,6 +118,34 @@ class ComfyFluxWrapper(nn.Module):
             # Update the previous timestamp
             self._prev_timestep = timestep_float
             with cache_context(self._cache_context):
+                if self.customized_forward is None:
+                    out = model(
+                        hidden_states=img,
+                        encoder_hidden_states=context,
+                        pooled_projections=y,
+                        timestep=timestep,
+                        img_ids=img_ids,
+                        txt_ids=txt_ids,
+                        guidance=guidance if self.config["guidance_embed"] else None,
+                        controlnet_block_samples=controlnet_block_samples,
+                        controlnet_single_block_samples=controlnet_single_block_samples,
+                    ).sample
+                else:
+                    out = self.customized_forward(
+                        model,
+                        hidden_states=img,
+                        encoder_hidden_states=context,
+                        pooled_projections=y,
+                        timestep=timestep,
+                        img_ids=img_ids,
+                        txt_ids=txt_ids,
+                        guidance=guidance if self.config["guidance_embed"] else None,
+                        controlnet_block_samples=controlnet_block_samples,
+                        controlnet_single_block_samples=controlnet_single_block_samples,
+                        **self.forward_kwargs,
+                    )
+        else:
+            if self.customized_forward is None:
                 out = model(
                     hidden_states=img,
                     encoder_hidden_states=context,
@@ -115,18 +157,20 @@ class ComfyFluxWrapper(nn.Module):
                     controlnet_block_samples=controlnet_block_samples,
                     controlnet_single_block_samples=controlnet_single_block_samples,
                 ).sample
-        else:
-            out = model(
-                hidden_states=img,
-                encoder_hidden_states=context,
-                pooled_projections=y,
-                timestep=timestep,
-                img_ids=img_ids,
-                txt_ids=txt_ids,
-                guidance=guidance if self.config["guidance_embed"] else None,
-                controlnet_block_samples=controlnet_block_samples,
-                controlnet_single_block_samples=controlnet_single_block_samples,
-            ).sample
+            else:
+                out = self.customized_forward(
+                    model,
+                    hidden_states=img,
+                    encoder_hidden_states=context,
+                    pooled_projections=y,
+                    timestep=timestep,
+                    img_ids=img_ids,
+                    txt_ids=txt_ids,
+                    guidance=guidance if self.config["guidance_embed"] else None,
+                    controlnet_block_samples=controlnet_block_samples,
+                    controlnet_single_block_samples=controlnet_single_block_samples,
+                    **self.forward_kwargs,
+                )
 
         out = rearrange(
             out,

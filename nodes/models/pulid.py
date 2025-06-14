@@ -2,6 +2,7 @@
 Adapted from https://github.com/lldacing/ComfyUI_PuLID_Flux_ll
 """
 
+import copy
 import logging
 import os
 from functools import partial
@@ -97,6 +98,68 @@ class NunchakuPulidLoader:
         return (model, pulid_model)
 
 
+class NunchakuFluxPuLIDApplyV2:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "pulid_pipline": ("PULID_PIPELINE",),
+                "image": ("IMAGE",),
+                "weight": ("FLOAT", {"default": 1.0, "min": -1.0, "max": 5.0, "step": 0.05}),
+                "start_at": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001}),
+                "end_at": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.001}),
+            },
+            "optional": {
+                "attn_mask": ("MASK",),
+                "options": ("OPTIONS",),
+            },
+            "hidden": {"unique_id": "UNIQUE_ID"},
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "apply"
+    CATEGORY = "Nunchaku"
+    TITLE = "Nunchaku FLUX PuLID Apply V2"
+
+    def apply(
+        self,
+        model,
+        pulid_pipline: PuLIDPipeline,
+        image,
+        weight: float,
+        start_at: float,
+        end_at: float,
+        attn_mask=None,
+        options=None,
+        unique_id=None,
+    ):
+        image = image.squeeze().cpu().numpy() * 255.0
+        image = np.clip(image, 0, 255).astype(np.uint8)
+        id_embeddings, _ = pulid_pipline.get_id_embedding(image)
+
+        model_wrapper = model.model.diffusion_model
+        assert isinstance(model_wrapper, ComfyFluxWrapper)
+        transformer = model_wrapper.model
+
+        model_wrapper.model = None
+        ret_model = copy.deepcopy(model)  # copy everything except the model
+        ret_model_wrapper = ret_model.model.diffusion_model
+        assert isinstance(ret_model_wrapper, ComfyFluxWrapper)
+        ret_model_wrapper.model = transformer
+        model_wrapper.model = transformer
+
+        ret_model_wrapper.pulid_pipeline = pulid_pipline
+        ret_model_wrapper.customized_forward = partial(
+            pulid_forward, id_embeddings=id_embeddings, id_weight=weight, start_timestep=start_at, end_timestep=end_at
+        )
+
+        if attn_mask is not None:
+            raise NotImplementedError("Attn mask is not supported for now in Nunchaku FLUX PuLID Apply V2.")
+
+        return ret_model_wrapper
+
+
 class NunchakuPuLIDLoaderV2:
     @classmethod
     def INPUT_TYPES(s):
@@ -111,15 +174,15 @@ class NunchakuPuLIDLoaderV2:
             }
         }
 
-    RETURN_TYPES = ("model", "pulid_pipeline")
+    RETURN_TYPES = ("MODEL", "PULID_PIPELINE")
     FUNCTION = "load"
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku PuLID Loader V2"
 
     def load(self, model, pulid_file: str, evala_clip_file: str, insight_face_provider: str):
-        wrapper = model.model.diffusion_model
-        assert isinstance(wrapper, ComfyFluxWrapper)
-        transformer = wrapper.model
+        model_wrapper = model.model.diffusion_model
+        assert isinstance(model_wrapper, ComfyFluxWrapper)
+        transformer = model_wrapper.model
 
         device = comfy.model_management.get_torch_device()
         weight_dtype = next(transformer.parameters()).dtype
