@@ -102,6 +102,10 @@ class ComfyFluxWrapper(nn.Module):
 
         controlnet_block_samples = None if control is None else [y.to(x.dtype) for y in control["input"]]
         controlnet_single_block_samples = None if control is None else [y.to(x.dtype) for y in control["output"]]
+
+        if self.pulid_pipeline is not None:
+            self.model.transformer_blocks[0].pulid_ca = self.pulid_pipeline.pulid_ca
+
         if getattr(model, "_is_cached", False):
             # A more robust caching strategy
             cache_invalid = False
@@ -171,6 +175,8 @@ class ComfyFluxWrapper(nn.Module):
                     controlnet_single_block_samples=controlnet_single_block_samples,
                     **self.forward_kwargs,
                 )
+        if self.pulid_pipeline is not None:
+            self.model.transformer_blocks[0].pulid_ca = None
 
         out = rearrange(
             out,
