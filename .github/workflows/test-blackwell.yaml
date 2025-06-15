@@ -116,6 +116,7 @@ jobs:
           rm -r models
           mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }}
           ln -s ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }} models
+          tree models/*
           cp -r ../ComfyUI-nunchaku/tests nunchaku_tests
           pip install -r nunchaku_tests/requirements.txt
           cd custom_nodes
