@@ -58,12 +58,22 @@ except ImportError:
     logger.exception("Node `NunchakuDepthPreprocessor` import failed:")
 
 try:
-    from .nodes.models.pulid import NunchakuPulidApply, NunchakuPulidLoader
+    from .nodes.models.pulid import (
+        NunchakuFluxPuLIDApplyV2,
+        NunchakuPulidApply,
+        NunchakuPulidLoader,
+        NunchakuPuLIDLoaderV2,
+    )
 
     NODE_CLASS_MAPPINGS["NunchakuPulidApply"] = NunchakuPulidApply
     NODE_CLASS_MAPPINGS["NunchakuPulidLoader"] = NunchakuPulidLoader
+    NODE_CLASS_MAPPINGS["NunchakuPuLIDLoaderV2"] = NunchakuPuLIDLoaderV2
+    NODE_CLASS_MAPPINGS["NunchakuFluxPuLIDApplyV2"] = NunchakuFluxPuLIDApplyV2
 except ImportError:
-    logger.exception("Nodes `NunchakuPulidApply` and `NunchakuPulidLoader` import failed:")
+    logger.exception(
+        "Nodes `NunchakuPulidApply`,`NunchakuPulidLoader`, "
+        "`NunchakuPuLIDLoaderV2` and `NunchakuFluxPuLIDApplyV2` import failed:"
+    )
 
 try:
     from .nodes.tools.merge_safetensors import NunchakuModelMerger

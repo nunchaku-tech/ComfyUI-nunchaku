@@ -179,7 +179,7 @@ class NunchakuPuLIDLoaderV2:
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku PuLID Loader V2"
 
-    def load(self, model, pulid_file: str, evala_clip_file: str, insight_face_provider: str):
+    def load(self, model, pulid_file: str, eva_clip_file: str, insight_face_provider: str):
         model_wrapper = model.model.diffusion_model
         assert isinstance(model_wrapper, ComfyFluxWrapper)
         transformer = model_wrapper.model
@@ -188,7 +188,7 @@ class NunchakuPuLIDLoaderV2:
         weight_dtype = next(transformer.parameters()).dtype
 
         pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
-        eva_clip_path = folder_paths.get_full_path_or_raise("clip", evala_clip_file)
+        eva_clip_path = folder_paths.get_full_path_or_raise("clip", eva_clip_file)
         insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
         facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
 
