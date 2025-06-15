@@ -135,6 +135,7 @@ jobs:
           pwd
           cd ../ComfyUI
           pwd
+          ls models/pulid/pulid_flux_v0.9.1.safetensors
           python nunchaku_tests/scripts/nunchaku-flux1-dev-pulid.py
           pytest -v nunchaku_tests/
   clean-up:
