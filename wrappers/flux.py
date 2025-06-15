@@ -147,7 +147,7 @@ class ComfyFluxWrapper(nn.Module):
                         controlnet_block_samples=controlnet_block_samples,
                         controlnet_single_block_samples=controlnet_single_block_samples,
                         **self.forward_kwargs,
-                    )
+                    ).sample
         else:
             if self.customized_forward is None:
                 out = model(
@@ -174,7 +174,7 @@ class ComfyFluxWrapper(nn.Module):
                     controlnet_block_samples=controlnet_block_samples,
                     controlnet_single_block_samples=controlnet_single_block_samples,
                     **self.forward_kwargs,
-                )
+                ).sample
         if self.pulid_pipeline is not None:
             self.model.transformer_blocks[0].pulid_ca = None
 

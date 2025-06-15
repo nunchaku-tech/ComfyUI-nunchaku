@@ -157,7 +157,7 @@ class NunchakuFluxPuLIDApplyV2:
         if attn_mask is not None:
             raise NotImplementedError("Attn mask is not supported for now in Nunchaku FLUX PuLID Apply V2.")
 
-        return ret_model_wrapper
+        return (ret_model,)
 
 
 class NunchakuPuLIDLoaderV2:
