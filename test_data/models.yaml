@@ -63,3 +63,7 @@ models:
     filename: "pulid_flux_v0.9.1.safetensors"
     sub_folder: "pulid"
     new_filename: null
+  - repo_id: "QuanSun/EVA-CLIP"
+    filename: "EVA02_CLIP_L_336_psz14_s6B.pt"
+    sub_folder: "clip"
+    new_filename: null
