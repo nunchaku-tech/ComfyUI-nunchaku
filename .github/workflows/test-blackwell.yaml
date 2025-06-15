@@ -126,6 +126,7 @@ jobs:
           comfy node install comfyui-inpainteasy
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
+          tree models/*
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
