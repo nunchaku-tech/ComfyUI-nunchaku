@@ -32,6 +32,7 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku_flux1_canny_lora.py", 0.9, 0.1, 25),
         ("nunchaku_flux1_dev_qencoder.py", 0.9, 0.27, 16.3),
         ("nunchaku-flux1-dev-hand_drawn_game.py", 0.92, 0.254, 20),
+        ("nunchaku-flux1-dev-pulid.py", 0.9, 0.194, 15.8),
     ],
 )
 def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
