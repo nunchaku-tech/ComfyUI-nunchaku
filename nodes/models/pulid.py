@@ -160,6 +160,14 @@ class NunchakuFluxPuLIDApplyV2:
         return (ret_model,)
 
 
+def my_get_full_path_or_raise(folder_name: str, filename: str) -> str:
+    full_path = folder_paths.get_full_path(folder_name, filename)
+    print(full_path)
+    if full_path is None:
+        raise FileNotFoundError(f"Model in folder '{folder_name}' with filename '{filename}' not found.")
+    return full_path
+
+
 class NunchakuPuLIDLoaderV2:
     @classmethod
     def INPUT_TYPES(s):
@@ -187,7 +195,7 @@ class NunchakuPuLIDLoaderV2:
         device = comfy.model_management.get_torch_device()
         weight_dtype = next(transformer.parameters()).dtype
 
-        pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
+        pulid_path = my_get_full_path_or_raise("pulid", pulid_file)
         eva_clip_path = folder_paths.get_full_path_or_raise("clip", eva_clip_file)
         insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
         facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
