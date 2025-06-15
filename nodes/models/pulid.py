@@ -160,9 +160,27 @@ class NunchakuFluxPuLIDApplyV2:
         return (ret_model,)
 
 
+def my_get_full_path(folder_name: str, filename: str) -> str | None:
+    global folder_names_and_paths
+    folder_name = folder_paths.map_legacy(folder_name)
+    if folder_name not in folder_names_and_paths:
+        return None
+    folders = folder_names_and_paths[folder_name]
+    filename = os.path.relpath(os.path.join("/", filename), "/")
+    for x in folders[0]:
+        full_path = os.path.join(x, filename)
+        if os.path.isfile(full_path):
+            return full_path
+        elif os.path.islink(full_path):
+            logging.warning("WARNING path {} exists but doesn't link anywhere, skipping.".format(full_path))
+
+    return None
+
+
 def my_get_full_path_or_raise(folder_name: str, filename: str) -> str:
-    full_path = folder_paths.get_full_path(folder_name, filename)
-    print(full_path)
+    print("!!!", folder_name, filename)
+    full_path = my_get_full_path(folder_name, filename)
+    print("###", full_path)
     if full_path is None:
         raise FileNotFoundError(f"Model in folder '{folder_name}' with filename '{filename}' not found.")
     return full_path
