@@ -19,7 +19,7 @@ class NunchakuWheelInstaller:
 
     @classmethod
     def INPUT_TYPES(s):
-        support_versions = ["v0.3.0"]
+        support_versions = ["v0.3.1"]
 
         return {
             "required": {
