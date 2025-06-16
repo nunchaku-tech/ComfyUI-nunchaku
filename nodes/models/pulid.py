@@ -163,9 +163,11 @@ class NunchakuFluxPuLIDApplyV2:
 def my_get_full_path(folder_name: str, filename: str) -> str | None:
     # global folder_names_and_paths
     folder_name = folder_paths.map_legacy(folder_name)
+    print("%%%", folder_name)
     if folder_name not in folder_paths.folder_names_and_paths:
         return None
     folders = folder_paths.folder_names_and_paths[folder_name]
+    print("%%%", folders)
     filename = os.path.relpath(os.path.join("/", filename), "/")
     for x in folders[0]:
         full_path = os.path.join(x, filename)
