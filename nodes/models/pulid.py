@@ -26,6 +26,24 @@ logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(a
 logger = logging.getLogger(__name__)
 
 
+def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
+    models_dir_default = os.path.join(folder_paths.models_dir, models_dir_name)
+    if extra_config_models_dir_key not in folder_paths.folder_names_and_paths:
+        folder_paths.folder_names_and_paths[extra_config_models_dir_key] = (
+            [os.path.join(folder_paths.models_dir, models_dir_name)],
+            folder_paths.supported_pt_extensions,
+        )
+    else:
+        if not os.path.exists(models_dir_default):
+            os.makedirs(models_dir_default, exist_ok=True)
+        folder_paths.add_model_folder_path(extra_config_models_dir_key, models_dir_default, is_default=True)
+
+
+set_extra_config_model_path("pulid", "pulid")
+set_extra_config_model_path("insightface", "insightface")
+set_extra_config_model_path("facexlib", "facexlib")
+
+
 class NunchakuPulidApply:
     def __init__(self):
         self.pulid_device = "cuda"
@@ -160,34 +178,6 @@ class NunchakuFluxPuLIDApplyV2:
         return (ret_model,)
 
 
-def my_get_full_path(folder_name: str, filename: str) -> str | None:
-    # global folder_names_and_paths
-    folder_name = folder_paths.map_legacy(folder_name)
-    print("%%%", folder_name)
-    if folder_name not in folder_paths.folder_names_and_paths:
-        return None
-    folders = folder_paths.folder_names_and_paths[folder_name]
-    print("%%%", folders)
-    filename = os.path.relpath(os.path.join("/", filename), "/")
-    for x in folders[0]:
-        full_path = os.path.join(x, filename)
-        if os.path.isfile(full_path):
-            return full_path
-        elif os.path.islink(full_path):
-            logging.warning("WARNING path {} exists but doesn't link anywhere, skipping.".format(full_path))
-
-    return None
-
-
-def my_get_full_path_or_raise(folder_name: str, filename: str) -> str:
-    print("!!!", folder_name, filename)
-    full_path = my_get_full_path(folder_name, filename)
-    print("###", full_path)
-    if full_path is None:
-        raise FileNotFoundError(f"Model in folder '{folder_name}' with filename '{filename}' not found.")
-    return full_path
-
-
 class NunchakuPuLIDLoaderV2:
     @classmethod
     def INPUT_TYPES(s):
@@ -215,7 +205,7 @@ class NunchakuPuLIDLoaderV2:
         device = comfy.model_management.get_torch_device()
         weight_dtype = next(transformer.parameters()).dtype
 
-        pulid_path = my_get_full_path_or_raise("pulid", pulid_file)
+        pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
         eva_clip_path = folder_paths.get_full_path_or_raise("clip", eva_clip_file)
         insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
         facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]

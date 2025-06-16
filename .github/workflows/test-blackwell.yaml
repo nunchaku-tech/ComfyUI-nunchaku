@@ -116,7 +116,6 @@ jobs:
           rm -r models
           mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }}
           ln -s ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }} models
-          tree models/*
           cp -r ../ComfyUI-nunchaku/tests nunchaku_tests
           pip install -r nunchaku_tests/requirements.txt
           cd custom_nodes
@@ -127,7 +126,6 @@ jobs:
           comfy node install comfyui-inpainteasy
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
           HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
-          tree models/*
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
@@ -135,7 +133,6 @@ jobs:
           pwd
           cd ../ComfyUI
           pwd
-          ls models/pulid/pulid_flux_v0.9.1.safetensors
           python nunchaku_tests/scripts/nunchaku-flux1-dev-pulid.py
           pytest -v nunchaku_tests/
   clean-up:
