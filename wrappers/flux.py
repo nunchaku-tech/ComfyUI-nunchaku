@@ -17,7 +17,7 @@ class ComfyFluxWrapper(nn.Module):
         self,
         model: NunchakuFluxTransformer2dModel,
         config,
-        pulid_pipeline = None,
+        pulid_pipeline=None,
         customized_forward: Callable = None,
         forward_kwargs: dict | None = {},
     ):
