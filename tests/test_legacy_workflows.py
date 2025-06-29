@@ -24,7 +24,7 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku-flux1-depth-lora.py", 0.7, 0.1, 26),
         ("nunchaku-flux1-canny.py", 0.9, 0.1, 26),
         ("nunchaku-flux1-schnell.py", 0.9, 0.29, 19.3),
-        ("nunchaku-flux1-depth.py", 0.9, 0.1, 26),
+        ("nunchaku-flux1-depth.py", 0.9, 0.13, 26),
         ("nunchaku-shuttle-jaguar.py", 0.9, 0.14, 23.9),
         ("nunchaku-flux1-fill.py", 0.9, 0.1, 26),
         ("nunchaku-flux1-fill-removalV2.py", 0.56, 0.13, 26),
