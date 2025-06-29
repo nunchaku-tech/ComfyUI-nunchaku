@@ -19,20 +19,25 @@
 
 ## 最新消息
 
-- **[2025-06-01]** 🚀 **发布 v0.3.0 版本！** 本次更新新增了对多批次推理的支持，集成了 [**ControlNet-Union-Pro 2.0**](https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro-2.0) 并初步整合了 [**PuLID**](https://github.com/ToTheBeginning/PuLID)。您现在可以将 Nunchaku FLUX 模型作为单个文件加载，而我们升级后的 [**4位 T5 编码器**](https://huggingface.co/mit-han-lab/nunchaku-t5) 在质量上已可媲美 **FP8 T5**！
-- **[2025-04-16]** 🎥 发布了[**英文**](https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0)和[**中文**](https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee)教程视频，协助安装和使用Nunchaku。
-- **[2025-04-09]** 📢 发布了 [4月更新计划](https://github.com/mit-han-lab/nunchaku/issues/266)和[常见问题解答](https://github.com/mit-han-lab/nunchaku/discussions/262)来帮助社区朋友快速入门并及时了解Nunchaku的发展情况。
-- **[2025-04-05]** 🚀 **v0.2.0发布!** 这个版本支持了[**多LoRA**](example_workflows/nunchaku-flux.1-dev.json)和[**ControlNet**](example_workflows/nunchaku-flux.1-dev-controlnet-union-pro.json)，并且使用FP16 attention和First-Block Cache来增强性能. 我们添加了对[**Invidia20系显卡**](examples/flux.1-dev-turing.py)的支持，并制作了[FLUX.1-redux](example_workflows/nunchaku-flux.1-redux-dev.json)的官方工作流。
+<ul>
+  <li><strong>[2025-06-29]</strong> 🔥 <strong>v0.3.3</strong> 现已支持 <a href="https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev">FLUX.1-Kontext-dev</a>！从 <a href="https://huggingface.co/mit-han-lab/nunchaku-flux.1-kontext-dev">HuggingFace</a> 或 <a href="https://modelscope.cn/models/Lmxyy1999/nunchaku-flux.1-kontext-dev">ModelScope</a> 下载量化模型，并使用此 <a href="./example_workflows/nunchaku-flux.1-kontext-dev.json">工作流</a> 开始使用。</li>
+  <li><strong>[2025-06-11]</strong> 从 <strong>v0.3.2</strong> 开始，您现在可以使用此 <a href="https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json">工作流</a> 轻松安装或更新 <a href="https://github.com/mit-han-lab/nunchaku">Nunchaku</a> 轮子！</li>
+  <li><strong>[2025-06-07]</strong> 🚀 <strong>发布补丁 v0.3.1！</strong> 我们恢复了 <strong>FB Cache</strong> 支持并修复了 <strong>4 位文本编码器加载</strong> 问题。PuLID 节点现在为可选，不会干扰其他节点。我们还添加了 <strong>NunchakuWheelInstaller</strong> 节点来帮助您安装正确的 <a href="https://github.com/mit-han-lab/nunchaku">Nunchaku</a> 轮子。</li>
+  <li><strong>[2025-06-01]</strong> 🚀 <strong>发布 v0.3.0！</strong> 此更新增加了对多批次推理、<a href="https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro-2.0">ControlNet-Union-Pro 2.0</a> 的支持，并初步集成了 <a href="https://github.com/ToTheBeginning/PuLID">PuLID</a>。您现在可以将 Nunchaku FLUX 模型作为单个文件加载，并且我们升级的 <a href="https://huggingface.co/mit-han-lab/nunchaku-t5">4 位 T5 编码器</a> 现在在质量上与 <strong>FP8 T5</strong> 相当！</li>
+  <li><strong>[2025-04-16]</strong> 🎥 发布了 <a href="https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0">英文</a> 和 <a href="https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee">中文</a> 教程视频，以协助安装和使用。</li>
+  <li><strong>[2025-04-09]</strong> 📢 发布了 <a href="https://github.com/mit-han-lab/nunchaku/issues/266">四月路线图</a> 和 <a href="https://github.com/mit-han-lab/nunchaku/discussions/262">常见问题解答</a>，以帮助社区开始使用并了解 Nunchaku 的开发进度。</li>
+  <li><strong>[2025-04-05]</strong> 🚀 <strong>发布 v0.2.0！</strong> 此版本引入了 <a href="example_workflows/nunchaku-flux.1-dev.json">多 LoRA</a> 和 <a href="example_workflows/nunchaku-flux.1-dev-controlnet-union-pro.json">ControlNet</a> 支持，通过 FP16 注意力和 First-Block Cache 增强了性能。我们还增加了 <a href="examples/flux.1-dev-turing.py">20 系列 GPU</a> 兼容性，并为 <a href="example_workflows/nunchaku-flux.1-redux-dev.json">FLUX.1-redux</a> 提供了官方工作流！</li>
+</ul>
 
-## 安装方法
+## 安装
 
 我们提供了在 Windows 上安装和使用 Nunchaku 的教学视频，支持[**英文**](https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0)和[**中文**](https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee)两个版本。同时，你也可以参考对应的图文教程 [`docs/setup_windows.md`](docs/setup_windows.md)。如果在安装过程中遇到问题，建议优先查阅这些资源。
 
-### 前置工作
+### 第一步：下载comfyUI插件
 
-请先参阅[README.md](https://github.com/mit-han-lab/nunchaku?tab=readme-ov-file#installation)来安装 `nunchaku`。
+您可以使用以下方式安装 `ComfyUI-nunchaku` 插件。
 
-### Comfy-CLI：ComfyUI的命令工具
+#### Comfy-CLI：ComfyUI的命令工具
 
 您可以使用[`comfy-cli`](https://github.com/Comfy-Org/comfy-cli)在ComfyUI中运行Nunchaku：
 
@@ -42,7 +47,7 @@ comfy install          # Install ComfyUI
 comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 ```
 
-### ComfyUI-Manager
+#### ComfyUI-Manager
 
 1. 首先使用以下指令安装[ComfyUI](https://github.com/comfyanonymous/ComfyUI/tree/master)
 
@@ -68,7 +73,7 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 1. 打开Manager后, 在Custom Nodes Manager中搜索`ComfyUI-nunchaku`节点并且下载它then install it.
 
-### 手动安装
+#### 手动安装
 
 1. 使用以下命令设置[ComfyUI](https://github.com/comfyanonymous/ComfyUI/tree/master)
 
@@ -84,6 +89,11 @@ comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
    cd custom_nodes
    git clone https://github.com/mit-han-lab/ComfyUI-nunchaku nunchaku_nodes
    ```
+### 步骤 2：安装 [Nunchaku](https://github.com/mit-han-lab/nunchaku) 后端
+
+从 **ComfyUI-nunchaku v0.3.2** 开始，一旦所有依赖项安装完成，您可以使用此 [工作流文件](https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json) 轻松安装或更新 [Nunchaku](https://github.com/mit-han-lab/nunchaku) 轮包。
+
+或者，您可以按照 [Nunchaku README](https://github.com/mit-han-lab/nunchaku?tab=readme-ov-file#installation) 中的手动安装说明进行操作。
 
 ## 使用说明
 
