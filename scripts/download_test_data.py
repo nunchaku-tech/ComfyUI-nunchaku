@@ -9,11 +9,11 @@ from tqdm import tqdm
 def main():
     with open(Path(__file__).resolve().parent.parent / "test_data" / "images.yaml", "r") as f:
         config = yaml.safe_load(f)
-    os.makedirs("input", exist_ok=True)
     for group in config.get("images", []):
         base_url = group["base_url"]
+        download_dir = group.get("download_dir", "input")
         for filename in tqdm(group["files"], desc="Downloading"):
-            output_path = os.path.join("input", filename)
+            output_path = os.path.join(download_dir, filename)
             if os.path.exists(output_path):
                 print(f"File {filename} already exists, skipping download.")
                 continue

@@ -58,6 +58,10 @@ models:
     filename: "svdq-{precision}_r32-shuttle-jaguar.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
+  - repo_id: "mit-han-lab/nunchaku-flux.1-kontext-dev"
+    filename: "svdq-{precision}_r32-flux.1-kontext-dev.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
   # pulid related
   - repo_id: "guozinan/PuLID"
     filename: "pulid_flux_v0.9.1.safetensors"

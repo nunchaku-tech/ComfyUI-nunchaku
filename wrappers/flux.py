@@ -84,6 +84,7 @@ class ComfyFluxWrapper(nn.Module):
         w_len = (w_orig + (patch_size // 2)) // patch_size
 
         img, img_ids = self.process_img(x)
+        img_tokens = img.shape[1]
 
         ref_latents = kwargs.get("ref_latents")
         if ref_latents is not None:
@@ -214,6 +215,7 @@ class ComfyFluxWrapper(nn.Module):
         if self.pulid_pipeline is not None:
             self.model.transformer_blocks[0].pulid_ca = None
 
+        out = out[:, :img_tokens]
         out = rearrange(
             out,
             "b (h w) (c ph pw) -> b c (h ph) (w pw)",
