@@ -1,4 +1,8 @@
 models:
+  - repo_id: "comfyanonymous/flux_text_encoders"
+    filename: "t5xxl_fp8_e4m3fn_scaled.safetensors"
+    sub_folder: "text_encoders"
+    new_filename: "t5xxl_fp8_e4m3fn_scaled.safetensors"
   # loras
   - repo_id: "alimama-creative/FLUX.1-Turbo-Alpha"
     filename: "diffusion_pytorch_model.safetensors"
