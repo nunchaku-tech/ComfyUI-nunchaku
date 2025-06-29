@@ -78,24 +78,12 @@ class ComfyFluxWrapper(nn.Module):
         model = self.model
         assert isinstance(model, NunchakuFluxTransformer2dModel)
 
-        # bs, c, h, w = x.shape
-        # x = pad_to_patch_size(x, (patch_size, patch_size))
-
-        # img = rearrange(x, "b c (h ph) (w pw) -> b (h w) (c ph pw)", ph=patch_size, pw=patch_size)
-
-        # h_len = (h + (patch_size // 2)) // patch_size
-        # w_len = (w + (patch_size // 2)) // patch_size
-
-        # img_ids = FluxPipeline._prepare_latent_image_ids(bs, h_len, w_len, x.device, x.dtype)
-        # txt_ids = torch.zeros((context.shape[1], 3), device=x.device, dtype=x.dtype)
-
         bs, c, h_orig, w_orig = x.shape
         patch_size = self.config.get("patch_size", 2)
         h_len = (h_orig + (patch_size // 2)) // patch_size
         w_len = (w_orig + (patch_size // 2)) // patch_size
 
         img, img_ids = self.process_img(x)
-        # img_tokens = img.shape[1]
 
         ref_latents = kwargs.get("ref_latents")
         if ref_latents is not None:
