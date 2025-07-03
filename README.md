@@ -107,7 +107,7 @@ Alternatively, you can follow the manual installation instructions in the [Nunch
      mkdir -p user/default/example_workflows
 
      # Copy workflow configurations
-     cp custom_nodes/nunchaku_nodes/example_workflows/* user/default/example_workflows/
+     cp custom_nodes/ComfyUI-nunchaku/example_workflows/* user/default/example_workflows/
      ```
 
    - Install any missing nodes (e.g., `comfyui-inpainteasy`) by following [this tutorial](https://github.com/ltdrdata/ComfyUI-Manager?tab=readme-ov-file#support-of-missing-nodes-installation).
