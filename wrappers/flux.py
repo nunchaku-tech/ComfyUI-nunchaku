@@ -160,6 +160,12 @@ class ComfyFluxWrapper(nn.Module):
             self._prev_timestep = timestep_float
             with cache_context(self._cache_context):
                 if self.customized_forward is None:
+                    # Patch: remove batch dimension if present
+                    if img_ids.dim() == 3 and img_ids.size(0) == 1:
+                        img_ids = img_ids.squeeze(0)
+                    if txt_ids.dim() == 3 and txt_ids.size(0) == 1:
+                        txt_ids = txt_ids.squeeze(0)
+
                     out = model(
                         hidden_states=img,
                         encoder_hidden_states=context,
@@ -187,6 +193,12 @@ class ComfyFluxWrapper(nn.Module):
                     ).sample
         else:
             if self.customized_forward is None:
+                # Patch: remove batch dimension if present
+                if img_ids.dim() == 3 and img_ids.size(0) == 1:
+                    img_ids = img_ids.squeeze(0)
+                if txt_ids.dim() == 3 and txt_ids.size(0) == 1:
+                    txt_ids = txt_ids.squeeze(0)
+
                 out = model(
                     hidden_states=img,
                     encoder_hidden_states=context,
