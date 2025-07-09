@@ -134,12 +134,10 @@ class NunchakuFluxPuLIDApplyV2:
             },
             "hidden": {"unique_id": "UNIQUE_ID"},
         }
-
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "apply"
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku FLUX PuLID Apply V2"
-
     def apply(
         self,
         model,
@@ -152,30 +150,107 @@ class NunchakuFluxPuLIDApplyV2:
         options=None,
         unique_id=None,
     ):
-        image = image.squeeze().cpu().numpy() * 255.0
-        image = np.clip(image, 0, 255).astype(np.uint8)
-        id_embeddings, _ = pulid_pipline.get_id_embedding(image)
-
-        model_wrapper = model.model.diffusion_model
-        assert isinstance(model_wrapper, ComfyFluxWrapper)
-        transformer = model_wrapper.model
-
-        model_wrapper.model = None
-        ret_model = copy.deepcopy(model)  # copy everything except the model
-        ret_model_wrapper = ret_model.model.diffusion_model
-        assert isinstance(ret_model_wrapper, ComfyFluxWrapper)
-        ret_model_wrapper.model = transformer
-        model_wrapper.model = transformer
-
-        ret_model_wrapper.pulid_pipeline = pulid_pipline
-        ret_model_wrapper.customized_forward = partial(
-            pulid_forward, id_embeddings=id_embeddings, id_weight=weight, start_timestep=start_at, end_timestep=end_at
-        )
-
+        # 1. 检查输入图像格式
+        if image.dim() == 3:
+            image = image.unsqueeze(0)  # 添加批次维度
+        batch_size = image.shape[0]
+        
+        # 2. 转换为numpy数组处理
+        image_np = image.cpu().numpy() * 255.0
+        image_np = np.clip(image_np, 0, 255).astype(np.uint8)
+        
+        # 3. 收集所有人脸特征
+        all_embeddings = []
+        valid_indices = []
+        
+        for i in range(batch_size):
+            try:
+                img = image_np[i]
+                id_emb, _ = pulid_pipline.get_id_embedding(img)
+                all_embeddings.append(id_emb)
+                valid_indices.append(i)
+            except RuntimeError as e:
+                logger.warning(f"图像 {i+1}/{batch_size} 处理失败: {str(e)}")
+                continue
+        
+        # 4. 处理无效结果
+        if not all_embeddings:
+            raise RuntimeError("错误: 所有输入图像均未检测到有效人脸!")
+        
+        # 5. 合并特征并取平均
+        embeddings_tensor = torch.cat(all_embeddings)  # [num_valid, num_queries, dim]
+        if embeddings_tensor.size(0) > 1:
+            avg_embedding = torch.mean(embeddings_tensor, dim=0, keepdim=True)
+            logger.info(f"使用 {len(all_embeddings)} 张图像的平均特征")
+        else:
+            avg_embedding = embeddings_tensor
+            logger.info(f"使用单张图像的特征")
+        
+        # 6. 准备注入参数
+        device = model.model.diffusion_model.model.device
+        dtype = model.model.diffusion_model.model.dtype
+        avg_embedding = avg_embedding.to(device=device, dtype=dtype)
+        
+        # 7. 复制模型实例
+        model_cloned = model.clone()
+        transformer = model_cloned.model.diffusion_model.model
+        
+        # 8. 设置注入参数
+        model_cloned.pulid_data = {
+            "id_embeddings": avg_embedding,
+            "id_weight": weight,
+            "start_at": start_at,
+            "end_at": end_at
+        }
+        
+        # 9. 创建模型前向传播的副本
+        original_forward = transformer.forward
+        
+        # 10. 绑定自定义前向传播（参考comfyui_pulid_flux_ll机制）
+        @torch.no_grad()
+        def pulid_forward_wrapper(self, hidden_states, *args, **kwargs):  # 添加self参数
+            pulid_data = model_cloned.pulid_data
+            
+            current_timestep = kwargs.get("timestep", None)
+            if current_timestep is not None:
+                timestep_float = current_timestep.flatten()[0].item() if current_timestep.numel() > 1 else current_timestep.item()
+                
+                if (pulid_data["start_at"] <= pulid_data["end_at"] and 
+                    pulid_data["start_at"] <= timestep_float <= pulid_data["end_at"]):
+                    kwargs["id_embeddings"] = pulid_data["id_embeddings"]
+                    kwargs["id_weight"] = pulid_data["id_weight"]
+                elif (pulid_data["start_at"] > pulid_data["end_at"] and 
+                    (timestep_float >= pulid_data["start_at"] or timestep_float <= pulid_data["end_at"])):
+                    kwargs["id_embeddings"] = pulid_data["id_embeddings"]
+                    kwargs["id_weight"] = pulid_data["id_weight"]
+            
+            # 调用时添加self作为第一个参数
+            return pulid_forward(self, hidden_states, *args, **kwargs)
+        
+        # 11. 替换模型的前向传播
+        transformer.forward = MethodType(pulid_forward_wrapper, transformer)
+        
+        # 12. 清理资源引用
+        model_cloned.original_forward = original_forward
+        
+        # 13. 添加前向传播恢复钩子
+        @torch.no_grad()
+        def restore_original_forward(hidden_states, *args, **kwargs):
+            transformer.forward = original_forward
+            logger.info("已恢复原始模型的前向传播")
+            return transformer.forward(hidden_states, *args, **kwargs)
+        
+        model_cloned.restore_forward = restore_original_forward
+        
+        # 14. 处理注意力掩码
         if attn_mask is not None:
-            raise NotImplementedError("Attn mask is not supported for now in Nunchaku FLUX PuLID Apply V2.")
-
-        return (ret_model,)
+            if attn_mask.dim() > 3:
+                attn_mask = attn_mask.squeeze(-1)
+            elif attn_mask.dim() < 3:
+                attn_mask = attn_mask.unsqueeze(0)
+            model_cloned.pulid_data["attn_mask"] = attn_mask.to(device=device, dtype=dtype)
+        
+        return (model_cloned,)
 
 
 class NunchakuPuLIDLoaderV2:
