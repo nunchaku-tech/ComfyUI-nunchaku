@@ -1,5 +1,14 @@
+"""
+Nunchaku FLUX DiT Loader
+========================
+
+This module provides the :class:`NunchakuFluxDiTLoader` class for loading Nunchaku FLUX models.
+It also supports attention implementation selection, CPU offload, and first-block caching.
+"""
+
 import gc
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -8,7 +17,6 @@ import comfy.model_patcher
 import folder_paths
 import torch
 from comfy.supported_models import Flux, FluxSchnell
-from diffusers import FluxTransformer2DModel
 
 from nunchaku import NunchakuFluxTransformer2dModel
 from nunchaku.caching.diffusers_adapters.flux import apply_cache_on_transformer
@@ -16,9 +24,45 @@ from nunchaku.utils import is_turing
 
 from ...wrappers.flux import ComfyFluxWrapper
 
+# Get log level from environment variable (default to INFO)
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Configure logging
+logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
 
 class NunchakuFluxDiTLoader:
+    """
+    Loader for SVDQuant-quantized FLUX.1 models with Nunchaku acceleration.
+
+    This class manages model loading, device selection, attention implementation,
+    CPU offload, and caching for efficient inference.
+
+    Attributes
+    ----------
+    transformer : :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel` or None
+        The loaded transformer model.
+    metadata : dict or None
+        Metadata associated with the loaded model.
+    model_path : str or None
+        Path to the loaded model.
+    device : torch.device or None
+        Device on which the model is loaded.
+    cpu_offload : bool or None
+        Whether CPU offload is enabled.
+    data_type : str or None
+        Data type used for inference.
+    patcher : object or None
+        ComfyUI model patcher instance.
+    """
+
     def __init__(self):
+        """
+        Initialize the NunchakuFluxDiTLoader.
+
+        Sets up internal state and selects the default torch device.
+        """
         self.transformer = None
         self.metadata = None
         self.model_path = None
@@ -30,6 +74,14 @@ class NunchakuFluxDiTLoader:
 
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
         local_folders = set()
         for prefix in prefixes:
@@ -44,7 +96,7 @@ class NunchakuFluxDiTLoader:
         model_paths = sorted(list(local_folders))
         safetensor_files = folder_paths.get_filename_list("diffusion_models")
 
-        # exclude the safetensors in svdquant folders
+        # exclude the safetensors in the legacy svdquant folders
         new_safetensor_files = []
         for safetensor_file in safetensor_files:
             safetensor_path = folder_paths.get_full_path_or_raise("diffusion_models", safetensor_file)
@@ -72,7 +124,7 @@ class NunchakuFluxDiTLoader:
             "required": {
                 "model_path": (
                     model_paths,
-                    {"tooltip": "The SVDQuant quantized FLUX.1 models."},
+                    {"tooltip": "The Nunchaku FLUX model."},
                 ),
                 "cache_threshold": (
                     "FLOAT",
@@ -81,7 +133,8 @@ class NunchakuFluxDiTLoader:
                         "min": 0,
                         "max": 1,
                         "step": 0.001,
-                        "tooltip": "Adjusts the caching tolerance like `residual_diff_threshold` in WaveSpeed. "
+                        "tooltip": "Adjusts the first-block caching tolerance"
+                        "like `residual_diff_threshold` in WaveSpeed. "
                         "Increasing the value enhances speed at the cost of quality. "
                         "A typical setting is 0.12. Setting it to 0 disables the effect.",
                     },
@@ -150,7 +203,32 @@ class NunchakuFluxDiTLoader:
         device_id: int,
         data_type: str,
         **kwargs,
-    ) -> tuple[FluxTransformer2DModel]:
+    ):
+        """
+        Load a Nunchaku FLUX model with the specified configuration.
+
+        Parameters
+        ----------
+        model_path : str
+            Path to the model directory or safetensors file.
+        attention : str
+            Attention implementation to use ("nunchaku-fp16" or "flash-attention2").
+        cache_threshold : float
+            Caching tolerance for first-block cache. See :ref:`nunchaku:usage_fbcache` for details.
+        cpu_offload : str
+            Whether to enable CPU offload ("auto", "enable", "disable").
+        device_id : int
+            GPU device ID to use.
+        data_type : str
+            Data type for inference ("bfloat16" or "float16").
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the loaded and patched model.
+        """
         device = torch.device(f"cuda:{device_id}")
 
         if model_path.endswith((".sft", ".safetensors")):
@@ -234,7 +312,7 @@ class NunchakuFluxDiTLoader:
                 config_path = os.path.join(default_config_root, f"{config_name}.json")
                 assert os.path.exists(config_path), f"Config file not found: {config_path}"
 
-            print(f"Loading ComfyUI model config from {config_path}")
+            logger.info(f"Loading ComfyUI model config from {config_path}")
             comfy_config = json.load(open(config_path, "r"))
         else:
             comfy_config_str = self.metadata.get("comfy_config", None)

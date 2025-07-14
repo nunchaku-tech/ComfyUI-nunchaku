@@ -1,10 +1,11 @@
 """
-This module provides the :class:`NunchakuFluxLoraLoader` node 
+This module provides the :class:`NunchakuFluxLoraLoader` node
 for applying LoRA weights to Nunchaku FLUX models within ComfyUI.
 """
 
 import copy
 import logging
+import os
 
 import folder_paths
 
@@ -12,8 +13,12 @@ from nunchaku.lora.flux import to_diffusers
 
 from ...wrappers.flux import ComfyFluxWrapper
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("NunchakuFluxLoraLoader")
+# Get log level from environment variable (default to INFO)
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Configure logging
+logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 
 class NunchakuFluxLoraLoader:
@@ -52,7 +57,7 @@ class NunchakuFluxLoraLoader:
                     "MODEL",
                     {
                         "tooltip": "The diffusion model the LoRA will be applied to. "
-                                   "Make sure the model is loaded by `Nunchaku FLUX DiT Loader`."
+                        "Make sure the model is loaded by `Nunchaku FLUX DiT Loader`."
                     },
                 ),
                 "lora_name": (
