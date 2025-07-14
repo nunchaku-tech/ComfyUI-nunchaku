@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.nodes.lora.flux module
-========================================
+nodes.lora.flux
+===============
 
-.. automodule:: ComfyUI-nunchaku.nodes.lora.flux
+.. automodule:: nodes.lora.flux
    :members:
    :undoc-members:
    :show-inheritance:

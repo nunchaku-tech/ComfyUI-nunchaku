@@ -24,18 +24,8 @@ class FluxDepthPreprocessor:
     Node for applying a depth preprocessor model to an input image.
 
     .. warning::
-        This node will be deprecated in October 2025. Please use ``Depth Anything`` directly within native ComfyUI instead.
-
-    Attributes
-    ----------
-    RETURN_TYPES : tuple
-        The types of outputs returned by the node.
-    FUNCTION : str
-        The name of the function to call for processing.
-    CATEGORY : str
-        The category under which this node appears in the UI.
-    TITLE : str
-        The display title of the node.
+        This node will be deprecated in October 2025.
+        Please use the ``Depth Anything`` node in `comfyui_controlnet_aux <https://github.com/Fannovel16/comfyui_controlnet_aux>`_.
     """
 
     @classmethod
@@ -92,7 +82,7 @@ class FluxDepthPreprocessor:
         """
         logger.warning(
             "`FLUX.1 Depth Preprocessor` is deprecated and will be removed in October 2025. "
-            "Please use `Depth Anything` directly within native ComfyUI instead."
+            "Please use `Depth Anything` in `comfyui_controlnet_aux` instead."
         )
         prefixes = folder_paths.folder_names_and_paths["checkpoints"][0]
         for prefix in prefixes:

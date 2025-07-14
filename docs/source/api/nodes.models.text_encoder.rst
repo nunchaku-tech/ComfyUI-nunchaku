@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.nodes.models.text\_encoder module
-===================================================
+nodes.models.text_encoder
+=========================
 
-.. automodule:: ComfyUI-nunchaku.nodes.models.text_encoder
+.. automodule:: nodes.models.text_encoder
    :members:
    :undoc-members:
    :show-inheritance:

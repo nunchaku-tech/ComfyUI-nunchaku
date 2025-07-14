@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.nodes.preprocessors.depth module
-==================================================
+nodes.preprocessors.depth
+=========================
 
-.. automodule:: ComfyUI-nunchaku.nodes.preprocessors.depth
+.. automodule:: nodes.preprocessors.depth
    :members:
    :undoc-members:
    :show-inheritance:

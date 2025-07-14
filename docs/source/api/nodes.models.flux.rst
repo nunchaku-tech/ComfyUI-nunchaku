@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.nodes.models.flux module
-==========================================
+nodes.models.flux
+=================
 
-.. automodule:: ComfyUI-nunchaku.nodes.models.flux
+.. automodule:: nodes.models.flux
    :members:
    :undoc-members:
    :show-inheritance:

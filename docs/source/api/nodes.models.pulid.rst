@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.nodes.models.pulid module
-===========================================
+nodes.models.pulid
+==================
 
-.. automodule:: ComfyUI-nunchaku.nodes.models.pulid
+.. automodule:: nodes.models.pulid
    :members:
    :undoc-members:
    :show-inheritance:
