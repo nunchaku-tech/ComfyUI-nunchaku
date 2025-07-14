@@ -1,3 +1,7 @@
+"""
+This module provides nodes and utilities for loading and Nunchaku text encoders within ComfyUI.
+"""
+
 import gc
 import logging
 import os
@@ -9,7 +13,6 @@ import folder_paths
 import torch
 from comfy.text_encoders.flux import FluxClipModel
 from torch import nn
-from transformers import T5EncoderModel
 
 from nunchaku import NunchakuT5EncoderModel
 
@@ -22,6 +25,21 @@ logger = logging.getLogger(__name__)
 
 
 class NunchakuTextEncoderLoaderV2:
+    """
+    Node for loading Nunchaku text encoders. It also supports 16-bit and FP8 variants.
+
+    .. note::
+        When loading, a 16-bit T5 encoder is first initialized on a meta device,
+        then replaced by the Nunchaku T5 encoder.
+
+    .. warning::
+        Only CUDA devices are supported. If the model is not on CUDA, it will be moved automatically,
+        which may cause out-of-memory errors.
+
+    .. warning::
+        Turing GPUs are currently not supported. This is a known issue under investigation.
+    """
+
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_text_encoder"
     CATEGORY = "Nunchaku"
@@ -29,6 +47,14 @@ class NunchakuTextEncoderLoaderV2:
 
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         return {
             "required": {
                 "model_type": (["flux.1"],),
@@ -36,12 +62,39 @@ class NunchakuTextEncoderLoaderV2:
                 "text_encoder2": (folder_paths.get_filename_list("text_encoders"),),
                 "t5_min_length": (
                     "INT",
-                    {"default": 512, "min": 256, "max": 1024, "step": 128, "display": "number", "lazy": True},
+                    {
+                        "default": 512,
+                        "min": 256,
+                        "max": 1024,
+                        "step": 128,
+                        "display": "number",
+                        "lazy": True,
+                        "tooltip": "Minimum sequence length for the T5 encoder.",
+                    },
                 ),
             }
         }
 
     def load_text_encoder(self, model_type: str, text_encoder1: str, text_encoder2: str, t5_min_length: int):
+        """
+        Loads the text encoders with the given configuration.
+
+        Parameters
+        ----------
+        model_type : str
+            The type of model to load (e.g., "flux.1").
+        text_encoder1 : str
+            Filename of the first text encoder checkpoint.
+        text_encoder2 : str
+            Filename of the second text encoder checkpoint.
+        t5_min_length : int
+            Minimum sequence length for the T5 encoder.
+
+        Returns
+        -------
+        tuple
+            Tuple containing the loaded CLIP model.
+        """
         text_encoder_path1 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder1)
         text_encoder_path2 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder2)
         if model_type == "flux.1":
@@ -60,7 +113,7 @@ class NunchakuTextEncoderLoaderV2:
 
 
 def nunchaku_t5_forward(
-    self: T5EncoderModel,
+    self: NunchakuT5EncoderModel,
     input_ids: torch.LongTensor,
     attention_mask,
     embeds=None,
@@ -69,11 +122,55 @@ def nunchaku_t5_forward(
     dtype: str | torch.dtype = torch.bfloat16,
     **kwargs,
 ):
+    """
+    Forward function wrapper for
+    :class:`~nunchaku.models.text_encoders.t5_encoder.NunchakuT5EncoderModel` to be compatible with ComfyUI.
+
+    .. note::
+        It moves tensors to CUDA if necessary and runs the encoder.
+
+    Parameters
+    ----------
+    self : :class:`~nunchaku.models.text_encoders.t5_encoder.NunchakuT5EncoderModel`
+        The T5 encoder model instance.
+    input_ids : torch.LongTensor
+        Input token IDs.
+    attention_mask : Any
+        Attention mask (must be None).
+    embeds : torch.Tensor, optional
+        Optional input embeddings.
+    intermediate_output : Any, optional
+        Not used (must be None).
+    final_layer_norm_intermediate : bool, optional
+        Whether to apply final layer norm (must be True).
+    dtype : str or torch.dtype, optional
+        Output data type.
+    **kwargs
+        Additional keyword arguments.
+
+    Returns
+    -------
+    tuple
+        Tuple of (hidden_states, None).
+    """
     assert attention_mask is None
     assert intermediate_output is None
     assert final_layer_norm_intermediate
 
     def get_device(tensors: list[torch.Tensor]) -> torch.device:
+        """
+        Returns the device of the first non-None tensor in the list.
+
+        Parameters
+        ----------
+        tensors : list of torch.Tensor
+            List of tensors to check.
+
+        Returns
+        -------
+        torch.device
+            The device of the first non-None tensor, or CPU if all are None.
+        """
         for t in tensors:
             if t is not None:
                 return t.device
@@ -105,15 +202,47 @@ def nunchaku_t5_forward(
 
 
 class WrappedEmbedding(nn.Module):
+    """
+    Wrapper for ``nn.Embedding`` for the compatibility with ComfyUI.
+
+    Parameters
+    ----------
+    embedding : nn.Embedding
+        The embedding module to wrap.
+    """
+
     def __init__(self, embedding: nn.Embedding):
         super().__init__()
         self.embedding = embedding
 
     def forward(self, input: torch.Tensor, out_dtype: torch.dtype | None = None):
+        """
+        Forward pass through the wrapped embedding.
+
+        Parameters
+        ----------
+        input : torch.Tensor
+            Input tensor of indices.
+        out_dtype : torch.dtype, optional
+            Output data type (unused).
+
+        Returns
+        -------
+        torch.Tensor
+            Output embedding tensor.
+        """
         return self.embedding(input)
 
     @property
     def weight(self):
+        """
+        Returns the embedding weights.
+
+        Returns
+        -------
+        torch.Tensor
+            The embedding weights.
+        """
         return self.embedding.weight
 
 
