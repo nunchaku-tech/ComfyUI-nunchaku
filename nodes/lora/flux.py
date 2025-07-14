@@ -1,6 +1,6 @@
 """
-This module provides the NunchakuFluxLoraLoader node for applying LoRA weights
-to Nunchaku FLUX models within ComfyUI.
+This module provides the :class:`NunchakuFluxLoraLoader` node 
+for applying LoRA weights to Nunchaku FLUX models within ComfyUI.
 """
 
 import copy
@@ -19,17 +19,40 @@ logger = logging.getLogger("NunchakuFluxLoraLoader")
 class NunchakuFluxLoraLoader:
     """
     Node for loading and applying a LoRA to a Nunchaku FLUX model.
+
+    Attributes
+    ----------
+    RETURN_TYPES : tuple
+        The return type of the node ("MODEL",).
+    OUTPUT_TOOLTIPS : tuple
+        Tooltip for the output.
+    FUNCTION : str
+        The function to call ("load_lora").
+    TITLE : str
+        Node title.
+    CATEGORY : str
+        Node category.
+    DESCRIPTION : str
+        Node description.
     """
 
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         return {
             "required": {
                 "model": (
                     "MODEL",
                     {
-                        "tooltip": "The diffusion model the LoRA will be applied to."
-                        "Make sure the model is loaded by `Nunchaku FLUX DiT Loader`."
+                        "tooltip": "The diffusion model the LoRA will be applied to. "
+                                   "Make sure the model is loaded by `Nunchaku FLUX DiT Loader`."
                     },
                 ),
                 "lora_name": (
@@ -63,7 +86,7 @@ class NunchakuFluxLoraLoader:
 
     def load_lora(self, model, lora_name: str, lora_strength: float):
         """
-        Applies the specified LoRA to the given diffusion model.
+        Apply a LoRA to a Nunchaku FLUX diffusion model.
 
         Parameters
         ----------
@@ -99,6 +122,7 @@ class NunchakuFluxLoraLoader:
 
         sd = to_diffusers(lora_path)
 
+        # To handle FLUX.1 tools LoRAs, which change the number of input channels
         if "transformer.x_embedder.lora_A.weight" in sd:
             new_in_channels = sd["transformer.x_embedder.lora_A.weight"].shape[1]
             assert new_in_channels % 4 == 0
