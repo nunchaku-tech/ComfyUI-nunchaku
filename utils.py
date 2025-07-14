@@ -11,7 +11,7 @@ except ImportError:
     import tomli as tomllib
 
 
-def get_package_metadata(package_name) -> str:
+def get_package_metadata(package_name: str) -> str:
     """
     Retrieve metadata for a given installed package.
 
@@ -40,7 +40,7 @@ def get_package_metadata(package_name) -> str:
         return f"Package '{package_name}' not found."
 
 
-def get_package_version(package_name) -> str:
+def get_package_version(package_name: str) -> str:
     """
     Retrieve the version string for a given installed package.
 

@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.utils module
-==============================
+utils
+=====
 
-.. automodule:: ComfyUI-nunchaku.utils
+.. automodule:: utils
    :members:
    :undoc-members:
    :show-inheritance:

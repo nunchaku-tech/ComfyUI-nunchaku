@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku package
-=========================
+ComfyUI\-nunchaku
+=================
 
-   nodes
-   tests
-   wrappers
+.. toctree::
+   :maxdepth: 4
+
    utils
