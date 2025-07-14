@@ -1,5 +1,5 @@
 """
-This module provides a wrapper for the :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel`, 
+This module provides a wrapper for the :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel`,
 enabling integration with ComfyUI forward,
 LoRA composition, and advanced caching strategies.
 """

@@ -1,3 +1,8 @@
+"""
+This module provides the NunchakuFluxLoraLoader node for applying LoRA weights
+to Nunchaku FLUX models within ComfyUI.
+"""
+
 import copy
 import logging
 
@@ -12,17 +17,24 @@ logger = logging.getLogger("NunchakuFluxLoraLoader")
 
 
 class NunchakuFluxLoraLoader:
+    """
+    Node for loading and applying a LoRA to a Nunchaku FLUX model.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
                 "model": (
                     "MODEL",
-                    {"tooltip": "The diffusion model the LoRA will be applied to."},
+                    {
+                        "tooltip": "The diffusion model the LoRA will be applied to."
+                        "Make sure the model is loaded by `Nunchaku FLUX DiT Loader`."
+                    },
                 ),
                 "lora_name": (
                     folder_paths.get_filename_list("loras"),
-                    {"tooltip": "The name of the LoRA."},
+                    {"tooltip": "The file name of the LoRA."},
                 ),
                 "lora_strength": (
                     "FLOAT",
@@ -50,8 +62,26 @@ class NunchakuFluxLoraLoader:
     )
 
     def load_lora(self, model, lora_name: str, lora_strength: float):
+        """
+        Applies the specified LoRA to the given diffusion model.
+
+        Parameters
+        ----------
+        model : object
+            The diffusion model to modify.
+        lora_name : str
+            The name of the LoRA to apply.
+        lora_strength : float
+            The strength with which to apply the LoRA.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the modified diffusion model.
+        """
         if abs(lora_strength) < 1e-5:
-            return (model,)
+            return (model,)  # If the strength is too small, return the original model
+
         model_wrapper = model.model.diffusion_model
         assert isinstance(model_wrapper, ComfyFluxWrapper)
 
