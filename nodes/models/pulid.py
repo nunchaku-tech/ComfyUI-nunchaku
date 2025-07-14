@@ -1,5 +1,10 @@
 """
-Adapted from https://github.com/lldacing/ComfyUI_PuLID_Flux_ll
+This module provides nodes and utilities for integrating the Nunchaku PuLID pipeline
+with ComfyUI, enabling face restoration and enhancement using PuLID and related models.
+
+
+:note:
+    Adapted from: https://github.com/lldacing/ComfyUI_PuLID_Flux_ll
 """
 
 import copy
@@ -27,6 +32,16 @@ logger = logging.getLogger(__name__)
 
 
 def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
+    """
+    Register an extra model directory (`pulid`, `insightface`, `facexlib`) with ComfyUI's folder_paths.
+
+    Parameters
+    ----------
+    extra_config_models_dir_key : str
+        The key to register the model directory under.
+    models_dir_name : str
+        The name of the subdirectory to use for models.
+    """
     models_dir_default = os.path.join(folder_paths.models_dir, models_dir_name)
     if extra_config_models_dir_key not in folder_paths.folder_names_and_paths:
         folder_paths.folder_names_and_paths[extra_config_models_dir_key] = (
@@ -42,6 +57,160 @@ def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: st
 set_extra_config_model_path("pulid", "pulid")
 set_extra_config_model_path("insightface", "insightface")
 set_extra_config_model_path("facexlib", "facexlib")
+
+
+class NunchakuFluxPuLIDApplyV2:
+    """
+    Node for applying PuLID to a Nunchaku FLUX model.
+    """
+
+    @classmethod
+    def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "pulid_pipline": ("PULID_PIPELINE",),
+                "image": ("IMAGE",),
+                "weight": ("FLOAT", {"default": 1.0, "min": -1.0, "max": 5.0, "step": 0.05}),
+                "start_at": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001}),
+                "end_at": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.001}),
+            },
+            "optional": {
+                "attn_mask": ("MASK",),
+                "options": ("OPTIONS",),
+            },
+            "hidden": {"unique_id": "UNIQUE_ID"},
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "apply"
+    CATEGORY = "Nunchaku"
+    TITLE = "Nunchaku FLUX PuLID Apply V2"
+
+    def apply(
+        self,
+        model,
+        pulid_pipline: PuLIDPipeline,
+        image,
+        weight: float,
+        start_at: float,
+        end_at: float,
+        attn_mask=None,
+        options=None,
+        unique_id=None,
+    ):
+        """
+        Apply PuLID ID customization according to the given image to the model.
+
+        Parameters
+        ----------
+        model : object
+            The Nunchaku FLUX model to modify.
+        pulid_pipline : :class:`~nunchaku.pipeline.pipeline_flux_pulid.PuLIDPipeline`
+            The PuLID pipeline instance.
+        image : np.ndarray or torch.Tensor
+            The input image for identity embedding extraction.
+        weight : float
+            The strength of the identity guidance.
+        start_at : float
+            The starting timestep for applying the effect.
+        end_at : float
+            The ending timestep for applying the effect.
+        attn_mask : optional
+            Not supported for now.
+        options : optional
+            Additional options (unused).
+        unique_id : optional
+            Unique identifier (unused).
+
+        Returns
+        -------
+        tuple
+            A tuple containing the modified model.
+
+        Raises
+        ------
+        NotImplementedError
+            If attn_mask is provided.
+        """
+        image = image.squeeze().cpu().numpy() * 255.0
+        image = np.clip(image, 0, 255).astype(np.uint8)
+        id_embeddings, _ = pulid_pipline.get_id_embedding(image)
+
+        model_wrapper = model.model.diffusion_model
+        assert isinstance(model_wrapper, ComfyFluxWrapper)
+        transformer = model_wrapper.model
+
+        model_wrapper.model = None
+        ret_model = copy.deepcopy(model)  # copy everything except the model
+        ret_model_wrapper = ret_model.model.diffusion_model
+        assert isinstance(ret_model_wrapper, ComfyFluxWrapper)
+        ret_model_wrapper.model = transformer
+        model_wrapper.model = transformer
+
+        ret_model_wrapper.pulid_pipeline = pulid_pipline
+        ret_model_wrapper.customized_forward = partial(
+            pulid_forward, id_embeddings=id_embeddings, id_weight=weight, start_timestep=start_at, end_timestep=end_at
+        )
+
+        if attn_mask is not None:
+            raise NotImplementedError("Attn mask is not supported for now in Nunchaku FLUX PuLID Apply V2.")
+
+        return (ret_model,)
+
+
+class NunchakuPuLIDLoaderV2:
+    @classmethod
+    def INPUT_TYPES(s):
+        pulid_files = folder_paths.get_filename_list("pulid")
+        clip_files = folder_paths.get_filename_list("clip")
+        return {
+            "required": {
+                "model": ("MODEL", {"tooltip": "The nunchaku model."}),
+                "pulid_file": (pulid_files, {"tooltip": "Path to the PuLID model."}),
+                "eva_clip_file": (clip_files, {"tooltip": "Path to the EVA clip model."}),
+                "insight_face_provider": (["gpu", "cpu"], {"default": "gpu", "tooltip": "InsightFace ONNX provider."}),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL", "PULID_PIPELINE")
+    FUNCTION = "load"
+    CATEGORY = "Nunchaku"
+    TITLE = "Nunchaku PuLID Loader V2"
+
+    def load(self, model, pulid_file: str, eva_clip_file: str, insight_face_provider: str):
+        model_wrapper = model.model.diffusion_model
+        assert isinstance(model_wrapper, ComfyFluxWrapper)
+        transformer = model_wrapper.model
+
+        device = comfy.model_management.get_torch_device()
+        weight_dtype = next(transformer.parameters()).dtype
+
+        pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
+        eva_clip_path = folder_paths.get_full_path_or_raise("clip", eva_clip_file)
+        insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
+        facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
+
+        pulid_pipline = PuLIDPipeline(
+            dit=transformer,
+            device=device,
+            weight_dtype=weight_dtype,
+            onnx_provider=insight_face_provider,
+            pulid_path=pulid_path,
+            eva_clip_path=eva_clip_path,
+            insightface_dirpath=insightface_dirpath,
+            facexlib_dirpath=facexlib_dirpath,
+        )
+
+        return (model, pulid_pipline)
 
 
 class NunchakuPulidApply:
@@ -114,111 +283,3 @@ class NunchakuPulidLoader:
         pulid_model.load_pretrain(self.pretrained_model)
 
         return (model, pulid_model)
-
-
-class NunchakuFluxPuLIDApplyV2:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "model": ("MODEL",),
-                "pulid_pipline": ("PULID_PIPELINE",),
-                "image": ("IMAGE",),
-                "weight": ("FLOAT", {"default": 1.0, "min": -1.0, "max": 5.0, "step": 0.05}),
-                "start_at": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001}),
-                "end_at": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.001}),
-            },
-            "optional": {
-                "attn_mask": ("MASK",),
-                "options": ("OPTIONS",),
-            },
-            "hidden": {"unique_id": "UNIQUE_ID"},
-        }
-
-    RETURN_TYPES = ("MODEL",)
-    FUNCTION = "apply"
-    CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku FLUX PuLID Apply V2"
-
-    def apply(
-        self,
-        model,
-        pulid_pipline: PuLIDPipeline,
-        image,
-        weight: float,
-        start_at: float,
-        end_at: float,
-        attn_mask=None,
-        options=None,
-        unique_id=None,
-    ):
-        image = image.squeeze().cpu().numpy() * 255.0
-        image = np.clip(image, 0, 255).astype(np.uint8)
-        id_embeddings, _ = pulid_pipline.get_id_embedding(image)
-
-        model_wrapper = model.model.diffusion_model
-        assert isinstance(model_wrapper, ComfyFluxWrapper)
-        transformer = model_wrapper.model
-
-        model_wrapper.model = None
-        ret_model = copy.deepcopy(model)  # copy everything except the model
-        ret_model_wrapper = ret_model.model.diffusion_model
-        assert isinstance(ret_model_wrapper, ComfyFluxWrapper)
-        ret_model_wrapper.model = transformer
-        model_wrapper.model = transformer
-
-        ret_model_wrapper.pulid_pipeline = pulid_pipline
-        ret_model_wrapper.customized_forward = partial(
-            pulid_forward, id_embeddings=id_embeddings, id_weight=weight, start_timestep=start_at, end_timestep=end_at
-        )
-
-        if attn_mask is not None:
-            raise NotImplementedError("Attn mask is not supported for now in Nunchaku FLUX PuLID Apply V2.")
-
-        return (ret_model,)
-
-
-class NunchakuPuLIDLoaderV2:
-    @classmethod
-    def INPUT_TYPES(s):
-        pulid_files = folder_paths.get_filename_list("pulid")
-        clip_files = folder_paths.get_filename_list("clip")
-        return {
-            "required": {
-                "model": ("MODEL", {"tooltip": "The nunchaku model."}),
-                "pulid_file": (pulid_files, {"tooltip": "Path to the PuLID model."}),
-                "eva_clip_file": (clip_files, {"tooltip": "Path to the EVA clip model."}),
-                "insight_face_provider": (["gpu", "cpu"], {"default": "gpu", "tooltip": "InsightFace ONNX provider."}),
-            }
-        }
-
-    RETURN_TYPES = ("MODEL", "PULID_PIPELINE")
-    FUNCTION = "load"
-    CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku PuLID Loader V2"
-
-    def load(self, model, pulid_file: str, eva_clip_file: str, insight_face_provider: str):
-        model_wrapper = model.model.diffusion_model
-        assert isinstance(model_wrapper, ComfyFluxWrapper)
-        transformer = model_wrapper.model
-
-        device = comfy.model_management.get_torch_device()
-        weight_dtype = next(transformer.parameters()).dtype
-
-        pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
-        eva_clip_path = folder_paths.get_full_path_or_raise("clip", eva_clip_file)
-        insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
-        facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
-
-        pulid_pipline = PuLIDPipeline(
-            dit=transformer,
-            device=device,
-            weight_dtype=weight_dtype,
-            onnx_provider=insight_face_provider,
-            pulid_path=pulid_path,
-            eva_clip_path=eva_clip_path,
-            insightface_dirpath=insightface_dirpath,
-            facexlib_dirpath=facexlib_dirpath,
-        )
-
-        return (model, pulid_pipline)
