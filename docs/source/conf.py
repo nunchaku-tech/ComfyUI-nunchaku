@@ -6,18 +6,26 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import sys
+import tomllib
 from pathlib import Path
 
-project = "Nunchaku"
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+project = "ComfyUI-nunchaku"
 copyright = "2025, Nunchaku Team"
 author = "Nunchaku Team"
 
-version_path = Path(__file__).parent.parent.parent / "nunchaku" / "__version__.py"
-version_ns = {}
-exec(version_path.read_text(), {}, version_ns)
-version = release = version_ns["__version__"]
-# release = version
+cur_path = Path(__file__)
+toml_path = cur_path.parent.parent.parent / "pyproject.toml"
+with open(toml_path, "rb") as f:
+    data = tomllib.load(f)
+    version = data["project"]["version"]
 
+if "dev" in version:
+    version = version.replace("dev", "")
+
+release = version
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
