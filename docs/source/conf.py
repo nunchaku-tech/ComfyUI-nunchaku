@@ -10,6 +10,7 @@ import sys
 import tomllib
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "ComfyUI"))
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 project = "ComfyUI-nunchaku"
@@ -65,4 +66,8 @@ napoleon_numpy_docstring = True
 extlinks = {
     "nunchaku-issue": ("https://github.com/mit-han-lab/nunchaku/issues/%s", "nunchaku#%s"),
     "comfyui-issue": ("https://github.com/mit-han-lab/ComfyUI-nunchaku/issues/%s", "ComfyUI-nunchaku#%s"),
+}
+
+intersphinx_mapping = {
+    "nunchaku": ("https://nunchaku.tech/docs/nunchaku", None),
 }

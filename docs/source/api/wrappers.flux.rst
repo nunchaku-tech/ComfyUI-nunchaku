@@ -1,7 +1,7 @@
-ComfyUI\-nunchaku.wrappers.flux module
-======================================
+wrappers.flux
+=============
 
-.. automodule:: ComfyUI-nunchaku.wrappers.flux
+.. automodule:: wrappers.flux
    :members:
    :undoc-members:
    :show-inheritance:
