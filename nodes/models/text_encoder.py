@@ -247,7 +247,42 @@ class WrappedEmbedding(nn.Module):
 
 
 def nunchaku_flux_clip(nunchaku_t5_path: str | os.PathLike[str], dtype_t5=None) -> Callable:
+    """
+    Utility function to create a Nunchaku FLUX CLIP model class using a pretrained Nunchaku T5 encoder.
+
+    Parameters
+    ----------
+    nunchaku_t5_path : str or os.PathLike
+        Path to the pretrained Nunchaku T5 encoder model.
+    dtype_t5 : torch.dtype, optional
+        Data type for the T5 encoder weights.
+
+    Returns
+    -------
+    Callable
+        A class inheriting from ``FluxClipModel`` that uses the Nunchaku T5 encoder.
+
+    Notes
+    -----
+    Adapted from:
+    https://github.com/comfyanonymous/ComfyUI/blob/158419f3a0017c2ce123484b14b6c527716d6ec8/comfy/text_encoders/flux.py#L63
+    """
+
     class NunchakuFluxClipModel(FluxClipModel):
+        """
+        FLUX CLIP model with a Nunchaku T5 encoder backend.
+
+        Parameters
+        ----------
+        dtype_t5 : torch.dtype, optional
+            Data type for the T5 encoder weights.
+        device : str, default="cpu"
+            Device to load the model on.
+        dtype : torch.dtype, optional
+            Data type for the CLIP model.
+        model_options : dict, optional
+            Additional model options.
+        """
 
         def __init__(
             self,
@@ -262,7 +297,7 @@ def nunchaku_flux_clip(nunchaku_t5_path: str | os.PathLike[str], dtype_t5=None) 
                 device=device, dtype=dtype, return_projected_pooled=False, model_options=model_options
             )
 
-            # We are using meta device for T5XXL to avoid loading it into memory and then replacing it
+            # Use meta device for T5XXL to avoid loading into memory before replacement
             with torch.device("meta"):
                 self.t5xxl = comfy.text_encoders.sd3_clip.T5XXLModel(
                     device=device, dtype=dtype_t5, model_options=model_options
@@ -285,6 +320,35 @@ def load_text_encoder_state_dicts(
     clip_type=comfy.sd.CLIPType.FLUX,
     model_options: dict = {},
 ):
+    """
+    Utility function to load and assemble text encoder state dicts for Nunchaku models.
+
+    Parameters
+    ----------
+    paths : list of str or os.PathLike
+        List of paths to model state dict files.
+    embedding_directory : str or os.PathLike, optional
+        Directory containing additional embeddings.
+    clip_type : enum, default=comfy.sd.CLIPType.FLUX
+        Type of CLIP model to load.
+    model_options : dict, optional
+        Additional model options.
+
+    Returns
+    -------
+    comfy.sd.CLIP
+        The loaded and assembled CLIP model.
+
+    Raises
+    ------
+    NotImplementedError
+        If the clip_type is not supported or the number of state dicts is not 2.
+
+    Notes
+    -----
+    Adapted from:
+    https://github.com/comfyanonymous/ComfyUI/blob/158419f3a0017c2ce123484b14b6c527716d6ec8/comfy/sd.py#L820
+    """
     state_dicts, metadata_list = [], []
 
     for p in paths:
@@ -293,6 +357,8 @@ def load_text_encoder_state_dicts(
         metadata_list.append(metadata)
 
     class EmptyClass:
+        """Placeholder for CLIP target attributes."""
+
         pass
 
     for i in range(len(state_dicts)):
@@ -300,7 +366,7 @@ def load_text_encoder_state_dicts(
             state_dicts[i] = comfy.utils.clip_text_transformers_convert(state_dicts[i], "", "")
         else:
             if "text_projection" in state_dicts[i]:
-                # old models saved with the CLIPSave node
+                # Old models saved with the CLIPSave node
                 state_dicts[i]["text_projection.weight"] = state_dicts[i]["text_projection"].transpose(0, 1)
 
     tokenizer_data = {}
@@ -350,8 +416,32 @@ def load_text_encoder_state_dicts(
 
 
 class NunchakuTextEncoderLoader:
+    """
+    Node for loading Nunchaku text encoders (deprecated).
+
+    .. warning::
+        This node is deprecated and will be removed in December 2025. Please use
+        :class:`NunchakuTextEncoderLoaderV2` instead.
+
+    This node loads a pair of text encoder checkpoints for use with Nunchaku models,
+    with optional support for 4-bit T5 models.
+
+    Returns
+    -------
+    CLIP
+        The loaded CLIP model.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         prefixes = folder_paths.folder_names_and_paths["text_encoders"][0]
         local_folders = set()
         for prefix in prefixes:
@@ -378,6 +468,7 @@ class NunchakuTextEncoderLoader:
                         "step": 128,
                         "display": "number",
                         "lazy": True,
+                        "tooltip": "Minimum sequence length for the T5 encoder.",
                     },
                 ),
                 "use_4bit_t5": (["disable", "enable"],),
@@ -390,9 +481,7 @@ class NunchakuTextEncoderLoader:
 
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_text_encoder"
-
     CATEGORY = "Nunchaku"
-
     TITLE = "Nunchaku Text Encoder Loader (Deprecated)"
 
     def load_text_encoder(
@@ -404,6 +493,34 @@ class NunchakuTextEncoderLoader:
         use_4bit_t5: str,
         int4_model: str,
     ):
+        """
+        Loads the text encoders with the given configuration.
+
+        Parameters
+        ----------
+        model_type : str
+            The type of model to load (e.g., "flux").
+        text_encoder1 : str
+            Filename of the first text encoder checkpoint.
+        text_encoder2 : str
+            Filename of the second text encoder checkpoint.
+        t5_min_length : int
+            Minimum sequence length for the T5 encoder.
+        use_4bit_t5 : str
+            Whether to use a 4-bit T5 model ("enable" or "disable").
+        int4_model : str
+            The name or path of the 4-bit T5 model.
+
+        Returns
+        -------
+        tuple
+            Tuple containing the loaded CLIP model.
+
+        Warns
+        -----
+        UserWarning
+            If this deprecated node is used.
+        """
         logger.warning(
             "Nunchaku Text Encoder Loader will be deprecated in v0.4. "
             "Please use the Nunchaku Text Encoder Loader V2 node instead."
