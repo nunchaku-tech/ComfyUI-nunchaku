@@ -33,6 +33,8 @@ class ComfyFluxWrapper(nn.Module):
         self._prev_timestep = None  # for first-block cache
         self._cache_context = None
 
+        patch_size = self.config.get("patch_size", 2)
+
     def process_img(self, x, index=0, h_offset=0, w_offset=0):
         bs, c, h, w = x.shape
         patch_size = self.config.get("patch_size", 2)
