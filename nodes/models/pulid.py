@@ -2,8 +2,8 @@
 This module provides nodes and utilities for integrating the Nunchaku PuLID pipeline
 with ComfyUI, enabling face restoration and enhancement using PuLID and related models.
 
+.. note::
 
-:note:
     Adapted from: https://github.com/lldacing/ComfyUI_PuLID_Flux_ll
 """
 
