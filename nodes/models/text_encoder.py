@@ -425,11 +425,6 @@ class NunchakuTextEncoderLoader:
 
     This node loads a pair of text encoder checkpoints for use with Nunchaku models,
     with optional support for 4-bit T5 models.
-
-    Returns
-    -------
-    CLIP
-        The loaded CLIP model.
     """
 
     @classmethod
