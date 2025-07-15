@@ -1,7 +1,6 @@
 nodes.models.flux
 =================
 
-.. automodule:: nodes.models.flux
+.. automodule:: comfyui_nunchaku.nodes.models.flux
    :members:
-   :undoc-members:
    :show-inheritance:

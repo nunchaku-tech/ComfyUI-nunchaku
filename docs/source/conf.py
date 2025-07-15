@@ -10,7 +10,8 @@ import sys
 import tomllib
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "ComfyUI"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 project = "ComfyUI-nunchaku"
 copyright = "2025, Nunchaku Team"
@@ -64,7 +65,6 @@ napoleon_numpy_docstring = True
 
 # Mock imports for autodoc
 autodoc_mock_imports = [
-    "folder_paths",
     "comfy",
     "comfy.model_management",
     "comfy.model_patcher",

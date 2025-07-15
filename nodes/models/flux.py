@@ -1,7 +1,4 @@
 """
-Nunchaku FLUX DiT Loader
-========================
-
 This module provides the :class:`NunchakuFluxDiTLoader` class for loading Nunchaku FLUX models.
 It also supports attention implementation selection, CPU offload, and first-block caching.
 """

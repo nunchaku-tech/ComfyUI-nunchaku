@@ -1,7 +1,6 @@
-ComfyUI\-nunchaku.nodes.tools.merge\_safetensors module
-=======================================================
+nodes.tools.merge\_safetensors
+==============================
 
-.. automodule:: ComfyUI-nunchaku.nodes.tools.merge_safetensors
+.. automodule:: comfyui_nunchaku.nodes.tools.merge_safetensors
    :members:
-   :undoc-members:
    :show-inheritance:

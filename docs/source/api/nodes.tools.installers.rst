@@ -1,7 +1,6 @@
-ComfyUI\-nunchaku.nodes.tools.installers module
-===============================================
+nodes.tools.installers
+======================
 
-.. automodule:: ComfyUI-nunchaku.nodes.tools.installers
+.. automodule:: comfyui_nunchaku.nodes.tools.installers
    :members:
-   :undoc-members:
    :show-inheritance:

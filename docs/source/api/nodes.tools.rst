@@ -1,16 +1,8 @@
-ComfyUI\-nunchaku.nodes.tools package
-=====================================
-
-.. automodule:: ComfyUI-nunchaku.nodes.tools
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Submodules
-----------
+nodes.tools
+===========
 
 .. toctree::
    :maxdepth: 4
 
-   ComfyUI-nunchaku.nodes.tools.installers
-   ComfyUI-nunchaku.nodes.tools.merge_safetensors
+   nodes.tools.installers
+   nodes.tools.merge_safetensors

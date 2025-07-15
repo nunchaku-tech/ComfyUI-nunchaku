@@ -357,13 +357,6 @@ class NunchakuPulidLoader:
         ONNX provider to use (default: "gpu").
     pretrained_model : str or None
         Path to the pretrained PuLID model, if any.
-
-    Methods
-    -------
-    INPUT_TYPES()
-        Returns the input types for the node.
-    load(model)
-        Loads the PuLID pipeline and returns the model and pipeline.
     """
 
     def __init__(self):
