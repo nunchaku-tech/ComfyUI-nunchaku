@@ -10,10 +10,15 @@ ComfyUI-nunchaku Documentation
 
 .. toctree::
     :maxdepth: 1
-    :caption: Workflows and Nodes
+    :caption: Example Workflows
 
-    workflows/workflows.rst
-    nodes/nodes.rst
+    workflows/tools.rst
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Node Reference
+
+    nodes/tools.rst
 
 .. toctree::
     :maxdepth: 1

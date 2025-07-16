@@ -63,7 +63,7 @@ class NunchakuModelMerger:
     RETURN_NAMES = ("status",)
     FUNCTION = "run"
     CATEGORY = "Nunchaku"
-    TITLE = "Merge Nunchaku Model"
+    TITLE = "Nunchaku Model Merger"
 
     def run(self, model_folder: str, save_name: str):
         """

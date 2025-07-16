@@ -2,7 +2,7 @@ Installation
 ============
 
 We provide tutorial videos to help you install and use Nunchaku on Windows,
-available in both `English <_nunchaku_windows_tutorial_en>`_ and `Chinese <_nunchaku_windows_tutorial_zh>`_. 
+available in both `English <_nunchaku_windows_tutorial_en>`_ and `Chinese <_nunchaku_windows_tutorial_zh>`_.
 If you run into issues, these resources are a good place to start.
 
 Step 1: Install the ComfyUI-nunchaku Plugin
@@ -73,4 +73,4 @@ Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <_nunchaku_repo>`_ wheel using this
 `workflow file <_comfyui_nunchaku_wheel_installation_workflow>`_, once all dependencies are installed.
 
-Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation_installation`.
+Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.

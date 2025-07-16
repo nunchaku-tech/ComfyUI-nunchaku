@@ -33,7 +33,7 @@ to download the necessary FLUX models into the appropriate directories. Alternat
 Then, download the nunchaku models from our `HuggingFace <nunchaku_huggingface_>`_ or `ModelScope <nunchaku_modelscope_>`_ collection.
 
 .. note::
-   
+
    - For **Blackwell GPUs** (such as the RTX 50-series), please use our **FP4** models for hardware compatibility.
    - For all other GPUs, please use our **INT4** models.
 

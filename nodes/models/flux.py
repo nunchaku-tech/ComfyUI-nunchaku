@@ -211,7 +211,7 @@ class NunchakuFluxDiTLoader:
         attention : str
             Attention implementation to use ("nunchaku-fp16" or "flash-attention2").
         cache_threshold : float
-            Caching tolerance for first-block cache. See :ref:`nunchaku:usage_fbcache` for details.
+            Caching tolerance for first-block cache. See :ref:`nunchaku:usage-fbcache` for details.
         cpu_offload : str
             Whether to enable CPU offload ("auto", "enable", "disable").
         device_id : int
