@@ -1,18 +1,19 @@
 ComfyUI-nunchaku Documentation
 ==============================
 
-
 .. toctree::
-   :maxdepth: 2
-   :caption: Get Started
+    :maxdepth: 1
+    :caption: Getting Started
 
-   get_started/installation.rst
-   get_started/usage.rst
+    get_started/installation.rst
+    get_started/usage.rst
 
 .. toctree::
     :maxdepth: 1
-    :caption: Usage Tutorials
+    :caption: Workflows and Nodes
 
+    workflows/workflows.rst
+    nodes/nodes.rst
 
 .. toctree::
     :maxdepth: 1
