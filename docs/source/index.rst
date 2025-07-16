@@ -19,9 +19,10 @@ ComfyUI-nunchaku Documentation
     :maxdepth: 1
     :caption: Node Reference
 
-    nodes/tools.rst
     nodes/models.rst
+    nodes/pulid.rst
     nodes/lora.rst
+    nodes/tools.rst
     nodes/preprocessors.rst
 
 .. toctree::

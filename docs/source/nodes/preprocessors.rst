@@ -12,7 +12,7 @@ FLUX Depth Preprocessor (Deprecated)
 .. warning::
     This node is deprecated and will be removed in October 2025. Please use the **Depth Anything** node in `comfyui_controlnet_aux <https://github.com/Fannovel16/comfyui_controlnet_aux>`_ instead.
 
-A legacy node for depth preprocessing using `Depth Anything <https://huggingface.co/LiheYoung/depth-anything-large-hf>`_.
+A legacy node for depth preprocessing using `Depth Anything <https://huggingface.co/LiheYoung/depth-anything-large-hf>`__.
 This node applies a depth estimation model to an input image to produce a corresponding depth map.
 
 **Inputs:**

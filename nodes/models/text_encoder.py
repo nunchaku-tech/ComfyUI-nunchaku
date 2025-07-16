@@ -29,15 +29,13 @@ class NunchakuTextEncoderLoaderV2:
     Node for loading Nunchaku text encoders. It also supports 16-bit and FP8 variants.
 
     .. note::
-        When loading, a 16-bit T5 encoder is first initialized on a meta device,
-        then replaced by the Nunchaku T5 encoder.
+        When loading our 4-bit T5, a 16-bit T5 is first initialized on a meta device,
+        then replaced by the Nunchaku T5.
 
     .. warning::
-        Only CUDA devices are supported. If the model is not on CUDA, it will be moved automatically,
-        which may cause out-of-memory errors.
-
-    .. warning::
-        Turing GPUs are currently not supported. This is a known issue under investigation.
+        Our 4-bit T5 currently requires a CUDA device.
+        If not on CUDA, the model will be moved automatically, which may cause out-of-memory errors.
+        Turing GPUs (20-series) are not supported for now.
     """
 
     RETURN_TYPES = ("CLIP",)

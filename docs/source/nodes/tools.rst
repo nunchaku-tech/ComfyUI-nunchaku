@@ -29,7 +29,7 @@ After installation, please **restart ComfyUI** to apply the changes.
 .. seealso::
 
     API reference: :class:`~comfyui_nunchaku.nodes.tools.installers.NunchakuWheelInstaller`.
-    
+
     Example workflow: :ref:`install-wheel-json`.
 
 .. _nunchaku-model-merger:

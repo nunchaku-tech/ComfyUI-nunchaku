@@ -80,7 +80,7 @@ class NunchakuFluxLoraLoader:
     RETURN_TYPES = ("MODEL",)
     OUTPUT_TOOLTIPS = ("The modified diffusion model.",)
     FUNCTION = "load_lora"
-    TITLE = "Nunchaku FLUX.1 LoRA Loader"
+    TITLE = "Nunchaku FLUX LoRA Loader"
 
     CATEGORY = "Nunchaku"
     DESCRIPTION = (

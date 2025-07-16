@@ -87,7 +87,7 @@ A workflow combining Canny edge detection with LoRA modules for style-controlled
 
 .. _nunchaku-flux.1-depth-json:
 
-`nunchaku-flux.1-depth.json <https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-depth.json>`_
+`nunchaku-flux.1-depth.json <https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-depth.json>`__
 ---------------------------------------------------------------------------------------------------------------------------------------
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-depth.png
@@ -101,7 +101,7 @@ A workflow for depth-controlled image generation.
 
 .. _nunchaku-flux.1-depth-lora-json:
 
-`nunchaku-flux.1-depth-lora.json <https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-depth-lora.json>`_
+`nunchaku-flux.1-depth-lora.json <https://github.com/mit-han-lab/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-depth-lora.json>`__
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-depth-lora.png
