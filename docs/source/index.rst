@@ -19,9 +19,10 @@ ComfyUI-nunchaku Documentation
     :maxdepth: 1
     :caption: Node Reference
 
-    nodes/models.rst
-    nodes/pulid.rst
+    nodes/diffusion_model.rst
     nodes/lora.rst
+    nodes/text_encoder.rst
+    nodes/pulid.rst
     nodes/tools.rst
     nodes/preprocessors.rst
 

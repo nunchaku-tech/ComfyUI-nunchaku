@@ -83,3 +83,57 @@ A node for loading the PuLID pipeline required for identity-preserving image gen
     API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuPuLIDLoaderV2`.
     
     Example workflow: :ref:`nunchaku-flux.1-dev-pulid-json`.
+
+
+.. _nunchaku-pulid-loader:
+
+Nunchaku PuLID Loader (Deprecated)
+----------------------------------
+
+.. warning::
+    This node is **deprecated** and will be removed in December 2025.
+    Please use :ref:`nunchaku-pulid-loader-v2` instead.
+
+A legacy node for loading the PuLID pipeline for a Nunchaku FLUX model. This node loads the PuLID model and required face libraries, returning both the original model and a ready-to-use PuLID pipeline.
+
+**Inputs:**
+
+- **model**: The base Nunchaku FLUX model to apply PuLID to (must be loaded by :ref:`nunchaku-flux-dit-loader`).
+
+**Outputs:**
+
+- **model**: The input Nunchaku FLUX model (unchanged).
+- **pulid**: The loaded PuLID pipeline.
+
+.. seealso::
+
+    API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuPulidLoader`.
+
+----
+
+.. _nunchaku-pulid-apply:
+
+Nunchaku PuLID Apply (Deprecated)
+---------------------------------
+
+.. warning::
+    This node is **deprecated** and will be removed in December 2025.
+    Please use :ref:`nunchaku-flux-pulid-apply-v2` instead.
+
+A legacy node for applying PuLID identity embeddings to a Nunchaku FLUX model.
+
+**Inputs:**
+
+- **pulid**: The PuLID pipeline instance (from :ref:`nunchaku-pulid-loader`).
+- **image**: The image to encode for identity.
+- **model**: The Nunchaku FLUX model to modify.
+- **ip_weight**: The weight for the identity embedding (default: 1.0, range: 0.0–2.0).
+
+**Outputs:**
+
+- **model**: The updated model with PuLID applied.
+
+.. seealso::
+
+    API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuPulidApply`.
+

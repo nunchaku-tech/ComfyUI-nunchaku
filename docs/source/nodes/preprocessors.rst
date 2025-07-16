@@ -6,9 +6,6 @@ Preprocessor Nodes
 FLUX Depth Preprocessor (Deprecated)
 ------------------------------------
 
-.. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/nodes/FluxDepthPreprocessor.png
-    :alt: FluxDepthPreprocessor
-
 .. warning::
     This node is deprecated and will be removed in October 2025. Please use the **Depth Anything** node in `comfyui_controlnet_aux <https://github.com/Fannovel16/comfyui_controlnet_aux>`_ instead.
 
