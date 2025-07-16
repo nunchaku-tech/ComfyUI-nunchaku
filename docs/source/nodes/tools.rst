@@ -28,7 +28,9 @@ After installation, please **restart ComfyUI** to apply the changes.
 
 .. seealso::
 
-    See example workflow :ref:`install-wheel-json`.
+    API reference: :class:`~comfyui_nunchaku.nodes.tools.installers.NunchakuWheelInstaller`.
+    
+    Example workflow: :ref:`install-wheel-json`.
 
 .. _nunchaku-model-merger:
 
@@ -51,4 +53,6 @@ A utility node that merges a legacy SVDQuant FLUX.1 model folder into a single `
 
 .. seealso::
 
-    See example workflow :ref:`merge-safetensors-json`.
+    API reference: :class:`~comfyui_nunchaku.nodes.tools.merge_safetensors.NunchakuModelMerger`.
+
+    Example workflow: :ref:`merge-safetensors-json`.
