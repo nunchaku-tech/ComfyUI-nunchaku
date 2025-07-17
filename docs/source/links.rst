@@ -1,24 +1,8 @@
-.. _svdquant_paper: http://arxiv.org/abs/2411.05007
-.. _deepcompressor_repo: https://github.com/nunchaku-tech/deepcompressor
-.. _pytorch_home: https://pytorch.org/
-.. _flux_repo: https://github.com/black-forest-labs/flux
-.. _diffusers_repo: https://github.com/huggingface/diffusers
-.. _nunchaku_github_releases: https://github.com/nunchaku-tech/nunchaku/releases
-.. _nunchaku_huggingface: https://huggingface.co/nunchaku-tech/nunchaku/tree/main
-.. _nunchaku_modelscope: https://modelscope.cn/models/Lmxyy1999/nunchaku
-.. _comfyui_nunchaku_repo: https://github.com/nunchaku-tech/ComfyUI-nunchaku
-.. _comfyui_nunchaku_wheel_installation_workflow: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json
-.. _comfyui_nunchaku_example_workflows: https://github.com/nunchaku-tech/ComfyUI-nunchaku/tree/main/example_workflows
-.. _comfyui_manager_repo: https://github.com/Comfy-Org/ComfyUI-Manager
-.. _comfyui_repo: https://github.com/comfyanonymous/ComfyUI
-.. _comfy_cli_repo: https://github.com/Comfy-Org/comfy-cli
+
 .. _nvidia_cuda_downloads: https://developer.nvidia.com/cuda-downloads
 .. _visual_studio: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 .. _git_downloads_win: https://git-scm.com/downloads/win
 .. _anaconda_download: https://www.anaconda.com/download/success
-.. _nunchaku_windows_tutorial_en: https://youtu.be/YHAVe-oM7U8?si=cM9zaby_aEHiFXk0
-.. _nunchaku_windows_tutorial_zh: https://www.bilibili.com/video/BV1BTocYjEk5/?share_source=copy_web&vd_source=8926212fef622f25cc95380515ac74ee
-.. _nunchaku_repo: https://github.com/nunchaku-tech/nunchaku
 .. _ghibsky_lora: https://huggingface.co/aleksa-codes/flux-ghibsky-illustration
 .. _turbo_lora: https://huggingface.co/alimama-creative/FLUX.1-Turbo-Alpha
 .. _nunchaku_flux1_dev_fp4: https://huggingface.co/mit-han-lab/nunchaku-flux.1-dev/blob/main/svdq-fp4_r32-flux.1-dev.safetensors
