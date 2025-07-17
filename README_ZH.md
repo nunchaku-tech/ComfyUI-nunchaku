@@ -11,7 +11,7 @@
 
 该储存库为[**Nunchaku**](https://github.com/mit-han-lab/nunchaku)提供了ComfyUI节点，这是一个用于使用[SVDQuant](http://arxiv.org/abs/2411.05007)量化的 4 位神经网络的高效推理引擎。有关量化库，请查看 [DeepCompressor](https://github.com/mit-han-lab/deepcompressor).
 
-加入我们，在[**Slack**](https://join.slack.com/t/nunchaku/shared_invite/zt-3170agzoz-NgZzWaTrEj~n2KEV3Hpl5Q), [**Discord**](https://discord.gg/Wk6PnwX9Sm) 和 [**微信**](https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/nunchaku/assets/wechat.jpg) 上的社区群组进行讨论———详情点击[这里](https://github.com/mit-han-lab/nunchaku/issues/149). 如果您有任何问题、遇到问题或有兴趣做出贡献，请随时与我们分享您的想法！
+加入我们，在[**Slack**](https://join.slack.com/t/nunchaku/shared_invite/zt-3170agzoz-NgZzWaTrEj~n2KEV3Hpl5Q), [**Discord**](https://discord.gg/Wk6PnwX9Sm) 和 [**微信**](https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/nunchaku/assets/wechat.jpg) 上的社区群组进行讨论———详情点击[这里](https://github.com/mit-han-lab/nunchaku/issues/149). 如果您有任何问题、遇到问题或有兴趣做出贡献，请随时与我们分享您的想法！
 
 # Nunchaku ComfyUI节点
 
