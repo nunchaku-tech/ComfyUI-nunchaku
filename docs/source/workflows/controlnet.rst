@@ -43,4 +43,3 @@ A workflow for using the **FLUX.1-ControlNet-Upscaler** model with Nunchaku to u
 
 .. seealso::
     See node :ref:`nunchaku-flux-dit-loader`.
-

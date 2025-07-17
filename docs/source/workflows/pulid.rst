@@ -36,4 +36,3 @@ Identity-preserving image generation workflow using `PuLID <pulid_paper_>`_ and 
     Workflow adapted from https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.
 
     Related nodes: :ref:`nunchaku-flux-dit-loader`, :ref:`nunchaku-flux-pulid-apply-v2`, :ref:`nunchaku-pulid-loader-v2`.
-

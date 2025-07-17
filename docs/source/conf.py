@@ -51,8 +51,12 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 # -- Include global link definitions -----------------------------------------
-with open(Path(__file__).parent / "links.rst", encoding="utf-8") as f:
-    rst_epilog = f.read()
+links_dir = Path(__file__).parent / "links"
+rst_epilog = ""
+if links_dir.exists() and links_dir.is_dir():
+    for link_file in sorted(links_dir.glob("*.txt")):
+        with open(link_file, encoding="utf-8") as f:
+            rst_epilog += f.read()
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

@@ -8,7 +8,7 @@ If you run into issues, these resources are a good place to start.
 Step 1: Install the ComfyUI-nunchaku Plugin
 -------------------------------------------
 
-You can use the following ways to install the `ComfyUI-nunchaku <comfyui_nunchaku_repo_>`_ plugin.
+You can use the following ways to install the `ComfyUI-nunchaku <github_comfyui-nunchaku_>`_ plugin.
 
 Comfy-CLI
 ~~~~~~~~~
