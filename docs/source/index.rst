@@ -1,6 +1,12 @@
 ComfyUI-nunchaku Documentation
 ==============================
 
+This documentation is for the https://github.com/nunchaku-tech/ComfyUI-nunchaku.
+
+**Nunchaku** is a high-performance inference engine optimized for low-bit diffusion models and LLMs,
+as introduced in our paper `SVDQuant <paper_svdquant_>`_.
+Check out `DeepCompressor <github_deepcompressor_>`_ for the quantization library.
+
 .. toctree::
     :maxdepth: 1
     :caption: Getting Started
@@ -18,5 +24,15 @@ ComfyUI-nunchaku Documentation
 
 .. toctree::
     :maxdepth: 1
-    :caption: Useful Tools
+    :caption: Useful Links
     :titlesonly:
+
+    Nunchaku Backend <https://github.com/nunchaku-tech/nunchaku>
+    Custom Model Quantization: DeepCompressor <https://github.com/nunchaku-tech/deepcompressor>
+    Frequently Asked Questions (FAQ) <https://nunchaku.tech/docs/nunchaku/faq/faq.html>
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Other Resources
+
+    faq.rst
