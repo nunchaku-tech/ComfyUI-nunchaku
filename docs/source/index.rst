@@ -14,6 +14,7 @@ ComfyUI-nunchaku Documentation
 
     workflows/t2i.rst
     workflows/kontext.rst
+    workflows/canny.rst
     workflows/pulid.rst
     workflows/tools.rst
 

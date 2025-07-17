@@ -1,5 +1,5 @@
-Text-to-Image Workflows
-=======================
+FLUX Text-to-Image
+==================
 
 .. _nunchaku-flux.1-dev-json:
 

@@ -14,9 +14,7 @@ A node for loading and applying LoRA weights to Nunchaku FLUX models within Comf
 **Inputs:**
 
 - **model**: The diffusion model the LoRA will be applied to. Make sure the model is loaded by :ref:`nunchaku-flux-dit-loader`.
-
 - **lora_name**: The file name of the LoRA checkpoint. Place your LoRA files in the ``models/loras`` directory, and they will appear as selectable options.
-
 - **lora_strength**: How strongly to modify the diffusion model. This value can be negative. Range: -100.0 to 100.0, default: 1.0.
 
 **Outputs:**
@@ -30,5 +28,3 @@ A node for loading and applying LoRA weights to Nunchaku FLUX models within Comf
 .. seealso::
 
     API reference: :class:`~comfyui_nunchaku.nodes.lora.flux.NunchakuFluxLoraLoader`.
-
-    Example workflows: :ref:`nunchaku-flux.1-dev-json`, :ref:`nunchaku-flux.1-canny-lora-json`, :ref:`nunchaku-flux.1-depth-lora-json`.

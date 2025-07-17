@@ -1,5 +1,5 @@
-PuLID Workflows
-===============
+FLUX PuLID
+==========
 
 .. _nunchaku-flux.1-dev-pulid-json:
 
@@ -13,7 +13,7 @@ This workflow demonstrates identity-preserving image generation using `PuLID <pu
 
 Used models:
 
-- Nunchaku FLUX.1-dev: `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`__, `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`__
+- Nunchaku FLUX.1-dev: `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`__, `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`__ and place them in ``models/diffusion_models``.
 - PuLID weights: Download from `Hugging Face <https://huggingface.co/guozinan/PuLID/resolve/main/pulid_flux_v0.9.1.safetensors>`__ and place in ``models/pulid``.
 - EVA-CLIP weights: Download from `Hugging Face <https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt>`__ and place in ``models/clip`` (autodownload supported).
 - AntelopeV2 ONNX models: Download from `Hugging Face <https://huggingface.co/MonsterMMORPG/tools/tree/main>`__ and place in ``models/insightface/models/antelopev2`` (autodownload supported).
