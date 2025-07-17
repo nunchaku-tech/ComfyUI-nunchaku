@@ -11,7 +11,7 @@ Text-to-Image Workflows
 
 This workflow demonstrates how to use the Nunchaku FLUX.1-dev model with multiple LoRAs to generate images from a given prompt.
 
-You can download the Nunchaku FLUX.1-dev models from `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`__ or `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`__.
+You can download the Nunchaku FLUX.1-dev models from `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`__ or `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`__ and place them in ``models/diffusion_models``.
 
 Example LoRA weights are available at:
 
@@ -34,11 +34,11 @@ Example LoRA weights are available at:
 
 This workflow demonstrates how to use the Nunchaku FLUX.1-schnell model to generate images from a given prompt.
 
-You can download the Nunchaku FLUX.1-schnell models from `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-schnell>`__ or `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-schnell>`__.
+You can download the Nunchaku FLUX.1-schnell models from `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-schnell>`__ or `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-schnell>`__ and place them in ``models/diffusion_models``.
 
 .. seealso::
 
-    See :ref:`nunchaku-flux-dit-loader`.
+    See node :ref:`nunchaku-flux-dit-loader`.
 
 .. _nunchaku-flux.1-dev-qencoder-json:
 
@@ -52,8 +52,8 @@ This workflow demonstrates how to use the Nunchaku FLUX.1-dev model with a 4-bit
 
 Model Links:
 
-- Nunchaku FLUX.1-dev: `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`__, `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`__
-- 4-bit T5 encoder: `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-t5>`__, `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-t5>`__
+- Nunchaku FLUX.1-dev: `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`__, `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`__. Place the model in ``models/diffusion_models``.
+- 4-bit T5 encoder: `Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-t5>`__, `ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-t5>`__. Place the model in ``models/text_encoders``.
 
 .. seealso::
 

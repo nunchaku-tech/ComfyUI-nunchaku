@@ -6,7 +6,7 @@
 .. _nunchaku_github_releases: https://github.com/nunchaku-tech/nunchaku/releases
 .. _nunchaku_huggingface: https://huggingface.co/nunchaku-tech/nunchaku/tree/main
 .. _nunchaku_modelscope: https://modelscope.cn/models/Lmxyy1999/nunchaku
-.. _comfyui_nunchaku: https://github.com/nunchaku-tech/ComfyUI-nunchaku
+.. _comfyui_nunchaku_repo: https://github.com/nunchaku-tech/ComfyUI-nunchaku
 .. _comfyui_nunchaku_wheel_installation_workflow: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json
 .. _comfyui_nunchaku_example_workflows: https://github.com/nunchaku-tech/ComfyUI-nunchaku/tree/main/example_workflows
 .. _comfyui_manager_repo: https://github.com/Comfy-Org/ComfyUI-Manager

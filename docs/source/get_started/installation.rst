@@ -2,18 +2,18 @@ Installation
 ============
 
 We provide tutorial videos to help you install and use Nunchaku on Windows,
-available in both `English <_nunchaku_windows_tutorial_en>`_ and `Chinese <_nunchaku_windows_tutorial_zh>`_.
+available in both `English <nunchaku_windows_tutorial_en_>`_ and `Chinese <nunchaku_windows_tutorial_zh_>`_.
 If you run into issues, these resources are a good place to start.
 
 Step 1: Install the ComfyUI-nunchaku Plugin
 -------------------------------------------
 
-You can use the following ways to install the `ComfyUI-nunchaku <_comfyui_nunchaku_repo>`_ plugin.
+You can use the following ways to install the `ComfyUI-nunchaku <comfyui_nunchaku_repo_>`_ plugin.
 
 Comfy-CLI
 ~~~~~~~~~
 
-You can easily use `comfy-cli <_comfy_cli_repo>`_ to run ComfyUI with Nunchaku:
+You can easily use `comfy-cli <comfy_cli_repo_>`_ to run ComfyUI with Nunchaku:
 
 .. code-block:: shell
 
@@ -24,7 +24,7 @@ You can easily use `comfy-cli <_comfy_cli_repo>`_ to run ComfyUI with Nunchaku:
 ComfyUI-Manager
 ~~~~~~~~~~~~~~~
 
-1. Install `ComfyUI <_comfyui_repo>`_ with
+1. Install `ComfyUI <comfyui_repo_>`_ with
 
    .. code-block:: shell
 
@@ -32,7 +32,7 @@ ComfyUI-Manager
       cd ComfyUI
       pip install -r requirements.txt
 
-2. Install `ComfyUI-Manager <_comfyui_manager_repo>`_ with the following commands:
+2. Install `ComfyUI-Manager <comfyui_manager_repo_>`_ with the following commands:
 
    .. code-block:: shell
 
@@ -51,7 +51,7 @@ ComfyUI-Manager
 Manual Installation
 ~~~~~~~~~~~~~~~~~~~
 
-1. Set up `ComfyUI <_comfyui_repo>`_ with the following commands:
+1. Set up `ComfyUI <comfyui_repo_>`_ with the following commands:
 
    .. code-block:: shell
 
@@ -70,7 +70,7 @@ Step 2: Install the Nunchaku Backend
 ------------------------------------
 
 Starting from **ComfyUI-nunchaku v0.3.2**,
-you can easily install or update the `Nunchaku <_nunchaku_repo>`_ wheel using this
-`workflow file <_comfyui_nunchaku_wheel_installation_workflow>`_, once all dependencies are installed.
+you can easily install or update the `Nunchaku <nunchaku_repo_>`_ wheel using this
+`workflow file <comfyui_nunchaku_wheel_installation_workflow_>`_, once all dependencies are installed.
 
 Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.

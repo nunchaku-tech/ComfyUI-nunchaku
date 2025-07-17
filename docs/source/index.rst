@@ -13,6 +13,8 @@ ComfyUI-nunchaku Documentation
     :caption: Example Workflows
 
     workflows/t2i.rst
+    workflows/kontext.rst
+    workflows/pulid.rst
     workflows/tools.rst
 
 .. toctree::
