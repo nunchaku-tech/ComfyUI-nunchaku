@@ -26,11 +26,8 @@ A node for loading Nunchaku text encoders.
 **Inputs:**
 
 - **model_type**: The type of model to load (currently only `flux.1` is supported).
-
 - **text_encoder1**: The first text encoder checkpoint.
-
 - **text_encoder2**: The second text encoder checkpoint.
-
 - **t5_min_length**: Minimum sequence length for the T5 encoder. The default value is 512 to better align our quantization settings.
 
 **Outputs:**

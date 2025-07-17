@@ -10,3 +10,4 @@
 .. _github_comfy-cli: https://github.com/Comfy-Org/comfy-cli
 .. _github_fbcache: https://github.com/chengzeyi/ParaAttention?tab=readme-ov-file#first-block-cache-our-dynamic-caching
 .. _github_comfyui-manager_missing-nodes-installation: https://github.com/ltdrdata/ComfyUI-Manager?tab=readme-ov-file#support-of-missing-nodes-installation
+.. _github_comfyui_controlnet_aux: https://github.com/Fannovel16/comfyui_controlnet_aux

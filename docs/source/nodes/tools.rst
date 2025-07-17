@@ -9,18 +9,18 @@ Nunchaku Wheel Installer
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/nodes/NunchakuWheelInstaller.png
     :alt: NunchakuWheelInstaller
 
-A utility node for automatically installing the correct version of the `nunchaku <nunchaku_repo_>`_ wheel in ComfyUI.
+A utility node for automatically installing the correct version of the `nunchaku <github_nunchaku_>`_ wheel in ComfyUI.
 After installation, please **restart ComfyUI** to apply the changes.
 
 **Inputs:**
 
 - **source**: Select the wheel source. Options include:
 
-  - `GitHub Release <nunchaku_github_releases_>`_
-  - `HuggingFace <nunchaku_huggingface_>`_
-  - `ModelScope <nunchaku_modelscope_>`_
+  - `GitHub Releases <github_nunchaku_releases_>`_
+  - `HuggingFace <hf_nunchaku_wheels_>`_
+  - `ModelScope <ms_nunchaku_wheels_>`_
 
-- **version**: Choose the compatible `nunchaku <nunchaku_repo_>`_ version to install.
+- **version**: Choose the compatible `nunchaku <github_nunchaku_>`_ version to install.
 
 **Outputs:**
 

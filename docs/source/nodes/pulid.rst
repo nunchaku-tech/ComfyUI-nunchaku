@@ -14,19 +14,12 @@ A node for applying PuLID identity customization to a Nunchaku FLUX model accord
 **Inputs:**
 
 - **model**: The Nunchaku FLUX model to modify (must be loaded by Nunchaku FLUX DiT Loader).
-
 - **pulid_pipline**: The PuLID pipeline instance (from :ref:`nunchaku-pulid-loader-v2`).
-
 - **image**: The input image for identity embedding extraction.
-
 - **weight**: How strongly to apply the PuLID effect. Range: -1.0 to 5.0, default: 1.0.
-
 - **start_at**: When to start applying PuLID during the denoising process. Range: 0.0 to 1.0, default: 0.0.
-
 - **end_at**: When to stop applying PuLID during the denoising process. Range: 0.0 to 1.0, default: 1.0.
-
 - **attn_mask** (optional): Attention mask for selective application. Currently not supported.
-
 - **options** (optional): Additional options for PuLID processing.
 
 **Outputs:**
@@ -52,11 +45,8 @@ A node for loading the PuLID pipeline required for identity-preserving image gen
 **Inputs:**
 
 - **model**: The base Nunchaku FLUX model to apply PuLID to (must be loaded by :ref:`nunchaku-flux-dit-loader`).
-
 - **pulid_file**: PuLID model weights file. You can download this file from `Hugging Face <https://huggingface.co/guozinan/PuLID/resolve/main/pulid_flux_v0.9.1.safetensors>`__ and place it under ``models/pulid``.
-
 - **eva_clip_file**: EVA-CLIP model weights file. Download it from `Hugging Face <https://huggingface.co/QuanSun/EVA-CLIP/blob/main/EVA02_CLIP_L_336_psz14_s6B.pt>`__ and place it in the ``models/clip`` directory. Autodownload is also supported.
-
 - **insight_face_provider**: ONNX provider for InsightFace. Choose ``gpu`` for CUDA or ``cpu`` for CPU inference.
 
 **Outputs:**

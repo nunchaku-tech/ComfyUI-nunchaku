@@ -13,7 +13,7 @@ A node for loading Nunchaku FLUX models. It manages model loading, device select
 
 **Inputs:**
 
-- **model_path**: The path to the Nunchaku FLUX model folder (legacy format) or ``.safetensors`` file. You can download the model from `HuggingFace <nunchaku_huggingface_>`_ or `ModelScope <nunchaku_modelscope_>`_.
+- **model_path**: The path to the Nunchaku FLUX model folder (legacy format) or ``.safetensors`` file. You can download the model from `HuggingFace <hf_nunchaku_>`_ or `ModelScope <ms_nunchaku_>`_.
 - **cache_threshold**: Adjusts the first-block caching tolerance like ``residual_diff_threshold`` in WaveSpeed. Increasing the value enhances speed at the cost of quality. A typical setting is 0.12. Setting it to 0 disables the effect. See :ref:`nunchaku:usage-fbcache` for more details.
 - **attention**: Attention implementation. Options include ``flash-attention2`` and ``nunchaku-fp16``. The ``nunchaku-fp16`` uses FP16 attention, offering ~1.2× speedup. Note that 20-series GPUs can only use ``nunchaku-fp16``.
 - **cpu_offload**: Whether to enable CPU offload for the transformer model. Options include:
