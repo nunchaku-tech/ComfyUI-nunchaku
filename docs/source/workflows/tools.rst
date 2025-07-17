@@ -3,29 +3,36 @@ Tool Workflows
 
 .. _install-wheel-json:
 
-`install_wheel.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json>`_
-------------------------------------------------------------------------------------------------------------------------
+install_wheel.json
+------------------
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/install_wheel.png
     :alt: install_wheel.json
+    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json
 
-This workflow is used to install the wheel file of the nunchaku node.
+Workflow for installing a wheel file for the Nunchaku node.
+
+**Links:**
+
+- Workflow: :download:`install_wheel.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json>`
 
 .. seealso::
-
     See node :ref:`nunchaku-wheel-installer`.
 
 .. _merge-safetensors-json:
 
-`merge_safetensors.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/merge_safetensors.json>`_
---------------------------------------------------------------------------------------------------------------------------------
+merge_safetensors.json
+----------------------
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/merge_safetensors.png
     :alt: merge_safetensors.json
+    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/merge_safetensors.json
 
-This workflow is used to merge a legacy SVDQuant model folder
-(e.g., `mit-han-lab/svdq-int4-flux.1-dev <https://huggingface.co/mit-han-lab/svdq-int4-flux.1-dev>`__) into a single ``.safetensors`` file.
+Workflow for merging a legacy SVDQuant model folder into a single ``.safetensors`` file.
+
+**Links:**
+
+- Workflow: :download:`merge_safetensors.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/merge_safetensors.json>`
 
 .. seealso::
-
     See node :ref:`nunchaku-model-merger`.
