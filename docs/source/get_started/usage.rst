@@ -4,7 +4,7 @@ Usage
 Step 1: Set Up ComfyUI Workflows
 --------------------------------
 
-- Nunchaku workflows can be found at `example_workflows <comfyui_nunchaku_example_workflows_>`_. To use them, copy the files to ``user/default/workflows`` in the ComfyUI root directory:
+- Nunchaku workflows can be found at `example_workflows <github_comfyui-nunchaku_example_workflows_>`_. To use them, copy the files to ``user/default/workflows`` in the ComfyUI root directory:
 
   .. code-block:: shell
 
@@ -16,13 +16,14 @@ Step 1: Set Up ComfyUI Workflows
      # Copy workflows
      cp custom_nodes/nunchaku_nodes/example_workflows/* user/default/example_workflows/
 
-- Install any missing nodes (e.g., ``comfyui-inpainteasy``) by following `this tutorial <https://github.com/ltdrdata/ComfyUI-Manager?tab=readme-ov-file#support-of-missing-nodes-installation>`__.
+- Install any missing nodes (e.g., ``comfyui-inpainteasy``) by following `this tutorial <github_comfyui-manager_missing-nodes-installation_>`_.
 
 Step 2: Download Models
 -----------------------
 
-First, follow `this tutorial <https://comfyanonymous.github.io/ComfyUI_examples/flux/>`__
-to download the necessary FLUX models into the appropriate directories. Alternatively, use the following commands:
+First, follow `this tutorial <comfyui_examples_flux_>`_
+to download the necessary FLUX models into the appropriate directories.
+Alternatively, use the following commands:
 
 .. code-block:: shell
 
@@ -30,7 +31,7 @@ to download the necessary FLUX models into the appropriate directories. Alternat
    huggingface-cli download comfyanonymous/flux_text_encoders t5xxl_fp16.safetensors --local-dir models/text_encoders
    huggingface-cli download black-forest-labs/FLUX.1-schnell ae.safetensors --local-dir models/vae
 
-Then, download the nunchaku models from our `HuggingFace <nunchaku_huggingface_>`_ or `ModelScope <nunchaku_modelscope_>`_ collection.
+Then, download the nunchaku models from `Hugging Face <hf_nunchaku_>`_ or `ModelScope <ms_nunchaku_>`_.
 
 .. note::
 
@@ -41,9 +42,9 @@ Step 3: Run ComfyUI
 -------------------
 
 To start ComfyUI, navigate to its root directory and run ``python main.py``.
-If you are using ``comfy-cli``, simply run ``comfy launch``.
+If you are using `comfy-cli <github_comfy-cli_>`_, simply run ``comfy launch``.
 
 Step 4: Select the Nunchaku Workflow
 ------------------------------------
 
-Choose one of the Nunchaku workflows (workflows that start with ``nunchaku-``) to get started.
+Choose one of the Nunchaku workflows to get started. See :doc:`../workflows/toc` for more details.

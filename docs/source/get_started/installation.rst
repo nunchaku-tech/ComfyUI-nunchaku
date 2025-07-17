@@ -13,7 +13,7 @@ You can use the following ways to install the `ComfyUI-nunchaku <github_comfyui-
 Comfy-CLI
 ~~~~~~~~~
 
-You can easily use `comfy-cli <comfy_cli_repo_>`_ to run ComfyUI with Nunchaku:
+You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku:
 
 .. code-block:: shell
 
@@ -24,7 +24,7 @@ You can easily use `comfy-cli <comfy_cli_repo_>`_ to run ComfyUI with Nunchaku:
 ComfyUI-Manager
 ~~~~~~~~~~~~~~~
 
-1. Install `ComfyUI <comfyui_repo_>`_ with
+1. Install `ComfyUI <github_comfyui_>`_ with
 
    .. code-block:: shell
 
@@ -32,7 +32,7 @@ ComfyUI-Manager
       cd ComfyUI
       pip install -r requirements.txt
 
-2. Install `ComfyUI-Manager <comfyui_manager_repo_>`_ with the following commands:
+2. Install `ComfyUI-Manager <github_comfyui-manager_>`_ with the following commands:
 
    .. code-block:: shell
 
@@ -51,7 +51,7 @@ ComfyUI-Manager
 Manual Installation
 ~~~~~~~~~~~~~~~~~~~
 
-1. Set up `ComfyUI <comfyui_repo_>`_ with the following commands:
+1. Set up `ComfyUI <github_comfyui_>`_ with the following commands:
 
    .. code-block:: shell
 
@@ -70,7 +70,6 @@ Step 2: Install the Nunchaku Backend
 ------------------------------------
 
 Starting from **ComfyUI-nunchaku v0.3.2**,
-you can easily install or update the `Nunchaku <nunchaku_repo_>`_ wheel using this
-`workflow file <comfyui_nunchaku_wheel_installation_workflow_>`_, once all dependencies are installed.
+you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
 
 Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.

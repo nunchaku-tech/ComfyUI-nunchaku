@@ -1,5 +1,5 @@
-ComfyUI\-nunchaku
-=================
+API Reference
+=============
 
 .. toctree::
    :maxdepth: 4

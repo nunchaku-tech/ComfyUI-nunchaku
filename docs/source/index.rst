@@ -10,34 +10,11 @@ ComfyUI-nunchaku Documentation
 
 .. toctree::
     :maxdepth: 1
-    :caption: Example Workflows
+    :caption: References
 
-    workflows/t2i.rst
-    workflows/kontext.rst
-    workflows/controlnet.rst
-    workflows/canny.rst
-    workflows/depth.rst
-    workflows/fill.rst
-    workflows/redux.rst
-    workflows/pulid.rst
-    workflows/tools.rst
-
-.. toctree::
-    :maxdepth: 1
-    :caption: Node Reference
-
-    nodes/diffusion_model.rst
-    nodes/lora.rst
-    nodes/text_encoder.rst
-    nodes/pulid.rst
-    nodes/tools.rst
-    nodes/preprocessors.rst
-
-.. toctree::
-    :maxdepth: 1
-    :caption: API Reference
-
-    api/ComfyUI-nunchaku.rst
+    workflows/toc.rst
+    nodes/toc.rst
+    api/toc.rst
 
 .. toctree::
     :maxdepth: 1
