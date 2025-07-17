@@ -35,7 +35,7 @@ A node for applying PuLID identity customization to a Nunchaku FLUX model accord
 
 .. seealso::
 
-    API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuFluxPuLIDApplyV2`. 
+    API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuFluxPuLIDApplyV2`.
 
     Example workflow: :ref:`nunchaku-flux.1-dev-pulid-json`.
 
@@ -81,7 +81,7 @@ A node for loading the PuLID pipeline required for identity-preserving image gen
 .. seealso::
 
     API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuPuLIDLoaderV2`.
-    
+
     Example workflow: :ref:`nunchaku-flux.1-dev-pulid-json`.
 
 
@@ -136,4 +136,3 @@ A legacy node for applying PuLID identity embeddings to a Nunchaku FLUX model.
 .. seealso::
 
     API reference: :class:`~comfyui_nunchaku.nodes.models.pulid.NunchakuPulidApply`.
-

@@ -58,5 +58,3 @@ Model Links:
 .. seealso::
 
     See nodes :ref:`nunchaku-flux-dit-loader`, :ref:`nunchaku-text-encoder-loader-v2`.
-
-

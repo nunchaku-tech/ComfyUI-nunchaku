@@ -32,4 +32,3 @@ A node for loading Nunchaku FLUX models. It manages model loading, device select
 .. seealso::
 
     See API reference: :class:`~comfyui_nunchaku.nodes.models.flux.NunchakuFluxDiTLoader`.
-
