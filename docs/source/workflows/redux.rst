@@ -9,7 +9,7 @@ FLUX Redux
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-redux-dev.png
     :alt: nunchaku-flux.1-redux-dev.json
 
-A workflow of using FLUX.1-Redux-dev with Nunchaku model to generate a new image from a reference image.
+A workflow of using FLUX.1-Redux-dev with Nunchaku to generate a new image from a reference image.
 
 **Links:**
 
