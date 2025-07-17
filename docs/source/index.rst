@@ -12,8 +12,8 @@ ComfyUI-nunchaku Documentation
     :maxdepth: 1
     :caption: Example Workflows
 
+    workflows/t2i.rst
     workflows/tools.rst
-    workflows/flux1.rst
 
 .. toctree::
     :maxdepth: 1

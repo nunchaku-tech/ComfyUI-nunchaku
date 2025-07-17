@@ -47,7 +47,7 @@ Nunchaku Text Encoder Loader (Deprecated)
 -----------------------------------------
 
 .. warning::
-    This node is deprecated and will be removed in v0.4. Please use :ref:`nunchaku-text-encoder-loader-v2` instead.
+    This node is deprecated and will be removed in December 2025. Please use :ref:`nunchaku-text-encoder-loader-v2` instead.
 
 A legacy node for loading Nunchaku text encoders with 4-bit T5 support.
 
