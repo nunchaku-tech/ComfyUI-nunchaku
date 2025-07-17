@@ -17,6 +17,9 @@ Image-to-image workflow for style transfer using depth detection with the Nuncha
   (Place in ``models/diffusion_models``)
 - Example input image: :download:`logo.png <https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/test_data/logo.png>`
 
+.. note::
+    You need to install https://github.com/Fannovel16/comfyui_controlnet_aux to use this workflow.
+
 .. seealso::
     See node :ref:`nunchaku-flux-dit-loader`.
 
@@ -37,6 +40,9 @@ Image-to-image workflow for style transfer using depth detection with the Nuncha
 - FLUX.1-Depth-dev LoRA: :download:`Hugging Face <https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev-lora>`
   (Place in ``models/loras``)
 - Example input image: :download:`logo.png <https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/test_data/logo.png>`
+
+.. note::
+    You need to install https://github.com/Fannovel16/comfyui_controlnet_aux to use this workflow.
 
 .. seealso::
     See nodes :ref:`nunchaku-flux-dit-loader`, :ref:`nunchaku-flux-lora-loader`.

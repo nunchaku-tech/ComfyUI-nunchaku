@@ -17,6 +17,9 @@ A workflow of inpainting the image with the prompt using Nunchaku FLUX.1-Fill-de
   (Place in ``models/diffusion_models``)
 - Example input image: :download:`strawberry.png <https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/test_data/strawberry.png>`
 
+.. note::
+    You need to install https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy to use this workflow.
+
 .. seealso::
     See node :ref:`nunchaku-flux-dit-loader`.
 
@@ -37,6 +40,9 @@ A workflow of removing an object from the image using Nunchaku FLUX.1-Fill-dev m
 - Removal LoRA: :download:`Hugging Face <https://huggingface.co/lrzjason/ObjectRemovalFluxFill/blob/main/removal_timestep_alpha-2-1740.safetensors>`
   (Place in ``models/loras``)
 - Example input image: :download:`removal.png <https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/test_data/removal.png>`
+
+.. note::
+    You need to install https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy to use this workflow.
 
 .. seealso::
     See node :ref:`nunchaku-flux-dit-loader`.
