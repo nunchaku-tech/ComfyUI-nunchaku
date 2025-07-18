@@ -97,12 +97,12 @@ jobs:
           pip install ninja wheel diffusers==0.33.1 transformers==4.51 accelerate==1.7 sentencepiece==0.2 protobuf==6.31 huggingface_hub==0.31
           pwd
           cd ..
-          git clone -b dev https://github.com/mit-han-lab/nunchaku.git
+          git clone https://github.com/nunchaku-tech/nunchaku.git
           cd nunchaku
           git log -1 --oneline
           git submodule init
           git submodule update
-          NUNCHAKU_INSTALL_MODE=ALL python setup.py develop
+          python setup.py develop
       - name: Install ComfyUI and set up test environment
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
