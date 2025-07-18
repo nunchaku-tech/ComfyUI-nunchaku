@@ -35,4 +35,4 @@ Check out `DeepCompressor <github_deepcompressor_>`_ for the quantization librar
     :maxdepth: 1
     :caption: Other Resources
 
-    faq.rst
+    developer/contribution_guide.rst

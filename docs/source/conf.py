@@ -84,3 +84,5 @@ extlinks = {
 intersphinx_mapping = {
     "nunchaku": ("https://nunchaku.tech/docs/nunchaku", None),
 }
+
+html_favicon = '_static/nunchaku.ico'
