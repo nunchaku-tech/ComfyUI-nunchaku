@@ -52,7 +52,7 @@ def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: f
 
     # lpips metric
     ref_image_url = (
-        f"https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/ref_images/"
+        f"https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/ComfyUI-nunchaku/ref_images/"
         f"{get_precision()}/{script_name.replace('.py', '.png')}"
     )
     ref_image = load_image(ref_image_url).convert("RGB")
