@@ -113,6 +113,7 @@ To add a test case:
       :emphasize-lines: 7, 120, 149, 153, 195-200, 204
 
    Key changes from the generated script:
+
    - Pass precision to the main function (see lines 7, 120, 153, 204; use :func:`~nunchaku:nunchaku.utils.get_precision`).
    - Set a fixed random seed (line 149).
    - Save the output image path to ``image_path.txt`` (lines 195-200).
@@ -140,10 +141,13 @@ To add a test case:
 
    **How to determine the expected values:**
 
-   - *CLIP IQA*: Run your script several times (e.g., 5 runs) and use the lowest CLIP IQA score as the expected value.
-   - *LPIPS and PSNR*: These metrics compare your generated image to a reference image. You can run your script multiple times, use the first generated image as the reference, and then set the highest observed LPIPS and PSNR values as the expected thresholds.
+   - **CLIP IQA**: Run your script several times (e.g., 5 runs) and use the lowest CLIP IQA score as the expected value.
+   - **LPIPS and PSNR**: These metrics compare your generated image to a reference image.
+     You can run your script multiple times (e.g., 5 runs), use the first generated image as the reference,
+     and then set the highest observed LPIPS and PSNR values as the expected thresholds.
 
-   After determining your reference image, upload it to our `Hugging Face dataset <https://huggingface.co/datasets/nunchaku-tech/test-data/tree/main/ComfyUI-nunchaku/ref_images>`__. Be sure to upload the image to both the ``int4`` and ``fp4`` directories to support all test configurations.
+   After determining your reference image, upload it to our `Hugging Face dataset <https://huggingface.co/datasets/nunchaku-tech/test-data/tree/main/ComfyUI-nunchaku/ref_images>`__.
+   Be sure to upload the image to both the ``int4`` and ``fp4`` directories to support all test configurations.
 
 6. **Add Test Data Links**
 

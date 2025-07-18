@@ -1,7 +1,7 @@
 ComfyUI-nunchaku Documentation
 ==============================
 
-This documentation is for the https://github.com/nunchaku-tech/ComfyUI-nunchaku.
+This is the documentation for https://github.com/nunchaku-tech/ComfyUI-nunchaku.
 
 **Nunchaku** is a high-performance inference engine optimized for low-bit diffusion models and LLMs,
 as introduced in our paper `SVDQuant <paper_svdquant_>`_.
