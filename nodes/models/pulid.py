@@ -141,9 +141,20 @@ class NunchakuFluxPuLIDApplyV2:
         NotImplementedError
             If attn_mask is provided.
         """
-        image = image.squeeze().cpu().numpy() * 255.0
-        image = np.clip(image, 0, 255).astype(np.uint8)
-        id_embeddings, _ = pulid_pipline.get_id_embedding(image)
+        all_embeddings = []
+        for i in range(image.shape[0]):
+            single_image = image[i:i + 1].squeeze().cpu().numpy() * 255.0
+            single_image = np.clip(single_image, 0, 255).astype(np.uint8)
+
+            id_embedding, _ = pulid_pipline.get_id_embedding(single_image)
+            if id_embedding is not None:
+                all_embeddings.append(id_embedding)
+
+        if not all_embeddings:
+            logger.warning("Nunchaku PuLID: No face detected in any of the images. Skipping PuLID.")
+            return (model,)
+
+        id_embeddings = torch.mean(torch.stack(all_embeddings), dim=0)
 
         model_wrapper = model.model.diffusion_model
         assert isinstance(model_wrapper, ComfyFluxWrapper)
