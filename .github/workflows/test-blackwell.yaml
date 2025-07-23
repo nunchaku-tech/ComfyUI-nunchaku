@@ -77,15 +77,6 @@ jobs:
           which python
           echo "Setting up Python with Conda"
           conda create -n test_env python=3.12 -y
-      - name: Install dependencies
-        run: |
-          source $(conda info --base)/etc/profile.d/conda.sh
-          conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
-          which python
-          conda install -c conda-forge gxx=11 gcc=11
-          echo "Installing dependencies"
-          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-          pip install ninja wheel diffusers transformers accelerate sentencepiece protobuf huggingface_hub
       - name: Install Nunchaku
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
