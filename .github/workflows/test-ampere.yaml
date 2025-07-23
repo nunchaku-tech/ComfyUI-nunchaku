@@ -102,7 +102,7 @@ jobs:
           pwd
           cd ..
           pip install comfy-cli
-          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.44
+          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.43
           cd ComfyUI
           rm -r models
           mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_AMPERE }}
