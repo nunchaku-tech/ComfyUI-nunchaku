@@ -1,14 +1,19 @@
+"""
+This module provides nodes load and apply IP-Adapter models
+to FLUX pipelines, enabling image-based conditioning for generative models.
+"""
+
 import logging
 import os
 from typing import Any, List, Optional
 
-import folder_paths
 import torch
 from diffusers import FluxPipeline
 from torchvision import transforms
 
 from nunchaku.models.ip_adapter.diffusers_adapters import apply_IPA_on_pipe
 from nunchaku.models.ip_adapter.utils import undo_all_mods_on_transformer
+from .utils import set_extra_config_model_path
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -17,15 +22,42 @@ logger = logging.getLogger(__name__)
 
 
 class IPAFluxPipelineWrapper(FluxPipeline):
+    """
+    FluxPipeline wrapper with IP-Adapter support.
+    """
+
     @torch.no_grad()
     def get_image_embeds(
         self,
         num_images_per_prompt: int = 1,
-        ip_adapter_image: Optional[Any] = None,  # PipelineImageInput
+        ip_adapter_image: Optional[Any] = None,
         ip_adapter_image_embeds: Optional[List[torch.Tensor]] = None,
-        negative_ip_adapter_image: Optional[Any] = None,  # PipelineImageInput
+        negative_ip_adapter_image: Optional[Any] = None,
         negative_ip_adapter_image_embeds: Optional[List[torch.Tensor]] = None,
     ) -> (Optional[torch.Tensor], Optional[torch.Tensor]):
+        """
+        Compute image and negative image embeddings for IP-Adapter.
+
+        Parameters
+        ----------
+        num_images_per_prompt : int, optional
+            Number of images per prompt (default is 1).
+        ip_adapter_image : Any, optional
+            Input image for positive conditioning.
+        ip_adapter_image_embeds : list of torch.Tensor, optional
+            Precomputed positive image embeddings.
+        negative_ip_adapter_image : Any, optional
+            Input image for negative conditioning.
+        negative_ip_adapter_image_embeds : list of torch.Tensor, optional
+            Precomputed negative image embeddings.
+
+        Returns
+        -------
+        image_embeds : torch.Tensor or None
+            Positive image embeddings.
+        negative_image_embeds : torch.Tensor or None
+            Negative image embeddings.
+        """
         batch_size = 1
 
         device = self.transformer.device
@@ -53,26 +85,43 @@ class IPAFluxPipelineWrapper(FluxPipeline):
         return image_embeds, negative_image_embeds
 
 
-def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
-    models_dir_default = os.path.join(folder_paths.models_dir, models_dir_name)
-    if extra_config_models_dir_key not in folder_paths.folder_names_and_paths:
-        folder_paths.folder_names_and_paths[extra_config_models_dir_key] = (
-            [os.path.join(folder_paths.models_dir, models_dir_name)],
-            folder_paths.supported_pt_extensions,
-        )
-    else:
-        if not os.path.exists(models_dir_default):
-            os.makedirs(models_dir_default, exist_ok=True)
-        folder_paths.add_model_folder_path(extra_config_models_dir_key, models_dir_default, is_default=True)
-
-
 set_extra_config_model_path("ipadapter", "ipadapter")
 set_extra_config_model_path("clip", "clip")
 
 
 class NunchakuIPAdapterLoader:
+    """
+    Node for loading Nunchaku IP-Adapter pipelines.
+
+    Methods
+    -------
+    load(model)
+        Loads the IP-Adapter pipeline and attaches it to the given model.
+
+    Class Attributes
+    ----------------
+    INPUT_TYPES : callable
+        Returns input types for the loader.
+    RETURN_TYPES : tuple
+        Output types ("MODEL", "IPADAPTER_PIPELINE").
+    FUNCTION : str
+        Name of the function ("load").
+    CATEGORY : str
+        Category for UI integration.
+    TITLE : str
+        Title for UI integration.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Returns the input types for the loader.
+
+        Returns
+        -------
+        dict
+            Dictionary specifying required input types.
+        """
         return {
             "required": {
                 "model": ("MODEL", {"tooltip": "The nunchaku model."}),
@@ -85,6 +134,19 @@ class NunchakuIPAdapterLoader:
     TITLE = "Nunchaku IP-Adapter Loader"
 
     def load(self, model):
+        """
+        Load the IP-Adapter pipeline and attach it to the given model.
+
+        Parameters
+        ----------
+        model : object
+            The Nunchaku model to which the IP-Adapter will be attached.
+
+        Returns
+        -------
+        tuple
+            The original model and the loaded IP-Adapter pipeline.
+        """
         device = model.model.diffusion_model.model.device
         pipeline = IPAFluxPipelineWrapper.from_pretrained(
             "black-forest-labs/FLUX.1-dev", transformer=model.model.diffusion_model.model, torch_dtype=torch.bfloat16
@@ -102,8 +164,38 @@ class NunchakuIPAdapterLoader:
 
 
 class NunchakuFluxIPAdapterApply:
+    """
+    Applies the IP-Adapter to a Nunchaku model using a given image and weight.
+
+    Methods
+    -------
+    apply_ipa(model, ipadapter_pipeline, image, weight)
+        Applies the IP-Adapter to the model.
+
+    Class Attributes
+    ----------------
+    INPUT_TYPES : callable
+        Returns input types for the apply node.
+    RETURN_TYPES : tuple
+        Output types ("MODEL",).
+    FUNCTION : str
+        Name of the function ("apply_ipa").
+    CATEGORY : str
+        Category for UI integration.
+    TITLE : str
+        Title for UI integration.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Returns the input types for the apply node.
+
+        Returns
+        -------
+        dict
+            Dictionary specifying required input types.
+        """
         return {
             "required": {
                 "model": ("MODEL",),
@@ -125,6 +217,25 @@ class NunchakuFluxIPAdapterApply:
         image,
         weight: float,
     ):
+        """
+        Apply the IP-Adapter to the given model using the provided image and weight.
+
+        Parameters
+        ----------
+        model : object
+            The Nunchaku model to modify.
+        ipadapter_pipeline : IPAFluxPipelineWrapper
+            The IP-Adapter pipeline.
+        image : torch.Tensor
+            The input image tensor.
+        weight : float
+            The scale/weight for the IP-Adapter.
+
+        Returns
+        -------
+        tuple
+            The modified model.
+        """
         to_pil_transformer = transforms.ToPILImage()
         image_tensor_chw = image[0].permute(2, 0, 1)
         pil_image = to_pil_transformer(image_tensor_chw)
