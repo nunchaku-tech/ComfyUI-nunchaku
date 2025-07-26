@@ -8,6 +8,8 @@ on:
         description: 'Branch, tag, or SHA to test (default: main)'
         required: false
         default: 'main'
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
