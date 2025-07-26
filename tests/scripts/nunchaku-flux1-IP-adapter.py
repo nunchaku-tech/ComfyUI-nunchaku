@@ -1,8 +1,11 @@
 import os
 import sys
-from typing import Sequence, Mapping, Any, Union
+from typing import Any, Mapping, Sequence, Union
+
 import torch
+
 from nunchaku.utils import get_precision
+
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -71,9 +74,7 @@ def add_extra_model_paths() -> None:
     try:
         from main import load_extra_path_config
     except ImportError:
-        print(
-            "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
-        )
+        print("Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead.")
         from utils.extra_config import load_extra_path_config
 
     extra_model_paths = find_path("extra_model_paths.yaml")
@@ -95,9 +96,11 @@ def import_custom_nodes() -> None:
     creates a PromptQueue, and initializes the custom nodes.
     """
     import asyncio
+
     import execution
-    from nodes import init_extra_nodes
     import server
+
+    from nodes import init_extra_nodes
 
     # Creating a new event loop and setting it as the default loop
     loop = asyncio.new_event_loop()
@@ -117,9 +120,7 @@ from nodes import NODE_CLASS_MAPPINGS
 def main(precision: str):
     import_custom_nodes()
     with torch.inference_mode():
-        nunchakutextencoderloaderv2 = NODE_CLASS_MAPPINGS[
-            "NunchakuTextEncoderLoaderV2"
-        ]()
+        nunchakutextencoderloaderv2 = NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoaderV2"]()
         nunchakutextencoderloaderv2_51 = nunchakutextencoderloaderv2.load_text_encoder(
             model_type="flux.1",
             text_encoder1="t5xxl_fp16.safetensors",
@@ -143,9 +144,7 @@ def main(precision: str):
         randomnoise_25 = randomnoise.get_noise(noise_seed=952572216486857)
 
         emptysd3latentimage = NODE_CLASS_MAPPINGS["EmptySD3LatentImage"]()
-        emptysd3latentimage_27 = emptysd3latentimage.generate(
-            width=1024, height=1024, batch_size=1
-        )
+        emptysd3latentimage_27 = emptysd3latentimage.generate(width=1024, height=1024, batch_size=1)
 
         nunchakufluxditloader = NODE_CLASS_MAPPINGS["NunchakuFluxDiTLoader"]()
         nunchakufluxditloader_45 = nunchakufluxditloader.load_model(
@@ -191,9 +190,7 @@ def main(precision: str):
                 model=get_value_at_index(nunchakufluxipadapterapply_49, 0),
             )
 
-            fluxguidance_26 = fluxguidance.append(
-                guidance=3.5, conditioning=get_value_at_index(cliptextencode_6, 0)
-            )
+            fluxguidance_26 = fluxguidance.append(guidance=3.5, conditioning=get_value_at_index(cliptextencode_6, 0))
 
             basicguider_22 = basicguider.get_guider(
                 model=get_value_at_index(modelsamplingflux_30, 0),
@@ -220,9 +217,7 @@ def main(precision: str):
                 vae=get_value_at_index(vaeloader_10, 0),
             )
 
-            saveimage_9 = saveimage.save_images(
-                filename_prefix="ComfyUI", images=get_value_at_index(vaedecode_8, 0)
-            )
+            saveimage_9 = saveimage.save_images(filename_prefix="ComfyUI", images=get_value_at_index(vaedecode_8, 0))
 
             filename = saveimage_9["ui"]["images"][0]["filename"]
             path = os.path.join("output", filename)
