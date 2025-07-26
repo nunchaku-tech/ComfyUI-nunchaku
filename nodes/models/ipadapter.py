@@ -1,18 +1,56 @@
 import logging
 import os
+from typing import Any, List, Optional
 
 import folder_paths
 import torch
+from diffusers import FluxPipeline
 from torchvision import transforms
 
-from nunchaku.models.IP_adapter.diffusers_adapters import apply_IPA_on_pipe
-from nunchaku.models.IP_adapter.utils import undo_all_mods_on_transformer
-from nunchaku.pipeline.pipeline_flux_IPA import FluxPipelineWrapper
+from nunchaku.models.ip_adapter.diffusers_adapters import apply_IPA_on_pipe
+from nunchaku.models.ip_adapter.utils import undo_all_mods_on_transformer
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+
+class IPAFluxPipelineWrapper(FluxPipeline):
+    @torch.no_grad()
+    def get_image_embeds(
+        self,
+        num_images_per_prompt: int = 1,
+        ip_adapter_image: Optional[Any] = None,  # PipelineImageInput
+        ip_adapter_image_embeds: Optional[List[torch.Tensor]] = None,
+        negative_ip_adapter_image: Optional[Any] = None,  # PipelineImageInput
+        negative_ip_adapter_image_embeds: Optional[List[torch.Tensor]] = None,
+    ) -> (Optional[torch.Tensor], Optional[torch.Tensor]):
+        batch_size = 1
+
+        device = self.transformer.device
+
+        image_embeds = None
+        if ip_adapter_image is not None or ip_adapter_image_embeds is not None:
+            image_embeds = self.prepare_ip_adapter_image_embeds(
+                ip_adapter_image=ip_adapter_image,
+                ip_adapter_image_embeds=ip_adapter_image_embeds,
+                device=device,
+                num_images_per_prompt=batch_size * num_images_per_prompt,
+            )
+            image_embeds = self.transformer.encoder_hid_proj(image_embeds)
+
+        negative_image_embeds = None
+        if negative_ip_adapter_image is not None or negative_ip_adapter_image_embeds is not None:
+            negative_image_embeds = self.prepare_ip_adapter_image_embeds(
+                ip_adapter_image=negative_ip_adapter_image,
+                ip_adapter_image_embeds=negative_ip_adapter_image_embeds,
+                device=device,
+                num_images_per_prompt=batch_size * num_images_per_prompt,
+            )
+            negative_image_embeds = self.transformer.encoder_hid_proj(negative_image_embeds)
+
+        return image_embeds, negative_image_embeds
 
 
 def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
@@ -83,7 +121,7 @@ class NunchakuFluxIPAdapterApply:
     def apply_ipa(
         self,
         model,
-        ipadapter_pipeline: FluxPipelineWrapper,
+        ipadapter_pipeline: IPAFluxPipelineWrapper,
         image,
         weight: float,
     ):
