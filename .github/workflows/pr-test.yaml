@@ -1,69 +1,44 @@
-name: Blackwell Tests
+name: PR Tests
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
-      test_target:
-        description: 'What to test: "pr" or "branch"'
-        required: true
-        type: choice
-        options:
-          - pr
-          - branch
-      pr_number:
-        description: 'Pull Request Number (only if test_target == "pr")'
+      ref:
+        description: 'Branch, tag, or SHA to test (default: main)'
         required: false
-      branch_name:
-        description: 'Branch name (only if test_target == "branch")'
         default: 'main'
-        required: false
-#  push:
-#    branches: [ main ]
-#    paths:
-#      - "nunchaku/**"
-#      - "src/**"
-#      - "tests/**"
-#      - "examples/**"
-#  pull_request:
-#    types: [ opened, synchronize, reopened, edited ]
-#    paths:
-#      - "nunchaku/**"
-#      - "src/**"
-#      - "tests/**"
-#      - "examples/**"
-#  issue_comment:
-#    types: [ created ]
-
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
-  check-comment:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.pull_request && !github.event.pull_request.draft) }}
-    runs-on: [self-hosted, blackwell]
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
-    steps:
-      - id: check
-        run: |
-          body="${{ github.event.comment.body }}"
-          body_lower=$(echo "$body" | tr '[:upper:]' '[:lower:]')
-          if [[ "$body_lower" == "run tests" || "$body_lower" == "run test" ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          else
-            echo "should_run=false" >> $GITHUB_OUTPUT
-          fi
   run-tests:
-    runs-on: [self-hosted, blackwell]
-    needs: [check-comment]
-    if: ${{ github.event_name != 'issue_comment' || needs.check-comment.outputs.should_run == 'true' }}
+    strategy:
+      matrix:
+        gpu: ['3090', '5090']
+    runs-on:
+      - self-hosted
+      - ${{ matrix.gpu }}
+    # Only run for non-draft PRs, or for workflow_dispatch events
+    if: |
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
+      (github.event_name == 'workflow_dispatch')
     steps:
       - name: Determine ref
         id: set-ref
         run: |
-          if [[ "${{ github.event.inputs.test_target }}" == "pr" ]]; then
-            echo "ref=refs/pull/${{ github.event.inputs.pr_number }}/merge" >> $GITHUB_OUTPUT
-          else
-            echo "ref=refs/heads/${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Use the merged commit SHA for PRs
+            echo "ref=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Use github.event.inputs.ref if provided, else default to main
+            if [[ -n "${{ github.event.inputs.ref }}" ]]; then
+              echo "ref=${{ github.event.inputs.ref }}" >> $GITHUB_OUTPUT
+            else
+              echo "ref=main" >> $GITHUB_OUTPUT
+            fi
           fi
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,25 +63,27 @@ jobs:
           pip install ninja wheel diffusers==0.33.1 transformers==4.51 accelerate==1.7 sentencepiece==0.2 protobuf==6.31 huggingface_hub==0.31
           pwd
           cd ..
+          rm -rf nunchaku
           git clone https://github.com/nunchaku-tech/nunchaku.git
           cd nunchaku
           git log -1 --oneline
           git submodule init
           git submodule update
           python setup.py develop
-      - name: Install ComfyUI and set up test environment
+      - name: Install ComfyUI
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           which python
           pwd
           cd ..
+          rm -rf ComfyUI
           pip install comfy-cli
           yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.43
           cd ComfyUI
           rm -r models
-          mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }}
-          ln -s ${{ secrets.COMFYUI_MODELS_ROOT_BLACKWELL }} models
+          mkdir -p ${{ secrets.COMFYUI_MODELS_ROOT }}
+          ln -s ${{ secrets.COMFYUI_MODELS_ROOT }} models
           cp -r ../ComfyUI-nunchaku/tests nunchaku_tests
           pip install -r nunchaku_tests/requirements.txt
           cd custom_nodes
@@ -126,12 +103,8 @@ jobs:
           pwd
           python nunchaku_tests/scripts/nunchaku-flux1-dev.py
           pytest -v nunchaku_tests/
-  clean-up:
-    if: always() && (github.event_name != 'issue_comment' || needs.check-comment.outputs.should_run == 'true')
-    needs: [run-tests]
-    runs-on: [self-hosted, blackwell]
-    steps:
-      - name: Clean up
+      - name: clean up
+        if: always()
         run: |
           cd ..
-          rm -rf *nunchaku* *ComfyUI*
+          rm -rf nunchaku ComfyUI
