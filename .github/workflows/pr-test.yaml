@@ -61,6 +61,7 @@ jobs:
           pip install ninja wheel diffusers==0.33.1 transformers==4.51 accelerate==1.7 sentencepiece==0.2 protobuf==6.31 huggingface_hub==0.31
           pwd
           cd ..
+          rm -rf nunchaku
           git clone https://github.com/nunchaku-tech/nunchaku.git
           cd nunchaku
           git log -1 --oneline
@@ -74,6 +75,7 @@ jobs:
           which python
           pwd
           cd ..
+          rm -rf ComfyUI
           pip install comfy-cli
           yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.43
           cd ComfyUI
@@ -103,4 +105,4 @@ jobs:
         if: always()
         run: |
           cd ..
-          rm -rf ComfyUI ComfyUI-nunchaku
+          rm -rf nunchaku ComfyUI
