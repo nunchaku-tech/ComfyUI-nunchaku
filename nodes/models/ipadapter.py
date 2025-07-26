@@ -13,6 +13,7 @@ from torchvision import transforms
 
 from nunchaku.models.ip_adapter.diffusers_adapters import apply_IPA_on_pipe
 from nunchaku.models.ip_adapter.utils import undo_all_mods_on_transformer
+
 from .utils import set_extra_config_model_path
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -93,34 +94,20 @@ class NunchakuIPAdapterLoader:
     """
     Node for loading Nunchaku IP-Adapter pipelines.
 
-    Methods
-    -------
-    load(model)
-        Loads the IP-Adapter pipeline and attaches it to the given model.
-
-    Class Attributes
-    ----------------
-    INPUT_TYPES : callable
-        Returns input types for the loader.
-    RETURN_TYPES : tuple
-        Output types ("MODEL", "IPADAPTER_PIPELINE").
-    FUNCTION : str
-        Name of the function ("load").
-    CATEGORY : str
-        Category for UI integration.
-    TITLE : str
-        Title for UI integration.
+    .. warning::
+        This node will automatically download the IP-Adapter and associated CLIP models from Hugging Face.
+        Custom model paths are not supported for now.
     """
 
     @classmethod
     def INPUT_TYPES(s):
         """
-        Returns the input types for the loader.
+        Defines the input types and tooltips for the node.
 
         Returns
         -------
         dict
-            Dictionary specifying required input types.
+            A dictionary specifying the required inputs and their descriptions for the node interface.
         """
         return {
             "required": {
@@ -141,6 +128,7 @@ class NunchakuIPAdapterLoader:
         ----------
         model : object
             The Nunchaku model to which the IP-Adapter will be attached.
+            It should be loaded with :class:`~comfyui_nunchaku.nodes.models.flux.NunchakuFluxDiTLoader`.
 
         Returns
         -------
@@ -157,44 +145,23 @@ class NunchakuIPAdapterLoader:
             weight_name="ip_adapter.safetensors",
             image_encoder_pretrained_model_name_or_path="openai/clip-vit-large-patch14",
         )
-        return (
-            model,
-            pipeline,
-        )
+        return (model, pipeline)
 
 
 class NunchakuFluxIPAdapterApply:
     """
-    Applies the IP-Adapter to a Nunchaku model using a given image and weight.
-
-    Methods
-    -------
-    apply_ipa(model, ipadapter_pipeline, image, weight)
-        Applies the IP-Adapter to the model.
-
-    Class Attributes
-    ----------------
-    INPUT_TYPES : callable
-        Returns input types for the apply node.
-    RETURN_TYPES : tuple
-        Output types ("MODEL",).
-    FUNCTION : str
-        Name of the function ("apply_ipa").
-    CATEGORY : str
-        Category for UI integration.
-    TITLE : str
-        Title for UI integration.
+    Node for applying IP-Adapter to a Nunchaku model using a given image and weight.
     """
 
     @classmethod
     def INPUT_TYPES(s):
         """
-        Returns the input types for the apply node.
+        Defines the input types and tooltips for the node.
 
         Returns
         -------
         dict
-            Dictionary specifying required input types.
+            A dictionary specifying the required inputs and their descriptions for the node interface.
         """
         return {
             "required": {

@@ -12,4 +12,5 @@ Example Workflows
     canny.rst
     depth.rst
     fill.rst
+    ipadapter.rst
     tools.rst

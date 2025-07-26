@@ -8,5 +8,6 @@ Node Reference
     lora.rst
     text_encoder.rst
     pulid.rst
+    ipadapter.rst
     tools.rst
     preprocessors.rst

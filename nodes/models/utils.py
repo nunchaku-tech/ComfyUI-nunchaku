@@ -2,9 +2,10 @@ import os
 
 import folder_paths
 
+
 def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
     """
-    Register an extra model directory (e.g.,`pulid`, `insightface`, `facexlib`) with ComfyUI's folder_paths.
+    Register an extra model directory (e.g., ``pulid``, ``insightface``, ``facexlib``) with ComfyUI's folder_paths.
 
     Parameters
     ----------
