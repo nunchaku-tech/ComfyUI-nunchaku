@@ -1,3 +1,9 @@
+"""
+This module provides a wrapper for the :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel`,
+enabling integration with ComfyUI forward,
+LoRA composition, and advanced caching strategies.
+"""
+
 from typing import Callable
 
 import torch
@@ -12,6 +18,41 @@ from nunchaku.utils import load_state_dict_in_safetensors
 
 
 class ComfyFluxWrapper(nn.Module):
+    """
+    Wrapper for :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel`
+    to support ComfyUI workflows, LoRA composition, and caching.
+
+    Parameters
+    ----------
+    model : :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel`
+        The underlying Nunchaku model to wrap.
+    config : dict
+        Model configuration dictionary.
+    pulid_pipeline : :class:`~nunchaku.pipeline.pipeline_flux_pulid.PuLIDPipeline`, optional
+        Optional pipeline for Pulid integration.
+    customized_forward : Callable, optional
+        Optional custom forward function.
+    forward_kwargs : dict, optional
+        Additional keyword arguments for the forward pass.
+
+    Attributes
+    ----------
+    model : :class:`~nunchaku.models.transformers.transformer_flux.NunchakuFluxTransformer2dModel`
+        The wrapped model.
+    dtype : torch.dtype
+        Data type of the model parameters.
+    config : dict
+        Model configuration.
+    loras : list
+        List of LoRA metadata for composition.
+    pulid_pipeline : :class:`~nunchaku.pipeline.pipeline_flux_pulid.PuLIDPipeline` or None
+        Pulid pipeline if provided.
+    customized_forward : Callable or None
+        Custom forward function if provided.
+    forward_kwargs : dict
+        Additional arguments for the forward pass.
+    """
+
     def __init__(
         self,
         model: NunchakuFluxTransformer2dModel,
@@ -34,6 +75,29 @@ class ComfyFluxWrapper(nn.Module):
         self._cache_context = None
 
     def process_img(self, x, index=0, h_offset=0, w_offset=0):
+        """
+        Preprocess an input image tensor for the model.
+
+        Pads and rearranges the image into patches and generates corresponding image IDs.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image tensor of shape (batch, channels, height, width).
+        index : int, optional
+            Index for image ID encoding.
+        h_offset : int, optional
+            Height offset for patch IDs.
+        w_offset : int, optional
+            Width offset for patch IDs.
+
+        Returns
+        -------
+        img : torch.Tensor
+            Rearranged image tensor of shape (batch, num_patches, patch_dim).
+        img_ids : torch.Tensor
+            Image ID tensor of shape (batch, num_patches, 3).
+        """
         bs, c, h, w = x.shape
         patch_size = self.config.get("patch_size", 2)
         x = pad_to_patch_size(x, (patch_size, patch_size))
@@ -66,6 +130,35 @@ class ComfyFluxWrapper(nn.Module):
         transformer_options={},
         **kwargs,
     ):
+        """
+        Forward pass for the wrapped model.
+
+        Handles LoRA composition, caching, PuLID integration, and reference latents.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image tensor.
+        timestep : float or torch.Tensor
+            Diffusion timestep.
+        context : torch.Tensor
+            Context tensor (e.g., text embeddings).
+        y : torch.Tensor
+            Pooled projections or additional conditioning.
+        guidance : torch.Tensor
+            Guidance embedding or value.
+        control : dict, optional
+            ControlNet input and output samples.
+        transformer_options : dict, optional
+            Additional transformer options.
+        **kwargs
+            Additional keyword arguments, e.g., 'ref_latents'.
+
+        Returns
+        -------
+        out : torch.Tensor
+            Output tensor of the same spatial size as the input.
+        """
         if isinstance(timestep, torch.Tensor):
             if timestep.numel() == 1:
                 timestep_float = timestep.item()

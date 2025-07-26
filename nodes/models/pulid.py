@@ -1,5 +1,10 @@
 """
-Adapted from https://github.com/lldacing/ComfyUI_PuLID_Flux_ll
+This module provides nodes and utilities for integrating the Nunchaku PuLID pipeline
+with ComfyUI, enabling face restoration and enhancement using PuLID and related models.
+
+.. note::
+
+    Adapted from: https://github.com/lldacing/ComfyUI_PuLID_Flux_ll
 """
 
 import copy
@@ -27,6 +32,16 @@ logger = logging.getLogger(__name__)
 
 
 def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
+    """
+    Register an extra model directory (`pulid`, `insightface`, `facexlib`) with ComfyUI's folder_paths.
+
+    Parameters
+    ----------
+    extra_config_models_dir_key : str
+        The key to register the model directory under.
+    models_dir_name : str
+        The name of the subdirectory to use for models.
+    """
     models_dir_default = os.path.join(folder_paths.models_dir, models_dir_name)
     if extra_config_models_dir_key not in folder_paths.folder_names_and_paths:
         folder_paths.folder_names_and_paths[extra_config_models_dir_key] = (
@@ -44,81 +59,21 @@ set_extra_config_model_path("insightface", "insightface")
 set_extra_config_model_path("facexlib", "facexlib")
 
 
-class NunchakuPulidApply:
-    def __init__(self):
-        self.pulid_device = "cuda"
-        self.weight_dtype = torch.bfloat16
-        self.onnx_provider = "gpu"
-        self.pretrained_model = None
-
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "pulid": ("PULID", {"tooltip": "from Nunchaku Pulid Loader"}),
-                "image": ("IMAGE", {"tooltip": "The image to encode"}),
-                "model": ("MODEL", {"tooltip": "The nunchaku model."}),
-                "ip_weight": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01, "tooltip": "ip_weight"}),
-            }
-        }
-
-    RETURN_TYPES = ("MODEL",)
-    FUNCTION = "apply"
-    CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku Pulid Apply (Deprecated)"
-
-    def apply(self, pulid, image, model, ip_weight):
-        logger.warning(
-            'This node is deprecated and will be removed in the v0.5.0. Directly use "Nunchaku FLUX PuLID Apply" instead.'
-        )
-
-        image = image.squeeze().cpu().numpy() * 255.0
-        image = np.clip(image, 0, 255).astype(np.uint8)
-        id_embeddings, _ = pulid.get_id_embedding(image)
-        model.model.diffusion_model.model.forward = MethodType(
-            partial(pulid_forward, id_embeddings=id_embeddings, id_weight=ip_weight), model.model.diffusion_model.model
-        )
-        return (model,)
-
-
-class NunchakuPulidLoader:
-    def __init__(self):
-        self.pulid_device = "cuda"
-        self.weight_dtype = torch.bfloat16
-        self.onnx_provider = "gpu"
-        self.pretrained_model = None
-
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "model": ("MODEL", {"tooltip": "The nunchaku model."}),
-            }
-        }
-
-    RETURN_TYPES = ("MODEL", "PULID")
-    FUNCTION = "load"
-    CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku Pulid Loader (Deprecated)"
-
-    def load(self, model):
-        logger.warning(
-            'This node is deprecated and will be removed in the v0.5.0. Directly use "Nunchaku FLUX PuLID Apply" instead.'
-        )
-        pulid_model = PuLIDPipeline(
-            dit=model.model.diffusion_model.model,
-            device=self.pulid_device,
-            weight_dtype=self.weight_dtype,
-            onnx_provider=self.onnx_provider,
-        )
-        pulid_model.load_pretrain(self.pretrained_model)
-
-        return (model, pulid_model)
-
-
 class NunchakuFluxPuLIDApplyV2:
+    """
+    Node for applying PuLID to a Nunchaku FLUX model.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         return {
             "required": {
                 "model": ("MODEL",),
@@ -152,6 +107,40 @@ class NunchakuFluxPuLIDApplyV2:
         options=None,
         unique_id=None,
     ):
+        """
+        Apply PuLID ID customization according to the given image to the model.
+
+        Parameters
+        ----------
+        model : object
+            The Nunchaku FLUX model to modify.
+        pulid_pipline : :class:`~nunchaku.pipeline.pipeline_flux_pulid.PuLIDPipeline`
+            The PuLID pipeline instance.
+        image : np.ndarray or torch.Tensor
+            The input image for identity embedding extraction.
+        weight : float
+            The strength of the identity guidance.
+        start_at : float
+            The starting timestep for applying the effect.
+        end_at : float
+            The ending timestep for applying the effect.
+        attn_mask : optional
+            Not supported for now.
+        options : optional
+            Additional options (unused).
+        unique_id : optional
+            Unique identifier (unused).
+
+        Returns
+        -------
+        tuple
+            A tuple containing the modified model.
+
+        Raises
+        ------
+        NotImplementedError
+            If attn_mask is provided.
+        """
         image = image.squeeze().cpu().numpy() * 255.0
         image = np.clip(image, 0, 255).astype(np.uint8)
         id_embeddings, _ = pulid_pipline.get_id_embedding(image)
@@ -179,8 +168,23 @@ class NunchakuFluxPuLIDApplyV2:
 
 
 class NunchakuPuLIDLoaderV2:
+    """
+    Node for loading the PuLID pipeline.
+
+    This node loads the PuLID model, EVA CLIP model, and required face libraries, and
+    returns both the original model and a ready-to-use PuLID pipeline.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         pulid_files = folder_paths.get_filename_list("pulid")
         clip_files = folder_paths.get_filename_list("clip")
         return {
@@ -198,6 +202,25 @@ class NunchakuPuLIDLoaderV2:
     TITLE = "Nunchaku PuLID Loader V2"
 
     def load(self, model, pulid_file: str, eva_clip_file: str, insight_face_provider: str):
+        """
+        Load the PuLID pipeline and associate it with the given Nunchaku FLUX model.
+
+        Parameters
+        ----------
+        model : object
+            The Nunchaku FLUX model to use.
+        pulid_file : str
+            Path to the PuLID model file.
+        eva_clip_file : str
+            Path to the EVA CLIP model file.
+        insight_face_provider : str
+            ONNX provider for InsightFace ("gpu" or "cpu").
+
+        Returns
+        -------
+        tuple
+            (model, pulid_pipeline)
+        """
         model_wrapper = model.model.diffusion_model
         assert isinstance(model_wrapper, ComfyFluxWrapper)
         transformer = model_wrapper.model
@@ -222,3 +245,177 @@ class NunchakuPuLIDLoaderV2:
         )
 
         return (model, pulid_pipline)
+
+
+class NunchakuPulidApply:
+    """
+    Deprecated node for applying PuLID to a Nunchaku FLUX model.
+
+    Attributes
+    ----------
+    pulid_device : str
+        The device to use for PuLID inference (default: "cuda").
+    weight_dtype : torch.dtype
+        The data type for model weights (default: torch.bfloat16).
+    onnx_provider : str
+        The ONNX provider for InsightFace ("gpu" or "cpu", default: "gpu").
+    pretrained_model : object or None
+        The loaded PuLID model, if any.
+
+    .. warning::
+        This node is deprecated and will be removed in December 2025.
+        Please use :class:`NunchakuFluxPuLIDApplyV2` instead.
+    """
+
+    def __init__(self):
+        self.pulid_device = "cuda"
+        self.weight_dtype = torch.bfloat16
+        self.onnx_provider = "gpu"
+        self.pretrained_model = None
+
+    @classmethod
+    def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
+        return {
+            "required": {
+                "pulid": ("PULID", {"tooltip": "from Nunchaku Pulid Loader"}),
+                "image": ("IMAGE", {"tooltip": "The image to encode"}),
+                "model": ("MODEL", {"tooltip": "The nunchaku model."}),
+                "ip_weight": (
+                    "FLOAT",
+                    {
+                        "default": 1.0,
+                        "min": 0.0,
+                        "max": 2.0,
+                        "step": 0.01,
+                        "tooltip": "ip_weight",
+                    },
+                ),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "apply"
+    CATEGORY = "Nunchaku"
+    TITLE = "Nunchaku Pulid Apply (Deprecated)"
+
+    def apply(self, pulid, image, model, ip_weight):
+        """
+        Apply PuLID identity embeddings to the given Nunchaku FLUX model.
+
+        Parameters
+        ----------
+        pulid : object
+            The PuLID pipeline instance.
+        image : torch.Tensor
+            The image to encode for identity.
+        model : object
+            The Nunchaku FLUX model.
+        ip_weight : float
+            The weight for the identity embedding.
+
+        Returns
+        -------
+        tuple
+            The updated model with PuLID applied.
+        """
+        logger.warning(
+            'This node is deprecated and will be removed in December 2025. Directly use "Nunchaku FLUX PuLID Apply V2" instead.'
+        )
+
+        image = image.squeeze().cpu().numpy() * 255.0
+        image = np.clip(image, 0, 255).astype(np.uint8)
+        id_embeddings, _ = pulid.get_id_embedding(image)
+        model.model.diffusion_model.model.forward = MethodType(
+            partial(pulid_forward, id_embeddings=id_embeddings, id_weight=ip_weight), model.model.diffusion_model.model
+        )
+        return (model,)
+
+
+class NunchakuPulidLoader:
+    """
+    Deprecated node for loading the PuLID pipeline for a Nunchaku FLUX model.
+
+    .. warning::
+        This node is deprecated and will be removed in December 2025.
+        Use :class:`NunchakuPuLIDLoaderV2` instead.
+
+    Attributes
+    ----------
+    pulid_device : str
+        Device to load the PuLID pipeline on (default: "cuda").
+    weight_dtype : torch.dtype
+        Data type for model weights (default: torch.bfloat16).
+    onnx_provider : str
+        ONNX provider to use (default: "gpu").
+    pretrained_model : str or None
+        Path to the pretrained PuLID model, if any.
+    """
+
+    def __init__(self):
+        """
+        Initialize the loader with default device, dtype, and ONNX provider.
+        """
+        self.pulid_device = "cuda"
+        self.weight_dtype = torch.bfloat16
+        self.onnx_provider = "gpu"
+        self.pretrained_model = None
+
+    @classmethod
+    def INPUT_TYPES(s):
+        """
+        Returns the required input types for this node.
+
+        Returns
+        -------
+        dict
+            Dictionary specifying required inputs.
+        """
+        return {
+            "required": {
+                "model": ("MODEL", {"tooltip": "The nunchaku model."}),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL", "PULID")
+    FUNCTION = "load"
+    CATEGORY = "Nunchaku"
+    TITLE = "Nunchaku Pulid Loader (Deprecated)"
+
+    def load(self, model):
+        """
+        Load the PuLID pipeline for the given Nunchaku FLUX model.
+
+        .. warning::
+            This node is deprecated and will be removed in December 2025.
+            Use :class:`NunchakuPuLIDLoaderV2` instead.
+
+        Parameters
+        ----------
+        model : object
+            The Nunchaku FLUX model.
+
+        Returns
+        -------
+        tuple
+            The input model and the loaded PuLID pipeline.
+        """
+        logger.warning(
+            'This node is deprecated and will be removed in December 2025. Directly use "Nunchaku PuLID Loader V22 instead.'
+        )
+        pulid_model = PuLIDPipeline(
+            dit=model.model.diffusion_model.model,
+            device=self.pulid_device,
+            weight_dtype=self.weight_dtype,
+            onnx_provider=self.onnx_provider,
+        )
+        pulid_model.load_pretrain(self.pretrained_model)
+
+        return (model, pulid_model)

@@ -1,5 +1,5 @@
 images:
-  - base_url: "https://huggingface.co/mit-han-lab/nunchaku-artifacts/resolve/main/ComfyUI-nunchaku/test_data/{filename}"
+  - base_url: "https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/ComfyUI-nunchaku/inputs/{filename}"
     files:
       - logo.png
       - robot.png

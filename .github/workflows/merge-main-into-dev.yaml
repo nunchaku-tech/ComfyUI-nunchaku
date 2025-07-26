@@ -1,6 +1,5 @@
 name: Merge main into dev
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,7 +8,7 @@ permissions:
 jobs:
   merge-main-into-dev:
     runs-on: ubuntu-latest
-    if: github.repository == 'mit-han-lab/ComfyUI-nunchaku'
+    if: github.repository == 'nunchaku-tech/ComfyUI-nunchaku'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4

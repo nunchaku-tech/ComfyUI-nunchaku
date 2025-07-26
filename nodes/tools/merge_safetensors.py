@@ -1,3 +1,8 @@
+"""
+This module provides a utility node for merging Nunchaku model folders (deprecated format)
+into a single safetensors file.
+"""
+
 from pathlib import Path
 
 import folder_paths
@@ -7,8 +12,36 @@ from nunchaku.merge_safetensors import merge_safetensors
 
 
 class NunchakuModelMerger:
+    """
+    Node for merging a Nunchaku FLUX.1 model folder into a single safetensors file.
+
+    This node scans available model folders, merges the selected folder using
+    `nunchaku.merge_safetensors.merge_safetensors`, and saves the result as a safetensors file.
+
+    Attributes
+    ----------
+    RETURN_TYPES : tuple of str
+        The return types of the node ("STRING",).
+    RETURN_NAMES : tuple of str
+        The names of the returned values ("status",).
+    FUNCTION : str
+        The function to execute ("run").
+    CATEGORY : str
+        The node category ("Nunchaku").
+    TITLE : str
+        The display title of the node.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Returns the input types required for the node.
+
+        Returns
+        -------
+        dict
+            Dictionary specifying required inputs: model_folder and save_name.
+        """
         prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
         local_folders = set()
         for prefix in prefixes:
@@ -30,9 +63,24 @@ class NunchakuModelMerger:
     RETURN_NAMES = ("status",)
     FUNCTION = "run"
     CATEGORY = "Nunchaku"
-    TITLE = "Merge Nunchaku Model"
+    TITLE = "Nunchaku Model Merger"
 
     def run(self, model_folder: str, save_name: str):
+        """
+        Merge the specified Nunchaku model folder and save as a safetensors file.
+
+        Parameters
+        ----------
+        model_folder : str
+            Name of the Nunchaku FLUX.1 model folder to merge.
+        save_name : str
+            Filename to save the merged model as.
+
+        Returns
+        -------
+        tuple of str
+            Status message indicating the result of the merge operation.
+        """
         prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
         model_path = None
         for prefix in prefixes:

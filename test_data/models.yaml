@@ -28,41 +28,41 @@ models:
     filename: "removal_timestep_alpha-2-1740.safetensors"
     sub_folder: "loras"
     new_filename: "removalV2.safetensors"
-  - repo_id: "mit-han-lab/nunchaku-test-models"
+  - repo_id: "nunchaku-tech/nunchaku-test-models"
     filename: "hand_drawn_game.safetensors"
     sub_folder: "loras"
     new_filename: null
   # nunchaku text encoders
-  - repo_id: "mit-han-lab/nunchaku-t5"
+  - repo_id: "nunchaku-tech/nunchaku-t5"
     filename: "awq-int4-flux.1-t5xxl.safetensors"
     sub_folder: "text_encoders"
     new_filename: null
   # nunchaku diffusion models
-  - repo_id: "mit-han-lab/nunchaku-flux.1-dev"
+  - repo_id: "nunchaku-tech/nunchaku-flux.1-dev"
     filename: "svdq-{precision}_r32-flux.1-dev.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
-  - repo_id: "mit-han-lab/nunchaku-flux.1-schnell"
+  - repo_id: "nunchaku-tech/nunchaku-flux.1-schnell"
     filename: "svdq-{precision}_r32-flux.1-schnell.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
-  - repo_id: "mit-han-lab/nunchaku-flux.1-depth-dev"
+  - repo_id: "nunchaku-tech/nunchaku-flux.1-depth-dev"
     filename: "svdq-{precision}_r32-flux.1-depth-dev.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
-  - repo_id: "mit-han-lab/nunchaku-flux.1-canny-dev"
+  - repo_id: "nunchaku-tech/nunchaku-flux.1-canny-dev"
     filename: "svdq-{precision}_r32-flux.1-canny-dev.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
-  - repo_id: "mit-han-lab/nunchaku-flux.1-fill-dev"
+  - repo_id: "nunchaku-tech/nunchaku-flux.1-fill-dev"
     filename: "svdq-{precision}_r32-flux.1-fill-dev.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
-  - repo_id: "mit-han-lab/nunchaku-shuttle-jaguar"
+  - repo_id: "nunchaku-tech/nunchaku-shuttle-jaguar"
     filename: "svdq-{precision}_r32-shuttle-jaguar.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
-  - repo_id: "mit-han-lab/nunchaku-flux.1-kontext-dev"
+  - repo_id: "nunchaku-tech/nunchaku-flux.1-kontext-dev"
     filename: "svdq-{precision}_r32-flux.1-kontext-dev.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null

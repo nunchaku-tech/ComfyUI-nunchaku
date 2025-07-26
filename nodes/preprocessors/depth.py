@@ -1,3 +1,9 @@
+"""
+This module provides a node for depth preprocessing using
+`Depth Anything <https://huggingface.co/LiheYoung/depth-anything-large-hf>`_.
+It is now deprecated and will be removed in October 2025.
+"""
+
 import logging
 import os
 
@@ -14,8 +20,24 @@ logger = logging.getLogger(__name__)
 
 
 class FluxDepthPreprocessor:
+    """
+    Node for applying a depth preprocessor model to an input image.
+
+    .. warning::
+        This node will be deprecated in October 2025.
+        Please use the ``Depth Anything`` node in `comfyui_controlnet_aux <https://github.com/Fannovel16/comfyui_controlnet_aux>`_.
+    """
+
     @classmethod
     def INPUT_TYPES(s):
+        """
+        Defines the input types and tooltips for the node.
+
+        Returns
+        -------
+        dict
+            A dictionary specifying the required inputs and their descriptions for the node interface.
+        """
         model_paths = []
         prefix = os.path.join(folder_paths.models_dir, "checkpoints")
         local_folders = os.listdir(prefix)
@@ -40,12 +62,27 @@ class FluxDepthPreprocessor:
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "depth_preprocess"
     CATEGORY = "Nunchaku"
-    TITLE = "FLUX.1 Depth Preprocessor (Deprecated)"
+    TITLE = "FLUX Depth Preprocessor (Deprecated)"
 
     def depth_preprocess(self, image, model_path):
+        """
+        Apply the selected depth preprocessor model to the input image.
+
+        Parameters
+        ----------
+        image : np.ndarray or torch.Tensor
+            The input image to process.
+        model_path : str
+            The name of the depth preprocessor model checkpoint.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the depth map as a torch.Tensor.
+        """
         logger.warning(
-            "`FluxDepthPreprocessor` will be deprecated in v0.4. "
-            "Please use `Depth Anything` directly within native ComfyUI instead."
+            "`FLUX.1 Depth Preprocessor` is deprecated and will be removed in October 2025. "
+            "Please use `Depth Anything` in `comfyui_controlnet_aux` instead."
         )
         prefixes = folder_paths.folder_names_and_paths["checkpoints"][0]
         for prefix in prefixes:

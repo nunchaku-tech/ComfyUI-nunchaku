@@ -19,8 +19,7 @@ line-length = 120
 name = "ComfyUI-nunchaku"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/mit-han-lab/nunchaku"
 version = "0.3.3"
-license = { file = "LICENSE.txt" }
-dependencies = []
+license = { file = "LICENCE.txt" }
 requires-python = ">=3.10, <3.13"
 
 [project.urls]
@@ -31,3 +30,12 @@ Repository = "https://github.com/mit-han-lab/ComfyUI-nunchaku"
 PublisherId = "lmxyy1999"
 DisplayName = "ComfyUI-nunchaku"
 Icon = "https://raw.githubusercontent.com/mit-han-lab/nunchaku/96615bd93a1f0d2cf98039fddecfec43ce34cc96/assets/nunchaku.svg"
+
+[tool.doc8]
+max-line-length = 120
+ignore-path = ["docs/_build"]
+ignore = ["D000", "D001"]
+
+[tool.rstcheck]
+ignore_directives = ["tabs"]
+ignore_messages = ["ERROR/3", "INFO/1"]
