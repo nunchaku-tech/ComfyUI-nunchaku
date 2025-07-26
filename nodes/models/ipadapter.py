@@ -86,7 +86,7 @@ class NunchakuIPAdapterLoader:
 
     def load(self, model):
         device = model.model.diffusion_model.model.device
-        pipeline = FluxPipelineWrapper.from_pretrained(
+        pipeline = IPAFluxPipelineWrapper.from_pretrained(
             "black-forest-labs/FLUX.1-dev", transformer=model.model.diffusion_model.model, torch_dtype=torch.bfloat16
         ).to(device)
 
