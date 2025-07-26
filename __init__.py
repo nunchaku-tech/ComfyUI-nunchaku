@@ -80,9 +80,7 @@ try:
     NODE_CLASS_MAPPINGS["NunchakuFluxIPAdapterApply"] = NunchakuFluxIPAdapterApply
     NODE_CLASS_MAPPINGS["NunchakuIPAdapterLoader"] = NunchakuIPAdapterLoader
 except ImportError:
-    logger.exception(
-        "Cloned IP-Adapter nodes import failed. Make sure ipadapter_clone.py exists in the nunchaku folder."
-    )
+    logger.exception("Nodes `NunchakuFluxIPAdapterApply` and `NunchakuIPAdapterLoader` import failed:")
 
 try:
     from .nodes.tools.merge_safetensors import NunchakuModelMerger
