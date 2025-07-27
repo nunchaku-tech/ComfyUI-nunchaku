@@ -143,7 +143,7 @@ class NunchakuFluxPuLIDApplyV2:
         """
         all_embeddings = []
         for i in range(image.shape[0]):
-            single_image = image[i:i + 1].squeeze().cpu().numpy() * 255.0
+            single_image = image[i : i + 1].squeeze().cpu().numpy() * 255.0
             single_image = np.clip(single_image, 0, 255).astype(np.uint8)
 
             id_embedding, _ = pulid_pipline.get_id_embedding(single_image)
