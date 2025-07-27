@@ -123,7 +123,7 @@ def main(precision: str):
         nunchakutextencoderloaderv2 = NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoaderV2"]()
         nunchakutextencoderloaderv2_51 = nunchakutextencoderloaderv2.load_text_encoder(
             model_type="flux.1",
-            text_encoder1="t5xxl_fp16.safetensors",
+            text_encoder1="t5xxl_fp8_e4m3fn_scaled.safetensors",
             text_encoder2="clip_l.safetensors",
             t5_min_length=512,
         )
@@ -151,7 +151,7 @@ def main(precision: str):
             model_path=f"svdq-{precision}_r32-flux.1-dev.safetensors",
             cache_threshold=0.10000000000000002,
             attention="nunchaku-fp16",
-            cpu_offload="auto",
+            cpu_offload="enable",
             device_id=0,
             data_type="bfloat16",
             i2f_mode="enabled",

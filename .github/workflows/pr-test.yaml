@@ -104,8 +104,6 @@ jobs:
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           pwd
           cd ../ComfyUI
-          pwd
-          python nunchaku_tests/scripts/nunchaku-flux1-ip-adapter.py
           pytest -v nunchaku_tests/
       - name: clean up
         if: always()

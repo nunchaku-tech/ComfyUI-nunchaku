@@ -17,10 +17,11 @@ Image-based prompting workflow using `IP-Adapter <https://huggingface.co/XLabs-A
 - Workflow: :download:`nunchaku-flux.1-ip-adapter.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-ip-adapter.json>`
 - Example input image: :download:`monalisa.jpg <https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/ComfyUI-nunchaku/inputs/monalisa.jpg>`
 
-.. note::
-   This node will automatically download the IP-Adapter and associated CLIP models
-   from `Hugging Face <https://huggingface.co/XLabs-AI/flux-ip-adapter-v2>`__ to the default cache folder.
-   Custom model paths are not supported for now.
+.. warning::
+   This workflow is experimental and currently requires a large amount of VRAM.
+   It will automatically download the IP-Adapter and its associated CLIP models
+   from `Hugging Face <https://huggingface.co/XLabs-AI/flux-ip-adapter-v2>`__ to the default cache directory.
+   At this time, specifying custom model paths is not supported.
 
 .. seealso::
    See nodes :ref:`nunchaku-flux-ip-adapter-loader` and :ref:`nunchaku-flux-ip-adapter-apply`.
