@@ -26,7 +26,7 @@ jobs:
       (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
       (github.event_name == 'workflow_dispatch')
     env:
-      COMFYUI_MODELS_ROOT: "~/workspace/comfyui_models"
+      COMFYUI_MODELS_ROOT: "/home/runner/workspace/comfyui_models"
     steps:
       - name: Determine ref
         id: set-ref
@@ -54,6 +54,7 @@ jobs:
           which python
           echo "Setting up Python with Conda"
           conda create -n test_env python=3.12 -y
+          readlink -f ~/workspace/comfyui_models
       - name: Install Nunchaku
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
