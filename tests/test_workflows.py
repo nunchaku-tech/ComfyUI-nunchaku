@@ -43,7 +43,7 @@ def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: f
     torch.cuda.empty_cache()
     script_path = os.path.join(script_dir, script_name)
 
-    result = subprocess.run(["python", script_path], capture_output=True, text=True)
+    result = subprocess.run(["python", script_path])
     print(f"Running {script_path} -> Return code: {result.returncode}")
     assert result.returncode == 0, f"{script_path} failed with code {result.returncode}"
 
