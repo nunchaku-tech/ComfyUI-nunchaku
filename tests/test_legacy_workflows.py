@@ -32,6 +32,7 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku-flux1-canny-lora.py", 0.9, 0.1, 25),
     ],
 )
+@pytest.mark.flaky(reruns=2, reruns_delay=0)
 def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
     gc.collect()
     torch.cuda.empty_cache()

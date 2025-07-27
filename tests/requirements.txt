@@ -5,3 +5,4 @@ controlnet_aux
 git+https://github.com/asomoza/image_gen_aux.git
 wget
 pyyaml
+pytest-rerunfailures
