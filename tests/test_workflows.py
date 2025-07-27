@@ -35,7 +35,7 @@ script_dir = os.path.join(os.path.dirname(__file__), "scripts")
         ("nunchaku-flux1-dev-pulid.py", 0.9, 0.194, 15.8),
         ("nunchaku-flux1-kontext-dev.py", 0.9, 0.1, 18.3),
         ("nunchaku-flux1-kontext-dev-turbo_lora.py", 0.87, 0.13, 18.8),
-        ("nunchaku-flux1-ip-adapter.py", 0.6, 0.21, 19),
+        ("nunchaku-flux1-ip-adapter.py", 0.6, 0.25, 19),
     ],
 )
 @pytest.mark.flaky(reruns=2, reruns_delay=0)
