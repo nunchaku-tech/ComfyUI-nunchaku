@@ -105,7 +105,7 @@ jobs:
           pwd
           cd ../ComfyUI
           pwd
-          python nunchaku_tests/scripts/nunchaku-flux1-dev.py
+          python nunchaku_tests/scripts/nunchaku-flux1-ip-adapter.py
           pytest -v nunchaku_tests/
       - name: clean up
         if: always()
