@@ -26,8 +26,7 @@ jobs:
       (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
       (github.event_name == 'workflow_dispatch')
     env:
-      COMFYUI_MODELS_ROOT: ${{ vars.COMFYUI_MODELS_ROOT }}
-      HF_TOKEN: ${{ vars.HF_TOKEN }}
+      COMFYUI_MODELS_ROOT: "~/workspace/comfyui_models"
     steps:
       - name: Determine ref
         id: set-ref
@@ -95,8 +94,8 @@ jobs:
           pip install -r custom_nodes/ComfyUI-nunchaku/requirements.txt
           comfy node install comfyui_controlnet_aux
           comfy node install comfyui-inpainteasy
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
+          HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
+          HF_TOKEN=${{ secrets.HF_TOKEN }} python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
