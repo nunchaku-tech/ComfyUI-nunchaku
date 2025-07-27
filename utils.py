@@ -82,4 +82,4 @@ def get_plugin_version() -> str:
         return project_version
 
 
-supported_versions = ["v0.3.1"]
+supported_versions = ["v0.3.1", "v0.3.2"]
