@@ -252,16 +252,16 @@ class NunchakuFluxDiTLoader:
         if cpu_offload == "auto":
             if gpu_memory < 14336:  # 14GB threshold
                 cpu_offload_enabled = True
-                print("VRAM < 14GiB，enable CPU offload")
+                print("VRAM < 14GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                print("VRAM > 14GiB，disable CPU offload")
+                print("VRAM > 14GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
-            print("Enable CPU offload")
+            print("Enabling CPU offload")
         else:
             cpu_offload_enabled = False
-            print("Disable CPU offload")
+            print("Disabling CPU offload")
 
         if (
             self.model_path != model_path
