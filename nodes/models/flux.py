@@ -290,6 +290,7 @@ class NunchakuFluxDiTLoader:
             self.model_path = model_path
             self.device = device
             self.cpu_offload = cpu_offload_enabled
+            self.data_type = data_type
         self.transformer = apply_cache_on_transformer(
             transformer=self.transformer, residual_diff_threshold=cache_threshold
         )
