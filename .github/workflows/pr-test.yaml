@@ -54,7 +54,6 @@ jobs:
           which python
           echo "Setting up Python with Conda"
           conda create -n test_env python=3.12 -y
-          readlink -f ~/workspace/comfyui_models
       - name: Install Nunchaku
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
