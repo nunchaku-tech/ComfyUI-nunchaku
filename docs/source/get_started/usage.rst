@@ -27,11 +27,16 @@ Alternatively, use the following commands:
 
 .. code-block:: shell
 
-   huggingface-cli download comfyanonymous/flux_text_encoders clip_l.safetensors --local-dir models/text_encoders
-   huggingface-cli download comfyanonymous/flux_text_encoders t5xxl_fp16.safetensors --local-dir models/text_encoders
-   huggingface-cli download black-forest-labs/FLUX.1-schnell ae.safetensors --local-dir models/vae
+   hf download comfyanonymous/flux_text_encoders clip_l.safetensors --local-dir models/text_encoders
+   hf download comfyanonymous/flux_text_encoders t5xxl_fp16.safetensors --local-dir models/text_encoders
+   hf download black-forest-labs/FLUX.1-schnell ae.safetensors --local-dir models/vae
 
 Then, download the nunchaku models from `Hugging Face <hf_nunchaku_>`_ or `ModelScope <ms_nunchaku_>`_.
+For example, to download the Nunchaku Flux.1 dev models from Hugging Face, run:
+
+.. code-block:: shell
+
+   hf download nunchaku-tech/nunchaku-flux.1-dev svdq-int4_r32-flux.1-dev.safetensors --local-dir models/unet/
 
 .. note::
 
