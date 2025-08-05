@@ -4,6 +4,7 @@ sentencepiece
 protobuf
 huggingface_hub
 tomli
+peft>=0.15.0
 
 # PuLID dependencies
 insightface
