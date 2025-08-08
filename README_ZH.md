@@ -9,7 +9,7 @@
 <a href="README.md"><b>English</b></a> | <a href="README_ZH.md"><b>中文</b></a>
 </h3>
 
-本仓库为 [**Nunchaku**](https://github.com/nunchaku/nunchaku) 提供了 ComfyUI 插件，Nunchaku 是一个高效的 4-bit 神经网络推理引擎，采用 [SVDQuant](http://arxiv.org/abs/2411.05007) 量化方法。量化库请参考 [DeepCompressor](https://github.com/nunchaku-tech/deepcompressor)。
+本仓库为 [**Nunchaku**](https://github.com/nunchaku-tech/nunchaku) 提供了 ComfyUI 插件，Nunchaku 是一个高效的 4-bit 神经网络推理引擎，采用 [SVDQuant](http://arxiv.org/abs/2411.05007) 量化方法。量化库请参考 [DeepCompressor](https://github.com/nunchaku-tech/deepcompressor)。
 
 欢迎加入我们的用户群：[**Slack**](https://join.slack.com/t/nunchaku/shared_invite/zt-3170agzoz-NgZzWaTrEj~n2KEV3Hpl5Q)、[**Discord**](https://discord.gg/Wk6PnwX9Sm) 和 [**微信**](https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/nunchaku/assets/wechat.jpg)（详情见[这里](https://github.com/nunchaku-tech/nunchaku/issues/149)）。如有任何问题、遇到 bug 或有意贡献代码，欢迎随时与我们交流！
 
