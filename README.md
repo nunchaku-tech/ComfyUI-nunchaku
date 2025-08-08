@@ -9,7 +9,7 @@
 <a href="README.md"><b>English</b></a> | <a href="README_ZH.md"><b>中文</b></a>
 </h3>
 
-This repository provides the ComfyUI plugin for [**Nunchaku**](https://github.com/nunchaku/nunchaku), an efficient inference engine for 4-bit neural networks quantized with [SVDQuant](http://arxiv.org/abs/2411.05007). For the quantization library, check out [DeepCompressor](https://github.com/nunchaku-tech/deepcompressor).
+This repository provides the ComfyUI plugin for [**Nunchaku**](https://github.com/nunchaku-tech/nunchaku), an efficient inference engine for 4-bit neural networks quantized with [SVDQuant](http://arxiv.org/abs/2411.05007). For the quantization library, check out [DeepCompressor](https://github.com/nunchaku-tech/deepcompressor).
 
 Join our user groups on [**Slack**](https://join.slack.com/t/nunchaku/shared_invite/zt-3170agzoz-NgZzWaTrEj~n2KEV3Hpl5Q), [**Discord**](https://discord.gg/Wk6PnwX9Sm) and [**WeChat**](https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/nunchaku/assets/wechat.jpg) for discussions—details [here](https://github.com/nunchaku-tech/nunchaku/issues/149). If you have any questions, run into issues, or are interested in contributing, feel free to share your thoughts with us!
 
