@@ -73,3 +73,57 @@ Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
 
 Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
+
+Step 3: Install Radial Attention Dependencies (Optional)
+---------------------------------------------------------
+
+For advanced video generation optimization with radial attention, install the sparse attention backends:
+
+System Requirements
+~~~~~~~~~~~~~~~~~~~
+
+* **Python**: >= 3.9
+* **PyTorch**: >= 2.3.0  
+* **CUDA**: >= 12.0 (12.4+ recommended for fp8 support)
+* **GPU**: RTX 30/40/50 series, A100, H100, or compatible
+* **Additional**: ninja (for compilation)
+
+Option 1: Block-Sparse-SageAttention-2.0 (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+   git clone https://github.com/thu-ml/SpargeAttn custom_nodes/nunchaku_nodes/nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
+   # Navigate to the radial attention third-party directory
+   cd nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
+   
+   # Install build dependencies
+   pip install ninja torch torchvision transformers diffusers einops
+   
+   # Install the sparse attention backend
+   python setup.py install
+
+   cd ../../../..
+
+Option 2: Sparse_SageAttention_API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+   git clone https://github.com/jt-zhang/Sparse_SageAttention_API nodes/radial_attn/third_party/Sparse_SageAttention_API
+   # Navigate to the API directory
+   cd nodes/radial_attn/third_party/Sparse_SageAttention_API
+   
+   # Install the sparse attention API
+   python setup.py install
+
+   cd ../../../..
+Verification
+~~~~~~~~~~~~
+
+To verify radial attention is available, check the ComfyUI logs for:
+
+.. code-block:: text
+
+   RadialAttention: ✓ Available
+   MaskMap: ✓ Available
+
+If you see ``✗ Not found``, the sparse attention backends are not properly installed.
