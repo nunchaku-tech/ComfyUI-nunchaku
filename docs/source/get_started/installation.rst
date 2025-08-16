@@ -83,7 +83,7 @@ System Requirements
 ~~~~~~~~~~~~~~~~~~~
 
 * **Python**: >= 3.9
-* **PyTorch**: >= 2.3.0  
+* **PyTorch**: >= 2.3.0
 * **CUDA**: >= 12.0 (12.4+ recommended for fp8 support)
 * **GPU**: RTX 30/40/50 series, A100, H100, or compatible
 * **Additional**: ninja (for compilation)
@@ -95,10 +95,10 @@ Option 1: Block-Sparse-SageAttention-2.0 (Recommended)
    git clone https://github.com/thu-ml/SpargeAttn custom_nodes/nunchaku_nodes/nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
    # Navigate to the radial attention third-party directory
    cd nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
-   
+
    # Install build dependencies
    pip install ninja torch torchvision transformers diffusers einops
-   
+
    # Install the sparse attention backend
    python setup.py install
 
@@ -111,11 +111,12 @@ Option 2: Sparse_SageAttention_API
    git clone https://github.com/jt-zhang/Sparse_SageAttention_API nodes/radial_attn/third_party/Sparse_SageAttention_API
    # Navigate to the API directory
    cd nodes/radial_attn/third_party/Sparse_SageAttention_API
-   
+
    # Install the sparse attention API
    python setup.py install
 
    cd ../../../..
+
 Verification
 ~~~~~~~~~~~~
 

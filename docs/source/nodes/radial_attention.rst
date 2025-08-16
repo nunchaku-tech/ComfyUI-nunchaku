@@ -74,10 +74,10 @@ Radial Attention requires additional sparse attention backends:
    git clone https://github.com/thu-ml/SpargeAttn nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
    # Navigate to the third-party directory
    cd nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
-   
+
    # Install dependencies
    pip install ninja torch torchvision transformers diffusers einops
-   
+
    # Install the package
    python setup.py install
 
@@ -87,7 +87,7 @@ Radial Attention requires additional sparse attention backends:
    git clone https://github.com/jt-zhang/Sparse_SageAttention_API nodes/radial_attn/third_party/Sparse_SageAttention_API
    # Navigate to the API directory
    cd nodes/radial_attn/third_party/Sparse_SageAttention_API
-   
+
    # Install the package
    python setup.py install
 
@@ -107,7 +107,7 @@ Configuration Guide
 
 **Timestep Configuration:**
 
-* **dense_timesteps=num_inference_steps // 4**: 
+* **dense_timesteps=num_inference_steps // 4**:
   This setting applies radial attention starting from the quarter of the total inference steps, allowing for high-frequency details to be precisely captured in the initial denoising steps while optimizing later steps.
 
 Performance Optimization
