@@ -1,7 +1,6 @@
 name: Publish to Comfy registry
 on:
-  repository_dispatch:
-    types: [publish]
+  workflow_dispatch:
 jobs:
   publish-node:
     name: Publish Custom Node to registry

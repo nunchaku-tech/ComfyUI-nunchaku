@@ -7,6 +7,7 @@ images:
       - strawberry-mask.png
       - mushroom_depth.webp
       - removal.png
+      - monalisa.jpg
   - base_url: "https://github.com/ToTheBeginning/PuLID/blob/main/example_inputs/{filename}?raw=true"
     files:
       - lecun.jpg

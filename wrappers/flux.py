@@ -236,7 +236,7 @@ class ComfyFluxWrapper(nn.Module):
         if self.pulid_pipeline is not None:
             self.model.transformer_blocks[0].pulid_ca = self.pulid_pipeline.pulid_ca
 
-        if getattr(model, "_is_cached", False):
+        if getattr(model, "residual_diff_threshold_multi", 0) != 0 or getattr(model, "_is_cached", False):
             # A more robust caching strategy
             cache_invalid = False
 

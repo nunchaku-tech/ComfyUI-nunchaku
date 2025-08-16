@@ -74,6 +74,13 @@ except ImportError:
         "Nodes `NunchakuPulidApply`,`NunchakuPulidLoader`, "
         "`NunchakuPuLIDLoaderV2` and `NunchakuFluxPuLIDApplyV2` import failed:"
     )
+try:
+    from .nodes.models.ipadapter import NunchakuFluxIPAdapterApply, NunchakuIPAdapterLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuFluxIPAdapterApply"] = NunchakuFluxIPAdapterApply
+    NODE_CLASS_MAPPINGS["NunchakuIPAdapterLoader"] = NunchakuIPAdapterLoader
+except ImportError:
+    logger.exception("Nodes `NunchakuFluxIPAdapterApply` and `NunchakuIPAdapterLoader` import failed:")
 
 try:
     from .nodes.tools.merge_safetensors import NunchakuModelMerger

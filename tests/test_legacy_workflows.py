@@ -39,8 +39,11 @@ def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: f
     script_path = os.path.join(script_dir, script_name)
 
     result = subprocess.run(["python", script_path], capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Output: {result.stdout}")
+        print(f"Error: {result.stderr}")
+        assert result.returncode == 0, f"{script_path} failed with code {result.returncode}"
     print(f"Running {script_path} -> Return code: {result.returncode}")
-    assert result.returncode == 0, f"{script_path} failed with code {result.returncode}"
 
     path = open("image_path.txt", "r").read().strip()
 

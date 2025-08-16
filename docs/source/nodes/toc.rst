@@ -9,5 +9,6 @@ Node Reference
     text_encoder.rst
     pulid.rst
     radial_attention.rst
+    ipadapter.rst
     tools.rst
     preprocessors.rst

@@ -52,7 +52,6 @@ A node for loading the PuLID pipeline required for identity-preserving image gen
 **Outputs:**
 
 - **model**: PuLID injected Nunchaku FLUX model.
-
 - **pulid_pipeline**: The loaded PuLID pipeline, ready for use with PuLID Apply nodes.
 
 

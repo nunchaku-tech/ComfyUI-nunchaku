@@ -29,7 +29,7 @@ This node applies a depth estimation model to an input image to produce a corres
 
     .. code-block:: bash
 
-        huggingface-cli download LiheYoung/depth-anything-large-hf --local-dir models/checkpoints/depth-anything-large-hf
+        hf download LiheYoung/depth-anything-large-hf --local-dir models/checkpoints/depth-anything-large-hf
 
 .. seealso::
 

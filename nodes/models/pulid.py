@@ -22,6 +22,7 @@ from nunchaku.models.pulid.pulid_forward import pulid_forward
 from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
 
 from ...wrappers.flux import ComfyFluxWrapper
+from .utils import set_extra_config_model_path
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -29,29 +30,6 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 # Configure logging
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-
-def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):
-    """
-    Register an extra model directory (`pulid`, `insightface`, `facexlib`) with ComfyUI's folder_paths.
-
-    Parameters
-    ----------
-    extra_config_models_dir_key : str
-        The key to register the model directory under.
-    models_dir_name : str
-        The name of the subdirectory to use for models.
-    """
-    models_dir_default = os.path.join(folder_paths.models_dir, models_dir_name)
-    if extra_config_models_dir_key not in folder_paths.folder_names_and_paths:
-        folder_paths.folder_names_and_paths[extra_config_models_dir_key] = (
-            [os.path.join(folder_paths.models_dir, models_dir_name)],
-            folder_paths.supported_pt_extensions,
-        )
-    else:
-        if not os.path.exists(models_dir_default):
-            os.makedirs(models_dir_default, exist_ok=True)
-        folder_paths.add_model_folder_path(extra_config_models_dir_key, models_dir_default, is_default=True)
 
 
 set_extra_config_model_path("pulid", "pulid")
@@ -141,9 +119,20 @@ class NunchakuFluxPuLIDApplyV2:
         NotImplementedError
             If attn_mask is provided.
         """
-        image = image.squeeze().cpu().numpy() * 255.0
-        image = np.clip(image, 0, 255).astype(np.uint8)
-        id_embeddings, _ = pulid_pipline.get_id_embedding(image)
+        all_embeddings = []
+        for i in range(image.shape[0]):
+            single_image = image[i : i + 1].squeeze().cpu().numpy() * 255.0
+            single_image = np.clip(single_image, 0, 255).astype(np.uint8)
+
+            id_embedding, _ = pulid_pipline.get_id_embedding(single_image)
+            if id_embedding is not None:
+                all_embeddings.append(id_embedding)
+
+        if not all_embeddings:
+            logger.warning("Nunchaku PuLID: No face detected in any of the images. Skipping PuLID.")
+            return (model,)
+
+        id_embeddings = torch.mean(torch.stack(all_embeddings), dim=0)
 
         model_wrapper = model.model.diffusion_model
         assert isinstance(model_wrapper, ComfyFluxWrapper)

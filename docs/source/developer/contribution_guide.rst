@@ -73,7 +73,7 @@ Running Tests
 
 .. note::
 
-   ``$YOUR_HF_TOKEN`` is your Hugging Face access token, required for downloading models and datasets. Create one at https://huggingface.co/settings/tokens. If you have already logged in with ``huggingface-cli login``, you may omit this variable.
+   ``$YOUR_HF_TOKEN`` is your Hugging Face access token, required for downloading models and datasets. Create one at https://huggingface.co/settings/tokens. If you have already logged in with ``hf auth login``, you may omit this variable.
 
 Writing Tests
 ~~~~~~~~~~~~~
