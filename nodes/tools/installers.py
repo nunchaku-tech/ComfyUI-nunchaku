@@ -107,11 +107,11 @@ class NunchakuWheelInstaller:
         wheel_name = f"nunchaku-{version[1:]}+{torch_tag}-{python_version}-{python_version}-{platform_tag}.whl"
 
         if source == "GitHub Release":
-            url_prefix = f"https://github.com/mit-han-lab/nunchaku/releases/download/{version}/"
+            url_prefix = f"https://github.com/nunchaku-tech/nunchaku/releases/download/{version}/"
         elif source == "HuggingFace":
-            url_prefix = "https://huggingface.co/mit-han-lab/nunchaku/resolve/main/"
+            url_prefix = "https://huggingface.co/nunchaku-tech/nunchaku/resolve/main/"
         elif source == "ModelScope":
-            url_prefix = "https://modelscope.cn/models/Lmxyy1999/nunchaku/resolve/master/"
+            url_prefix = "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/"
         else:
             raise NotImplementedError(f"Unsupported source: {source}")
 
