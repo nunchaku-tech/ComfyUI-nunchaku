@@ -1,15 +1,9 @@
 """
-Radial Attention Core Implementation
+Efficient `Radial Attention <paper_radial_attention_>`_ for video generation.
 
-This module provides optimized radial sparse attention for video generation models.
-It implements efficient attention patterns that reduce computational complexity
-while maintaining generation quality for long video sequences.
-
-Key Features:
-    - Radial sparse attention patterns
-    - Block-based attention computation
-    - CUDA architecture-aware optimizations
-    - Fallback to dense attention when needed
+This module implements block-based radial attention, optimized for CUDA architectures,
+to reduce computational complexity in long video sequences.
+Dense attention fallback is provided if sparse backends are unavailable.
 """
 
 from typing import List, Optional
@@ -23,8 +17,10 @@ def get_cuda_arch_versions() -> List[str]:
     """
     Get CUDA architecture versions for all available devices.
 
-    Returns:
-        List[str]: List of CUDA architecture strings (e.g., ['sm86', 'sm90'])
+    Returns
+    -------
+    List[str]
+        List of CUDA architecture strings (e.g., ['sm86', 'sm90']).
     """
     cuda_archs = []
     for device_idx in range(torch.cuda.device_count()):
@@ -51,6 +47,23 @@ except ImportError:
 
 
 def sparge_mask_convert(mask: torch.Tensor, block_size: int = 128, arch="sm") -> torch.Tensor:
+    """
+    Convert a block-level mask for sparse attention backend compatibility.
+
+    Parameters
+    ----------
+    mask : torch.Tensor
+        Square block-level attention mask.
+    block_size : int, default=128
+        Block size (supports 128 or 64).
+    arch : str, default="sm"
+        CUDA architecture string.
+
+    Returns
+    -------
+    torch.Tensor
+        Converted mask for backend.
+    """
     assert block_size in [128, 64], "Radial Attention only supports block size of 128 or 64"
     assert mask.shape[0] == mask.shape[1], "Input mask must be square."
 
@@ -75,18 +88,19 @@ def sparge_mask_convert(mask: torch.Tensor, block_size: int = 128, arch="sm") ->
 
 def shrink_mask_strict(mask: torch.Tensor, block_size: int = 128) -> torch.Tensor:
     """
-    Shrink attention mask to block-level granularity with strict density filtering.
+    Downsample a token-level mask to block-level granularity using strict density filtering.
 
-    This function converts token-level attention masks to block-level masks by
-    analyzing the density of connections within each block and applying
-    strict filtering criteria.
+    Parameters
+    ----------
+    mask : torch.Tensor
+        Token-level attention mask (square).
+    block_size : int, default=128
+        Block size.
 
-    Args:
-        mask (torch.Tensor): Token-level attention mask
-        block_size (int): Size of attention blocks
-
-    Returns:
-        torch.Tensor: Block-level attention mask
+    Returns
+    -------
+    torch.Tensor
+        Block-level attention mask.
     """
     seq_len = mask.shape[0]
     block_num = seq_len // block_size
@@ -118,20 +132,25 @@ def get_diagonal_split_mask(
     i: int, j: int, token_per_frame: int, sparse_type: str, query: torch.Tensor
 ) -> torch.Tensor:
     """
-    Generate diagonal split mask for frame-to-frame attention.
+    Generate a diagonal split mask for frame-to-frame attention.
 
-    This function creates attention masks that control connections between different
-    video frames based on their temporal distance and sparse attention patterns.
+    Parameters
+    ----------
+    i : int
+        Source frame index.
+    j : int
+        Target frame index.
+    token_per_frame : int
+        Number of tokens per frame.
+    sparse_type : str
+        Sparse attention pattern type ("radial").
+    query : torch.Tensor
+        Query tensor (for device).
 
-    Args:
-        i (int): Source frame index
-        j (int): Target frame index
-        token_per_frame (int): Number of tokens per frame
-        sparse_type (str): Type of sparse attention pattern ("radial")
-        query (torch.Tensor): Query tensor for device placement
-
-    Returns:
-        torch.Tensor: Boolean mask for frame-to-frame attention [token_per_frame, token_per_frame]
+    Returns
+    -------
+    torch.Tensor
+        Boolean mask of shape (token_per_frame, token_per_frame).
     """
     assert sparse_type in ["radial"], f"Unsupported sparse type: {sparse_type}"
 
@@ -164,26 +183,36 @@ def get_window_width(
     model_type: str = None,
 ) -> float:
     """
-    Calculate attention window width for frame pair (i, j).
+    Compute the spatial attention window width for a frame pair.
 
-    This function determines the spatial attention window size based on temporal
-    distance between frames, model type, and decay parameters.
+    Parameters
+    ----------
+    i : int
+        Source frame index.
+    j : int
+        Target frame index.
+    token_per_frame : int
+        Number of tokens per frame.
+    sparse_type : str
+        Sparse attention pattern type.
+    num_frame : int
+        Total number of frames.
+    decay_factor : float, default=1.0
+        Controls attention decay over distance.
+    block_size : int, default=128
+        Attention block size.
+    model_type : str, optional
+        Model type ("wan" or "hunyuan").
 
-    Args:
-        i (int): Source frame index
-        j (int): Target frame index
-        token_per_frame (int): Number of tokens per frame
-        sparse_type (str): Sparse attention pattern type
-        num_frame (int): Total number of frames
-        decay_factor (float): Controls attention decay over distance
-        block_size (int): Attention block size
-        model_type (str): Model type ("wan" or "hunyuan")
+    Returns
+    -------
+    float
+        Attention window width.
 
-    Returns:
-        float: Attention window width
-
-    Raises:
-        ValueError: If model_type is not supported
+    Raises
+    ------
+    ValueError
+        If model_type is not supported.
     """
     assert sparse_type in ["radial"], f"Unsupported sparse type: {sparse_type}"
 
@@ -211,17 +240,19 @@ def get_window_width(
 
 def pad_qkv(input_tensor: torch.Tensor, padding_gran: int = 128) -> torch.Tensor:
     """
-    Pad input tensor to nearest multiple of padding granularity.
+    Pad input tensor along sequence length to the nearest multiple of `padding_gran`.
 
-    This ensures tensor dimensions are compatible with block-based attention
-    computation requirements.
+    Parameters
+    ----------
+    input_tensor : torch.Tensor
+        Input tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    padding_gran : int, default=128
+        Padding granularity.
 
-    Args:
-        input_tensor (torch.Tensor): Input tensor [batch_size, num_heads, seq_len, hidden_dim]
-        padding_gran (int): Padding granularity
-
-    Returns:
-        torch.Tensor: Padded tensor with seq_len padded to multiple of padding_gran
+    Returns
+    -------
+    torch.Tensor
+        Padded tensor with sequence length a multiple of `padding_gran`.
     """
     batch_size, num_heads, seq_len, hidden_dim = input_tensor.shape
     padded_seq_len = ((seq_len + padding_gran - 1) // padding_gran) * padding_gran
@@ -244,24 +275,34 @@ def generate_log_mask_shrinked(
     model_type: str = None,
 ) -> torch.Tensor:
     """
-    Generate shrinked attention mask for video sequences.
+    Generate a block-level sparse attention mask for a video sequence.
 
-    This function creates block-level attention masks by processing frame pairs
-    individually to manage memory usage efficiently. It applies radial attention
-    patterns with configurable decay and model-specific optimizations.
+    Processes frame pairs individually to efficiently construct a block-level mask
+    with radial attention patterns and configurable decay.
 
-    Args:
-        query (torch.Tensor): Query tensor for device placement
-        seq_len (int): Total sequence length
-        video_token_num (int): Number of video tokens
-        num_frame (int): Number of video frames
-        block_size (int): Attention block size
-        sparse_type (str): Sparse attention pattern type
-        decay_factor (float): Attention decay factor
-        model_type (str): Model type for specific optimizations
+    Parameters
+    ----------
+    query : torch.Tensor
+        Query tensor (for device).
+    seq_len : int
+        Total sequence length.
+    video_token_num : int
+        Number of video tokens.
+    num_frame : int
+        Number of video frames.
+    block_size : int, default=128
+        Attention block size.
+    sparse_type : str, default="radial"
+        Sparse attention pattern type.
+    decay_factor : float, default=0.5
+        Attention decay factor.
+    model_type : str, optional
+        Model type for specific optimizations.
 
-    Returns:
-        torch.Tensor: Block-level attention mask [seq_len//block_size, seq_len//block_size]
+    Returns
+    -------
+    torch.Tensor
+        Block-level attention mask of shape (seq_len // block_size, seq_len // block_size).
     """
     final_log_mask = torch.zeros((seq_len // block_size, seq_len // block_size), device=query.device, dtype=torch.bool)
     token_per_frame = video_token_num // num_frame
@@ -335,27 +376,32 @@ def generate_log_mask_shrinked(
 
 class MaskMap:
     """
-    Caching manager for attention masks.
+    Cache manager for attention masks.
 
-    This class provides efficient caching and retrieval of attention masks
-    to avoid recomputation during inference. It maintains a single cached
-    mask that can be reused across attention layers.
+    Efficiently caches and retrieves a single block-level attention mask to avoid recomputation.
 
-    Attributes:
-        _log_mask (torch.Tensor, optional): Cached attention mask
-        video_token_num (int): Number of video tokens
-        num_frame (int): Number of video frames
+    Attributes
+    ----------
+    _log_mask : torch.Tensor or None
+        Cached attention mask.
+    video_token_num : int
+        Number of video tokens.
+    num_frame : int
+        Number of video frames.
     """
 
     _log_mask: Optional[torch.Tensor] = None
 
     def __init__(self, video_token_num: int = 25440, num_frame: int = 16):
         """
-        Initialize mask map with video parameters.
+        Initialize the mask cache.
 
-        Args:
-            video_token_num (int): Total number of video tokens
-            num_frame (int): Number of video frames
+        Parameters
+        ----------
+        video_token_num : int, default=25440
+            Total number of video tokens.
+        num_frame : int, default=16
+            Number of video frames.
         """
         self.video_token_num = video_token_num
         self.num_frame = num_frame
@@ -369,20 +415,25 @@ class MaskMap:
         model_type: str = None,
     ) -> torch.Tensor:
         """
-        Query or generate attention mask.
+        Retrieve or generate the block-level attention mask.
 
-        This method returns a cached mask if available, or generates a new one
-        using the provided parameters.
+        Parameters
+        ----------
+        query : torch.Tensor
+            Query tensor (for device and shape).
+        sparse_type : str
+            Sparse attention pattern type.
+        block_size : int, default=128
+            Attention block size.
+        decay_factor : float, default=0.5
+            Attention decay factor.
+        model_type : str, optional
+            Model type for optimization.
 
-        Args:
-            query (torch.Tensor): Query tensor for device and shape information
-            sparse_type (str): Type of sparse attention pattern
-            block_size (int): Attention block size
-            decay_factor (float): Attention decay factor
-            model_type (str): Model type for optimization
-
-        Returns:
-            torch.Tensor: Block-level attention mask
+        Returns
+        -------
+        torch.Tensor
+            Block-level attention mask.
         """
         if MaskMap._log_mask is None:
             # Determine sequence length from query tensor
@@ -405,18 +456,21 @@ class MaskMap:
 
 def dense_attention_fallback(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor) -> torch.Tensor:
     """
-    Fallback to dense attention computation.
+    Fallback to dense attention using PyTorch's scaled dot-product attention.
 
-    This function provides a reliable fallback when sparse attention backends
-    are unavailable or fail. It uses PyTorch's optimized scaled dot-product attention.
+    Parameters
+    ----------
+    query : torch.Tensor
+        Query tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    key : torch.Tensor
+        Key tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    value : torch.Tensor
+        Value tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
 
-    Args:
-        query (torch.Tensor): Query tensor [batch_size, num_heads, seq_len, hidden_dim]
-        key (torch.Tensor): Key tensor [batch_size, num_heads, seq_len, hidden_dim]
-        value (torch.Tensor): Value tensor [batch_size, num_heads, seq_len, hidden_dim]
-
-    Returns:
-        torch.Tensor: Attention output with same shape as query
+    Returns
+    -------
+    torch.Tensor
+        Output tensor with the same shape as query.
     """
     return F.scaled_dot_product_attention(query, key, value, is_causal=False)
 
@@ -430,21 +484,27 @@ def sparse_sage_attention_backend(
     block_size: int = 128,
 ) -> torch.Tensor:
     """
-    Sparse attention backend using SageAttention.
+    Sparse attention backend using SageAttention, with dense fallback.
 
-    This function applies sparse attention using the SageAttention library
-    with automatic fallback to dense attention if unavailable or on error.
+    Parameters
+    ----------
+    query : torch.Tensor
+        Query tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    key : torch.Tensor
+        Key tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    value : torch.Tensor
+        Value tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    mask_map : MaskMap, optional
+        Mask map instance (unused).
+    video_mask : torch.Tensor, optional
+        Block-level attention mask.
+    block_size : int, default=128
+        Attention block size.
 
-    Args:
-        query (torch.Tensor): Query tensor [batch_size, num_heads, seq_len, hidden_dim]
-        key (torch.Tensor): Key tensor [batch_size, num_heads, seq_len, hidden_dim]
-        value (torch.Tensor): Value tensor [batch_size, num_heads, seq_len, hidden_dim]
-        mask_map (MaskMap, optional): Mask map instance (unused in current implementation)
-        video_mask (torch.Tensor, optional): Block-level attention mask
-        block_size (int): Attention block size
-
-    Returns:
-        torch.Tensor: Attention output with same shape as query
+    Returns
+    -------
+    torch.Tensor
+        Output tensor with the same shape as query.
     """
     batch_size, num_heads, seq_len, hidden_dim = query.shape
 
@@ -489,24 +549,34 @@ def RadialAttention(
     model_type: str = None,
 ) -> torch.Tensor:
     """
-    Main radial attention function.
+    Radial Attention for video generation.
 
-    This is the primary interface for radial sparse attention computation.
-    It handles padding, mask generation, and delegates to the appropriate
-    attention backend.
+    Pads input tensors, generates or retrieves a block-level mask, and applies
+    sparse or dense attention as appropriate.
 
-    Args:
-        query (torch.Tensor): Query tensor [batch_size, num_heads, seq_len, hidden_dim]
-        key (torch.Tensor): Key tensor [batch_size, num_heads, seq_len, hidden_dim]
-        value (torch.Tensor): Value tensor [batch_size, num_heads, seq_len, hidden_dim]
-        mask_map (MaskMap, optional): Mask map for attention mask caching
-        sparsity_type (str): Type of sparse attention pattern
-        block_size (int): Attention block size
-        decay_factor (float): Attention decay factor
-        model_type (str): Model type for optimization
+    Parameters
+    ----------
+    query : torch.Tensor
+        Query tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    key : torch.Tensor
+        Key tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    value : torch.Tensor
+        Value tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
+    mask_map : MaskMap, optional
+        Mask map for attention mask caching.
+    sparsity_type : str, default="radial"
+        Sparse attention pattern type.
+    block_size : int, default=128
+        Attention block size.
+    decay_factor : float, default=1.0
+        Attention decay factor.
+    model_type : str, optional
+        Model type for optimization.
 
-    Returns:
-        torch.Tensor: Attention output [batch_size, num_heads, seq_len, hidden_dim]
+    Returns
+    -------
+    torch.Tensor
+        Output tensor of shape (batch_size, num_heads, seq_len, hidden_dim).
     """
     batch_size, num_heads, seq_len, hidden_dim = query.shape
 

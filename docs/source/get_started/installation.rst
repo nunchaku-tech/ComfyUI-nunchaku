@@ -74,10 +74,10 @@ you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using 
 
 Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
 
-Step 3: Install Radial Attention Dependencies (Optional)
----------------------------------------------------------
+(Optional) Step 3: Install Radial Attention Dependencies
+--------------------------------------------------------
 
-For advanced video generation optimization with radial attention, install the sparse attention backends:
+For advanced video generation optimization with `Radial Attention <paper_radial_attention_>`_, install the sparse attention backends:
 
 System Requirements
 ~~~~~~~~~~~~~~~~~~~
@@ -88,8 +88,8 @@ System Requirements
 * **GPU**: RTX 30/40/50 series, A100, H100, or compatible
 * **Additional**: ninja (for compilation)
 
-Option 1: Block-Sparse-SageAttention-2.0 (Recommended)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(Recommended) Option 1: Block-Sparse-SageAttention-2.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
    git clone https://github.com/thu-ml/SpargeAttn custom_nodes/nunchaku_nodes/nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
@@ -105,7 +105,7 @@ Option 1: Block-Sparse-SageAttention-2.0 (Recommended)
    cd ../../../..
 
 Option 2: Sparse_SageAttention_API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
    git clone https://github.com/jt-zhang/Sparse_SageAttention_API nodes/radial_attn/third_party/Sparse_SageAttention_API

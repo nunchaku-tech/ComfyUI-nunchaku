@@ -1,7 +1,7 @@
 Radial Attention
 ================
 
-The Radial Attention feature provides optimized sparse attention patterns for video generation models, significantly reducing computations and latencies while maintaining generation quality.
+`Radial Attention <paper_radial_attention_>`_ provides optimized sparse attention patterns for video generation models, significantly reducing computations and latencies while maintaining generation quality.
 
 Overview
 --------
