@@ -4,7 +4,6 @@ import os
 import comfy.model_management
 import folder_paths
 
-
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -54,9 +53,5 @@ class NunchakuQwenImageDiTLoader:
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku Qwen-Image DiT Loader"
 
-    def load_model(
-        self,
-        model_name: str,
-        **kwargs,
-    ):
+    def load_model(self, model_name: str, **kwargs):
         pass

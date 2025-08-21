@@ -75,3 +75,16 @@ models:
     filename: "EVA02_CLIP_L_336_psz14_s6B.pt"
     sub_folder: "clip"
     new_filename: null
+  # qwen-image related
+  - repo_id: "Comfy-Org/Qwen-Image_ComfyUI"
+    filename: "split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "Comfy-Org/Qwen-Image_ComfyUI"
+    filename: "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+    sub_folder: "text_encoders"
+    new_filename: null
+  - repo_id: "Comfy-Org/Qwen-Image_ComfyUI"
+    filename: "split_files/vae/qwen_image_vae.safetensors"
+    sub_folder: "vae"
+    new_filename: null
