@@ -92,30 +92,17 @@ System Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
-   git clone https://github.com/thu-ml/SpargeAttn custom_nodes/nunchaku_nodes/nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
-   # Navigate to the radial attention third-party directory
-   cd nodes/radial_attn/third_party/Block-Sparse-SageAttention-2.0
 
    # Install build dependencies
    pip install ninja torch torchvision transformers diffusers einops
-
-   # Install the sparse attention backend
-   python setup.py install
-
-   cd ../../../..
+   pip install git+https://github.com/thu-ml/SpargeAttn
 
 Option 2: Sparse_SageAttention_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
-   git clone https://github.com/jt-zhang/Sparse_SageAttention_API nodes/radial_attn/third_party/Sparse_SageAttention_API
-   # Navigate to the API directory
-   cd nodes/radial_attn/third_party/Sparse_SageAttention_API
-
-   # Install the sparse attention API
-   python setup.py install
-
-   cd ../../../..
+   # Install the sparse attention API, but you also need to install triton
+   pip install git+https://github.com/jt-zhang/Sparse_SageAttention_API
 
 Verification
 ~~~~~~~~~~~~
