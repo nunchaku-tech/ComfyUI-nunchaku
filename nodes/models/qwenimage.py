@@ -6,7 +6,6 @@ import comfy.utils
 import comfy.sd
 import torch
 from comfy import model_management, model_detection
-from comfy.supported_models import QwenImage
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -14,12 +13,6 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 # Configure logging
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-
-class NunchakuQwenImage(QwenImage):
-    def get_model(self, state_dict, prefix="", device=None):
-        out = model_base.QwenImage(self, device=device)
-        return out
 
 
 def load_diffusion_model_state_dict(sd: dict[str, torch.Tensor], model_options: dict = {}):
