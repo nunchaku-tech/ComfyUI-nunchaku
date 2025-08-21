@@ -316,6 +316,7 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
         dtype=None,
         device=None,
         operations=None,
+        scale_shift: float = 1.0,
         **kwargs,
     ):
         super().__init__()
