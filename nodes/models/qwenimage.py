@@ -8,7 +8,9 @@ import folder_paths
 import torch
 from comfy import model_detection, model_management
 
-from model_configs.qwenimage import NunchakuQwenImage
+from ...model_configs.qwenimage import NunchakuQwenImage
+import json
+from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -18,7 +20,13 @@ logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(a
 logger = logging.getLogger(__name__)
 
 
-def load_diffusion_model_state_dict(sd: dict[str, torch.Tensor], model_options: dict = {}):
+def load_diffusion_model_state_dict(
+    sd: dict[str, torch.Tensor], metadata: dict[str, str] = {}, model_options: dict = {}
+):
+    quantization_config = json.loads(metadata.get("quantization_config", "{}"))
+    precision = get_precision_from_quantization_config(quantization_config)
+    rank = quantization_config.get("rank", 32)
+
     dtype = model_options.get("dtype", None)
 
     # Allow loading unets from checkpoint files
@@ -31,10 +39,13 @@ def load_diffusion_model_state_dict(sd: dict[str, torch.Tensor], model_options: 
     weight_dtype = comfy.utils.weight_dtype(sd)
 
     load_device = model_management.get_torch_device()
+    check_hardware_compatibility(quantization_config, load_device)
 
     # model_config = model_detection.model_config_from_unet_config({"image_model": "qwen_image"}, state_dict=sd)
-    model_config = NunchakuQwenImage({"image_model": "qwen_image"})
-    model_config.optimizations["fp8"] = True
+    model_config = NunchakuQwenImage(
+        {"image_model": "qwen_image", "scale_shift": 0, "rank": rank, "precision": precision}
+    )
+    model_config.optimizations["fp8"] = False
 
     new_sd = sd
 
@@ -112,7 +123,7 @@ class NunchakuQwenImageDiTLoader:
         model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
         model = comfy.sd.load_diffusion_model(model_path)
 
-        sd = comfy.utils.load_torch_file(model_path)
-        model = load_diffusion_model_state_dict(sd)
+        sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+        model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
         return (model,)

@@ -1,7 +1,7 @@
 import torch
 from comfy.model_base import ModelType, QwenImage
 
-from models.qwenimage import NunchakuQwenImageTransformer2DModel
+from ..models.qwenimage import NunchakuQwenImageTransformer2DModel
 
 
 class NunchakuQwenImage(QwenImage):
