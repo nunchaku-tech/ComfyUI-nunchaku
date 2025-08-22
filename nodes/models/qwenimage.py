@@ -6,6 +6,8 @@ import comfy.utils
 import comfy.sd
 import torch
 from comfy import model_management, model_detection
+from supported_models.qwenimage import NunchakuQwenImage
+import comfy.model_patcher
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -29,30 +31,11 @@ def load_diffusion_model_state_dict(sd: dict[str, torch.Tensor], model_options: 
 
     load_device = model_management.get_torch_device()
 
-    model_config = model_detection.model_config_from_unet_config({"image_model": "qwen_image"}, state_dict=sd)
+    # model_config = model_detection.model_config_from_unet_config({"image_model": "qwen_image"}, state_dict=sd)
+    model_config = NunchakuQwenImage({"image_model": "qwen_image"})
     model_config.optimizations["fp8"] = True
 
-    if model_config is not None:
-        new_sd = sd
-    else:
-        new_sd = model_detection.convert_diffusers_mmdit(sd, "")
-        if new_sd is not None:  # diffusers mmdit
-            model_config = model_detection.model_config_from_unet(new_sd, "")
-            if model_config is None:
-                return None
-        else:  # diffusers unet
-            model_config = model_detection.model_config_from_diffusers_unet(sd)
-            if model_config is None:
-                return None
-
-            diffusers_keys = comfy.utils.unet_to_diffusers(model_config.unet_config)
-
-            new_sd = {}
-            for k in diffusers_keys:
-                if k in sd:
-                    new_sd[diffusers_keys[k]] = sd.pop(k)
-                else:
-                    logging.warning("{} {}".format(diffusers_keys[k], k))
+    new_sd = sd
 
     offload_device = model_management.unet_offload_device()
     unet_weight_dtype = list(model_config.supported_inference_dtypes)
