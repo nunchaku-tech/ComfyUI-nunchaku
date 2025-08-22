@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -8,9 +9,9 @@ import folder_paths
 import torch
 from comfy import model_detection, model_management
 
-from ...model_configs.qwenimage import NunchakuQwenImage
-import json
 from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config
+
+from ...model_configs.qwenimage import NunchakuQwenImage
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
