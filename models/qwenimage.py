@@ -12,7 +12,7 @@ from comfy.ldm.qwen_image.model import (
     QwenTimestepProjEmbeddings,
     apply_rotary_emb,
 )
-from torch import DeviceObjType, nn
+from torch import nn
 
 from nunchaku.models.linear import AWQW4A16Linear, SVDQW4A4Linear
 from nunchaku.ops.fused import fused_gelu_mlp
@@ -240,6 +240,15 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         temb: torch.Tensor,
         image_rotary_emb: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # sd = {
+        #     "hidden_states": hidden_states,
+        #     "encoder_hidden_states": encoder_hidden_states,
+        #     "encoder_hidden_states_mask": encoder_hidden_states_mask,
+        #     "temb": temb,
+        #     "image_rotary_emb": image_rotary_emb,
+        # }
+        # torch.save(sd, "sd.pt")
+        # exit(0)
         # Get modulation parameters for both streams
         img_mod_params = self.img_mod(temb)  # [B, 6*dim]
         txt_mod_params = self.txt_mod(temb)  # [B, 6*dim]

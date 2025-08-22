@@ -3,7 +3,6 @@ import logging
 import os
 
 import comfy.model_patcher
-import comfy.sd
 import comfy.utils
 import folder_paths
 import torch
@@ -73,9 +72,6 @@ def load_diffusion_model_state_dict(
     model = model_config.get_model(new_sd, "")
     model = model.to(offload_device)
     model.load_model_weights(new_sd, "")
-    left_over = sd.keys()
-    if len(left_over) > 0:
-        logging.info("left over keys in diffusion model: {}".format(left_over))
     return comfy.model_patcher.ModelPatcher(model, load_device=load_device, offload_device=offload_device)
 
 
