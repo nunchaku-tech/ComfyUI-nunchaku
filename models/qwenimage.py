@@ -319,7 +319,7 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
         scale_shift: float = 1.0,
         **kwargs,
     ):
-        super().__init__()
+        super(QwenImageTransformer2DModel, self).__init__()
         self.dtype = dtype
         self.patch_size = patch_size
         self.out_channels = out_channels or in_channels

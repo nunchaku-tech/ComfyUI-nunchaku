@@ -122,8 +122,6 @@ class NunchakuQwenImageDiTLoader:
 
     def load_model(self, model_name: str, **kwargs):
         model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
-        model = comfy.sd.load_diffusion_model(model_path)
-
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
         model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
