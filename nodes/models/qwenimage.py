@@ -8,7 +8,7 @@ import folder_paths
 import torch
 from comfy import model_detection, model_management
 
-from supported_models.qwenimage import NunchakuQwenImage
+from model_configs.qwenimage import NunchakuQwenImage
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

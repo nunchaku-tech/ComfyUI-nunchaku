@@ -35,6 +35,13 @@ except ImportError:
     logger.exception("Node `NunchakuFluxDiTLoader` import failed:")
 
 try:
+    from .nodes.models.qwenimage import NunchakuQwenImageDiTLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuQwenImageDiTLoader"] = NunchakuQwenImageDiTLoader
+except ImportError:
+    logger.exception("Node `NunchakuQwenImageDiTLoader` import failed:")
+
+try:
     from .nodes.lora.flux import NunchakuFluxLoraLoader
 
     NODE_CLASS_MAPPINGS["NunchakuFluxLoraLoader"] = NunchakuFluxLoraLoader
