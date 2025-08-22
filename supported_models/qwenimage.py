@@ -1,4 +1,5 @@
 from comfy.supported_models import QwenImage
+
 import model_base
 
 

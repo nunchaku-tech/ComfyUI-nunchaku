@@ -1,13 +1,14 @@
 import logging
 import os
 
-import folder_paths
-import comfy.utils
-import comfy.sd
-import torch
-from comfy import model_management, model_detection
-from supported_models.qwenimage import NunchakuQwenImage
 import comfy.model_patcher
+import comfy.sd
+import comfy.utils
+import folder_paths
+import torch
+from comfy import model_detection, model_management
+
+from supported_models.qwenimage import NunchakuQwenImage
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
