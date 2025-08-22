@@ -12,13 +12,17 @@ class NunchakuQwenImage(QwenImage):
         self.memory_usage_factor_conds = ("ref_latents",)
 
     def load_model_weights(self, sd: dict[str, torch.Tensor], unet_prefix: str = ""):
-        super().load_model_weights(sd, unet_prefix)
         diffusion_model = self.diffusion_model
+        # print(diffusion_model)
+        # with open("diffusion_model.txt", "w") as f:
+        #     f.write(str(diffusion_model))
         state_dict = diffusion_model.state_dict()
         for k in state_dict.keys():
             if k not in sd:
-                assert ".wtscale" in k or ".wcscales" in k
+                # assert ".wtscale" in k or ".wcscales" in k
+                if ".wtscale" in k or ".wcscales" in k:
+                    raise ValueError(f"Key {k} not found in state_dict")
                 sd[k] = torch.ones_like(state_dict[k])
-            else:
-                assert state_dict[k].dtype == sd[k].dtype
-        diffusion_model.load_state_dict(sd)
+            # else:
+            #     assert state_dict[k].dtype == sd[k].dtype
+        diffusion_model.load_state_dict(sd, strict=True)

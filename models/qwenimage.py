@@ -12,7 +12,7 @@ from comfy.ldm.qwen_image.model import (
     QwenTimestepProjEmbeddings,
     apply_rotary_emb,
 )
-from torch import nn
+from torch import DeviceObjType, nn
 
 from nunchaku.models.linear import AWQW4A16Linear, SVDQW4A4Linear
 from nunchaku.ops.fused import fused_gelu_mlp
@@ -188,8 +188,10 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         device=None,
         operations=None,
         scale_shift: float = 1.0,
+        **kwargs,
     ):
         super().__init__()
+        self.scale_shift = scale_shift
         self.dim = dim
         self.num_attention_heads = num_attention_heads
         self.attention_head_dim = attention_head_dim
@@ -200,7 +202,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         )
         self.img_norm1 = operations.LayerNorm(dim, elementwise_affine=False, eps=eps, dtype=dtype, device=device)
         self.img_norm2 = operations.LayerNorm(dim, elementwise_affine=False, eps=eps, dtype=dtype, device=device)
-        self.img_mlp = NunchakuFeedForward(dim=dim, dim_out=dim, dtype=dtype, device=device, operations=operations)
+        self.img_mlp = NunchakuFeedForward(dim=dim, dim_out=dim, dtype=dtype, device=device, **kwargs)
 
         self.txt_mod = nn.Sequential(
             nn.SiLU(),
@@ -208,7 +210,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         )
         self.txt_norm1 = operations.LayerNorm(dim, elementwise_affine=False, eps=eps, dtype=dtype, device=device)
         self.txt_norm2 = operations.LayerNorm(dim, elementwise_affine=False, eps=eps, dtype=dtype, device=device)
-        self.txt_mlp = NunchakuFeedForward(dim=dim, dim_out=dim, dtype=dtype, device=device, operations=operations)
+        self.txt_mlp = NunchakuFeedForward(dim=dim, dim_out=dim, dtype=dtype, device=device, **kwargs)
 
         self.attn = Attention(
             query_dim=dim,
@@ -220,6 +222,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
             dtype=dtype,
             device=device,
             operations=operations,
+            **kwargs,
         )
 
     def _modulate(self, x: torch.Tensor, mod_params: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -348,6 +351,8 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
                     dtype=dtype,
                     device=device,
                     operations=operations,
+                    scale_shift=scale_shift,
+                    **kwargs,
                 )
                 for _ in range(num_layers)
             ]
