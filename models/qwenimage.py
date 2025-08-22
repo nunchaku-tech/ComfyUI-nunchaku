@@ -57,7 +57,17 @@ class NunchakuFeedForward(FeedForward):
             NunchakuGELU(dim, inner_dim, approximate="tanh", bias=bias, dtype=dtype, device=device, **kwargs)
         )
         self.net.append(nn.Dropout(dropout))
-        self.net.append(SVDQW4A4Linear(inner_dim, dim_out, bias=bias, torch_dtype=dtype, device=device, **kwargs))
+        self.net.append(
+            SVDQW4A4Linear(
+                inner_dim,
+                dim_out,
+                bias=bias,
+                act_unsigned=kwargs["precision"] == "int4",
+                torch_dtype=dtype,
+                device=device,
+                **kwargs,
+            )
+        )
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         if isinstance(self.net[0], NunchakuGELU):
