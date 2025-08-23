@@ -46,6 +46,7 @@ class NunchakuGELU(GELU):
     **kwargs
         Additional arguments for the quantized linear layer.
     """
+
     def __init__(
         self,
         dim_in: int,
@@ -86,6 +87,7 @@ class NunchakuFeedForward(FeedForward):
     **kwargs
         Additional arguments for the quantized linear layers.
     """
+
     def __init__(
         self,
         dim: int,
@@ -113,7 +115,8 @@ class NunchakuFeedForward(FeedForward):
                 inner_dim,
                 dim_out,
                 bias=bias,
-                act_unsigned=kwargs["precision"] == "int4",  # For int4 quantization, the second linear layer is unsigned as the output of the first is shifted positive in fused_gelu_mlp
+                act_unsigned=kwargs["precision"]
+                == "int4",  # For int4 quantization, the second linear layer is unsigned as the output of the first is shifted positive in fused_gelu_mlp
                 torch_dtype=dtype,
                 device=device,
                 **kwargs,
@@ -179,6 +182,7 @@ class Attention(nn.Module):
     **kwargs
         Additional arguments for quantized linear layers.
     """
+
     def __init__(
         self,
         query_dim: int,
@@ -338,6 +342,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
     **kwargs
         Additional arguments for quantized linear layers.
     """
+
     def __init__(
         self,
         dim: int,
@@ -466,7 +471,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
 
         # Joint attention computation (DoubleStreamLayerMegatron logic)
         attn_output = self.attn(
-            hidden_states=img_modulated,      # Image stream ("sample")
+            hidden_states=img_modulated,  # Image stream ("sample")
             encoder_hidden_states=txt_modulated,  # Text stream ("context")
             encoder_hidden_states_mask=encoder_hidden_states_mask,
             image_rotary_emb=image_rotary_emb,
@@ -533,6 +538,7 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
     **kwargs
         Additional arguments for transformer blocks.
     """
+
     def __init__(
         self,
         patch_size: int = 2,
