@@ -5,6 +5,7 @@ protobuf
 huggingface_hub>=0.35
 tomli
 peft>=0.17
+accelerate>=1.10
 
 # PuLID dependencies
 insightface

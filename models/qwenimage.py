@@ -536,7 +536,7 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
     scale_shift : float, optional
         Value added to scale in modulation (default: 1.0).
     **kwargs
-        Additional arguments for transformer blocks.
+        Additional arguments for quantized linear layers.
     """
 
     def __init__(

@@ -1,3 +1,9 @@
+"""
+Nunchaku Qwen-Image model base.
+
+This module provides a wrapper for ComfyUI's Qwen-Image model base.
+"""
+
 import torch
 from comfy.model_base import ModelType, QwenImage
 
@@ -5,13 +11,53 @@ from ..models.qwenimage import NunchakuQwenImageTransformer2DModel
 
 
 class NunchakuQwenImage(QwenImage):
+    """
+    Wrapper for the Nunchaku Qwen-Image model.
+
+    Parameters
+    ----------
+    model_config : object
+        Model configuration object.
+    model_type : ModelType, optional
+        Type of the model (default is ModelType.FLUX).
+    device : torch.device or str, optional
+        Device to load the model onto.
+    """
+
     def __init__(self, model_config, model_type=ModelType.FLUX, device=None):
+        """
+        Initialize the NunchakuQwenImage model.
+
+        Parameters
+        ----------
+        model_config : object
+            Model configuration object.
+        model_type : ModelType, optional
+            Type of the model (default is ModelType.FLUX).
+        device : torch.device or str, optional
+            Device to load the model onto.
+        """
         super(QwenImage, self).__init__(
             model_config, model_type, device=device, unet_model=NunchakuQwenImageTransformer2DModel
         )
         self.memory_usage_factor_conds = ("ref_latents",)
 
     def load_model_weights(self, sd: dict[str, torch.Tensor], unet_prefix: str = ""):
+        """
+        Load model weights into the diffusion model.
+
+        Parameters
+        ----------
+        sd : dict of str to torch.Tensor
+            State dictionary containing model weights.
+        unet_prefix : str, optional
+            Prefix for UNet weights (default is "").
+
+        Raises
+        ------
+        ValueError
+            If a required key is missing from the state dictionary.
+        """
         diffusion_model = self.diffusion_model
         state_dict = diffusion_model.state_dict()
         for k in state_dict.keys():
