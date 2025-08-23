@@ -81,7 +81,7 @@ jobs:
           cd ..
           rm -rf ComfyUI
           pip install comfy-cli
-          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.43
+          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.44
           cd ComfyUI
           rm -r models
           mkdir -p "${COMFYUI_MODELS_ROOT}"
