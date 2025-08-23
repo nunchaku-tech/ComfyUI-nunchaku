@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 class NunchakuFluxDiTLoader:
     """
-    Loader for SVDQuant-quantized FLUX.1 models with Nunchaku acceleration.
+    Loader for Nunchaku FLUX.1 models.
 
     This class manages model loading, device selection, attention implementation,
     CPU offload, and caching for efficient inference.
@@ -72,7 +72,7 @@ class NunchakuFluxDiTLoader:
     @classmethod
     def INPUT_TYPES(s):
         """
-        Defines the input types and tooltips for the node.
+        Define the input types and tooltips for the node.
 
         Returns
         -------

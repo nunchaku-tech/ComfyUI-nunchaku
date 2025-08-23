@@ -1,3 +1,7 @@
+"""
+This module provides the :class:`NunchakuQwenImageDiTLoader` class for loading Nunchaku Qwen-Image models.
+"""
+
 import json
 import logging
 import os
@@ -23,6 +27,23 @@ logger = logging.getLogger(__name__)
 def load_diffusion_model_state_dict(
     sd: dict[str, torch.Tensor], metadata: dict[str, str] = {}, model_options: dict = {}
 ):
+    """
+    Load a Nunchaku-quantized Qwen-Image diffusion model.
+
+    Parameters
+    ----------
+    sd : dict[str, torch.Tensor]
+        The state dictionary of the model.
+    metadata : dict[str, str], optional
+        Metadata containing quantization configuration (default is empty dict).
+    model_options : dict, optional
+        Additional model options such as dtype or custom operations.
+
+    Returns
+    -------
+    comfy.model_patcher.ModelPatcher
+        The patched and loaded Qwen-Image model ready for inference.
+    """
     quantization_config = json.loads(metadata.get("quantization_config", "{}"))
     precision = get_precision_from_quantization_config(quantization_config)
     rank = quantization_config.get("rank", 32)
@@ -76,26 +97,25 @@ def load_diffusion_model_state_dict(
 
 
 class NunchakuQwenImageDiTLoader:
+    """
+    Loader for Nunchaku Qwen-Image models.
 
-    def __init__(self):
-        """
-        Initialize the NunchakuFluxDiTLoader.
-
-        Sets up internal state and selects the default torch device.
-        """
-        self.transformer = None
-        self.metadata = None
-        self.model_path = None
-        self.device = None
-        self.cpu_offload = None
-        self.data_type = None
-        self.patcher = None
-        self.device = comfy.model_management.get_torch_device()
+    Attributes
+    ----------
+    RETURN_TYPES : tuple
+        Output types for the node ("MODEL",).
+    FUNCTION : str
+        Name of the function to call ("load_model").
+    CATEGORY : str
+        Node category ("Nunchaku").
+    TITLE : str
+        Node title ("Nunchaku Qwen-Image DiT Loader").
+    """
 
     @classmethod
     def INPUT_TYPES(s):
         """
-        Defines the input types and tooltips for the node.
+        Define the input types and tooltips for the node.
 
         Returns
         -------
@@ -117,6 +137,19 @@ class NunchakuQwenImageDiTLoader:
     TITLE = "Nunchaku Qwen-Image DiT Loader"
 
     def load_model(self, model_name: str, **kwargs):
+        """
+        Load the Qwen-Image model from file and return a patched model.
+
+        Parameters
+        ----------
+        model_name : str
+            The filename of the Qwen-Image model to load.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the loaded and patched model.
+        """
         model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
         model = load_diffusion_model_state_dict(sd, metadata=metadata)

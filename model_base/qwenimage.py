@@ -16,7 +16,7 @@ class NunchakuQwenImage(QwenImage):
         state_dict = diffusion_model.state_dict()
         for k in state_dict.keys():
             if k not in sd:
-                if ".wtscale" in k or ".wcscales" in k:
+                if ".wtscale" not in k and ".wcscales" not in k:
                     raise ValueError(f"Key {k} not found in state_dict")
                 sd[k] = torch.ones_like(state_dict[k])
         diffusion_model.load_state_dict(sd, strict=True)

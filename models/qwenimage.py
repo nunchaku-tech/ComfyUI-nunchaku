@@ -1,4 +1,11 @@
-# adapted from https://github.com/comfyanonymous/ComfyUI/blob/v0.3.51/comfy/ldm/qwen_image/model.py
+"""
+This module implements the Nunchaku Qwen-Image model and related components.
+
+.. note::
+
+    Inherits and modifies from https://github.com/comfyanonymous/ComfyUI/blob/v0.3.51/comfy/ldm/qwen_image/model.py
+"""
+
 from typing import Optional, Tuple
 
 import torch
@@ -19,6 +26,26 @@ from nunchaku.ops.fused import fused_gelu_mlp
 
 
 class NunchakuGELU(GELU):
+    """
+    GELU activation with a quantized linear projection.
+
+    Parameters
+    ----------
+    dim_in : int
+        Input feature dimension.
+    dim_out : int
+        Output feature dimension.
+    approximate : str, optional
+        Approximation mode for GELU (default: "none").
+    bias : bool, optional
+        Whether to use bias in the projection (default: True).
+    dtype : torch.dtype, optional
+        Data type for the projection.
+    device : torch.device, optional
+        Device for the projection.
+    **kwargs
+        Additional arguments for the quantized linear layer.
+    """
     def __init__(
         self,
         dim_in: int,
@@ -35,6 +62,30 @@ class NunchakuGELU(GELU):
 
 
 class NunchakuFeedForward(FeedForward):
+    """
+    Feed-forward network with fused quantized layers and optional fused GELU-MLP.
+
+    Parameters
+    ----------
+    dim : int
+        Input feature dimension.
+    dim_out : int, optional
+        Output feature dimension. If None, set to `dim`.
+    mult : int, optional
+        Expansion factor for the hidden layer (default: 4).
+    dropout : float, optional
+        Dropout probability (default: 0.0).
+    inner_dim : int, optional
+        Hidden layer dimension. If None, computed as `dim * mult`.
+    bias : bool, optional
+        Whether to use bias in the projections (default: True).
+    dtype : torch.dtype, optional
+        Data type for the projections.
+    device : torch.device, optional
+        Device for the projections.
+    **kwargs
+        Additional arguments for the quantized linear layers.
+    """
     def __init__(
         self,
         dim: int,
@@ -62,7 +113,7 @@ class NunchakuFeedForward(FeedForward):
                 inner_dim,
                 dim_out,
                 bias=bias,
-                act_unsigned=kwargs["precision"] == "int4",
+                act_unsigned=kwargs["precision"] == "int4",  # For int4 quantization, the second linear layer is unsigned as the output of the first is shifted positive in fused_gelu_mlp
                 torch_dtype=dtype,
                 device=device,
                 **kwargs,
@@ -70,16 +121,64 @@ class NunchakuFeedForward(FeedForward):
         )
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass for the feed-forward network.
+
+        Parameters
+        ----------
+        hidden_states : torch.Tensor
+            Input tensor of shape (batch, seq_len, dim).
+
+        Returns
+        -------
+        torch.Tensor
+            Output tensor after feed-forward transformation.
+        """
         if isinstance(self.net[0], NunchakuGELU):
             return fused_gelu_mlp(hidden_states, self.net[0].proj, self.net[2])
         else:
-            # fallback to original implementation
+            # Fallback to original implementation
             for module in self.net:
                 hidden_states = module(hidden_states)
             return hidden_states
 
 
 class Attention(nn.Module):
+    """
+    Double-stream attention module for joint image-text attention.
+
+    This module fuses QKV projections for both image and text streams for improved speed,
+    applies Q/K normalization and rotary embeddings, and computes joint attention.
+
+    Parameters
+    ----------
+    query_dim : int
+        Input feature dimension.
+    dim_head : int, optional
+        Dimension per attention head (default: 64).
+    heads : int, optional
+        Number of attention heads (default: 8).
+    dropout : float, optional
+        Dropout probability (default: 0.0).
+    bias : bool, optional
+        Whether to use bias in projections (default: False).
+    eps : float, optional
+        Epsilon for normalization layers (default: 1e-5).
+    out_bias : bool, optional
+        Whether to use bias in output projections (default: True).
+    out_dim : int, optional
+        Output dimension for image stream.
+    out_context_dim : int, optional
+        Output dimension for text stream.
+    dtype : torch.dtype, optional
+        Data type for projections.
+    device : torch.device, optional
+        Device for projections.
+    operations : module, optional
+        Module providing normalization and linear layers.
+    **kwargs
+        Additional arguments for quantized linear layers.
+    """
     def __init__(
         self,
         query_dim: int,
@@ -105,18 +204,18 @@ class Attention(nn.Module):
         self.out_context_dim = out_context_dim if out_context_dim is not None else query_dim
         self.dropout = dropout
 
-        # Q/K normalization
+        # Q/K normalization for both streams
         self.norm_q = operations.RMSNorm(dim_head, eps=eps, elementwise_affine=True, dtype=dtype, device=device)
         self.norm_k = operations.RMSNorm(dim_head, eps=eps, elementwise_affine=True, dtype=dtype, device=device)
         self.norm_added_q = operations.RMSNorm(dim_head, eps=eps, dtype=dtype, device=device)
         self.norm_added_k = operations.RMSNorm(dim_head, eps=eps, dtype=dtype, device=device)
 
-        # Image stream projections, nunchaku fuse the qkv projection for better speed (faster execution speed)
+        # Image stream projections: fused QKV for speed
         self.to_qkv = SVDQW4A4Linear(
             query_dim, self.inner_dim + self.inner_kv_dim * 2, bias=bias, torch_dtype=dtype, device=device, **kwargs
         )
 
-        # Text stream projections, nunchaku fuse the qkv projection for better speed (faster execution speed)
+        # Text stream projections: fused QKV for speed
         self.add_qkv_proj = SVDQW4A4Linear(
             query_dim, self.inner_dim + self.inner_kv_dim * 2, bias=bias, torch_dtype=dtype, device=device, **kwargs
         )
@@ -134,12 +233,35 @@ class Attention(nn.Module):
 
     def forward(
         self,
-        hidden_states: torch.FloatTensor,  # Image stream
-        encoder_hidden_states: torch.FloatTensor = None,  # Text stream
+        hidden_states: torch.FloatTensor,
+        encoder_hidden_states: torch.FloatTensor = None,
         encoder_hidden_states_mask: torch.FloatTensor = None,
         attention_mask: Optional[torch.FloatTensor] = None,
         image_rotary_emb: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Forward pass for double-stream attention.
+
+        Parameters
+        ----------
+        hidden_states : torch.FloatTensor
+            Image stream input tensor of shape (batch, seq_len_img, dim).
+        encoder_hidden_states : torch.FloatTensor, optional
+            Text stream input tensor of shape (batch, seq_len_txt, dim).
+        encoder_hidden_states_mask : torch.FloatTensor, optional
+            Mask for encoder hidden states.
+        attention_mask : torch.FloatTensor, optional
+            Attention mask for joint attention.
+        image_rotary_emb : torch.Tensor, optional
+            Rotary positional embeddings.
+
+        Returns
+        -------
+        img_attn_output : torch.Tensor
+            Output tensor for image stream.
+        txt_attn_output : torch.Tensor
+            Output tensor for text stream.
+        """
         seq_txt = encoder_hidden_states.shape[1]
 
         img_qkv = self.to_qkv(hidden_states)
@@ -162,10 +284,12 @@ class Attention(nn.Module):
         txt_query = self.norm_added_q(txt_query)
         txt_key = self.norm_added_k(txt_key)
 
+        # Concatenate image and text streams for joint attention
         joint_query = torch.cat([txt_query, img_query], dim=1)
         joint_key = torch.cat([txt_key, img_key], dim=1)
         joint_value = torch.cat([txt_value, img_value], dim=1)
 
+        # Apply rotary embeddings
         joint_query = apply_rotary_emb(joint_query, image_rotary_emb)
         joint_key = apply_rotary_emb(joint_key, image_rotary_emb)
 
@@ -173,10 +297,12 @@ class Attention(nn.Module):
         joint_key = joint_key.flatten(start_dim=2)
         joint_value = joint_value.flatten(start_dim=2)
 
+        # Compute joint attention
         joint_hidden_states = optimized_attention_masked(
             joint_query, joint_key, joint_value, self.heads, attention_mask
         )
 
+        # Split results back to separate streams
         txt_attn_output = joint_hidden_states[:, :seq_txt, :]
         img_attn_output = joint_hidden_states[:, seq_txt:, :]
 
@@ -188,6 +314,30 @@ class Attention(nn.Module):
 
 
 class NunchakuQwenImageTransformerBlock(nn.Module):
+    """
+    Transformer block with dual-stream (image/text) processing, modulation, and quantized attention/MLP.
+
+    Parameters
+    ----------
+    dim : int
+        Input feature dimension.
+    num_attention_heads : int
+        Number of attention heads.
+    attention_head_dim : int
+        Dimension per attention head.
+    eps : float, optional
+        Epsilon for normalization layers (default: 1e-6).
+    dtype : torch.dtype, optional
+        Data type for projections.
+    device : torch.device, optional
+        Device for projections.
+    operations : module, optional
+        Module providing normalization and linear layers.
+    scale_shift : float, optional
+        Value added to scale in modulation (default: 1.0). Nunchaku may have fused the scale's shift into bias.
+    **kwargs
+        Additional arguments for quantized linear layers.
+    """
     def __init__(
         self,
         dim: int,
@@ -206,6 +356,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         self.num_attention_heads = num_attention_heads
         self.attention_head_dim = attention_head_dim
 
+        # Modulation and normalization for image stream
         self.img_mod = nn.Sequential(
             nn.SiLU(),
             AWQW4A16Linear(dim, 6 * dim, bias=True, torch_dtype=dtype, device=device),
@@ -214,6 +365,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         self.img_norm2 = operations.LayerNorm(dim, elementwise_affine=False, eps=eps, dtype=dtype, device=device)
         self.img_mlp = NunchakuFeedForward(dim=dim, dim_out=dim, dtype=dtype, device=device, **kwargs)
 
+        # Modulation and normalization for text stream
         self.txt_mod = nn.Sequential(
             nn.SiLU(),
             AWQW4A16Linear(dim, 6 * dim, bias=True, torch_dtype=dtype, device=device),
@@ -236,7 +388,23 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         )
 
     def _modulate(self, x: torch.Tensor, mod_params: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Apply modulation to input tensor"""
+        """
+        Apply modulation to input tensor.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (batch, seq_len, dim).
+        mod_params : torch.Tensor
+            Modulation parameters of shape (batch, 3*dim).
+
+        Returns
+        -------
+        modulated_x : torch.Tensor
+            Modulated tensor.
+        gate : torch.Tensor
+            Gate tensor for residual connection.
+        """
         shift, scale, gate = mod_params.chunk(3, dim=-1)
         if self.scale_shift != 0:
             scale.add_(self.scale_shift)
@@ -250,20 +418,34 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         temb: torch.Tensor,
         image_rotary_emb: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        # sd = {
-        #     "hidden_states": hidden_states,
-        #     "encoder_hidden_states": encoder_hidden_states,
-        #     "encoder_hidden_states_mask": encoder_hidden_states_mask,
-        #     "temb": temb,
-        #     "image_rotary_emb": image_rotary_emb,
-        # }
-        # torch.save(sd, "sd.pt")
-        # exit(0)
+        """
+        Forward pass for the transformer block.
+
+        Parameters
+        ----------
+        hidden_states : torch.Tensor
+            Image stream input tensor.
+        encoder_hidden_states : torch.Tensor
+            Text stream input tensor.
+        encoder_hidden_states_mask : torch.Tensor
+            Mask for encoder hidden states.
+        temb : torch.Tensor
+            Timestep or conditioning embedding.
+        image_rotary_emb : tuple of torch.Tensor, optional
+            Rotary positional embeddings.
+
+        Returns
+        -------
+        encoder_hidden_states : torch.Tensor
+            Updated text stream tensor.
+        hidden_states : torch.Tensor
+            Updated image stream tensor.
+        """
         # Get modulation parameters for both streams
         img_mod_params = self.img_mod(temb)  # [B, 6*dim]
         txt_mod_params = self.txt_mod(temb)  # [B, 6*dim]
 
-        # nunchaku's mod_params is [B, 6*dim] instead of [B, dim*6]
+        # Nunchaku's mod_params is [B, 6*dim] instead of [B, dim*6]
         img_mod_params = (
             img_mod_params.view(img_mod_params.shape[0], -1, 6).transpose(1, 2).reshape(img_mod_params.shape[0], -1)
         )
@@ -274,10 +456,6 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         img_mod1, img_mod2 = img_mod_params.chunk(2, dim=-1)  # Each [B, 3*dim]
         txt_mod1, txt_mod2 = txt_mod_params.chunk(2, dim=-1)  # Each [B, 3*dim]
 
-        # Split modulation parameters for norm1 and norm2
-        # img_mod1, img_mod2 = img_mod_params.chunk(2, dim=-1)  # Each [B, 3*dim]
-        # txt_mod1, txt_mod2 = txt_mod_params.chunk(2, dim=-1)  # Each [B, 3*dim]
-
         # Process image stream - norm1 + modulation
         img_normed = self.img_norm1(hidden_states)
         img_modulated, img_gate1 = self._modulate(img_normed, img_mod1)
@@ -286,15 +464,10 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         txt_normed = self.txt_norm1(encoder_hidden_states)
         txt_modulated, txt_gate1 = self._modulate(txt_normed, txt_mod1)
 
-        # Use QwenAttnProcessor2_0 for joint attention computation
-        # This directly implements the DoubleStreamLayerMegatron logic:
-        # 1. Computes QKV for both streams
-        # 2. Applies QK normalization and RoPE
-        # 3. Concatenates and runs joint attention
-        # 4. Splits results back to separate streams
+        # Joint attention computation (DoubleStreamLayerMegatron logic)
         attn_output = self.attn(
-            hidden_states=img_modulated,  # Image stream (will be processed as "sample")
-            encoder_hidden_states=txt_modulated,  # Text stream (will be processed as "context")
+            hidden_states=img_modulated,      # Image stream ("sample")
+            encoder_hidden_states=txt_modulated,  # Text stream ("context")
             encoder_hidden_states_mask=encoder_hidden_states_mask,
             image_rotary_emb=image_rotary_emb,
         )
@@ -322,6 +495,47 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
 
 
 class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
+    """
+    Full transformer model for QwenImage, using Nunchaku-optimized blocks.
+
+    This model stacks multiple NunchakuQwenImageTransformerBlock layers for joint image-text modeling,
+    with quantized and fused operations for efficient inference.
+
+    Parameters
+    ----------
+    patch_size : int, optional
+        Patch size for image input (default: 2).
+    in_channels : int, optional
+        Number of input channels (default: 64).
+    out_channels : int, optional
+        Number of output channels (default: 16).
+    num_layers : int, optional
+        Number of transformer layers (default: 60).
+    attention_head_dim : int, optional
+        Dimension per attention head (default: 128).
+    num_attention_heads : int, optional
+        Number of attention heads (default: 24).
+    joint_attention_dim : int, optional
+        Dimension for joint attention (default: 3584).
+    pooled_projection_dim : int, optional
+        Dimension for pooled projection (default: 768).
+    guidance_embeds : bool, optional
+        Whether to use guidance embeddings (default: False).
+    axes_dims_rope : tuple of int, optional
+        Axes dimensions for rotary embeddings (default: (16, 56, 56)).
+    image_model : module, optional
+        Optional image model.
+    dtype : torch.dtype, optional
+        Data type for projections.
+    device : torch.device, optional
+        Device for projections.
+    operations : module, optional
+        Module providing normalization and linear layers.
+    scale_shift : float, optional
+        Value added to scale in modulation (default: 1.0).
+    **kwargs
+        Additional arguments for transformer blocks.
+    """
     def __init__(
         self,
         patch_size: int = 2,
