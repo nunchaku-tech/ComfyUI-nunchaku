@@ -498,9 +498,6 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
     """
     Full transformer model for QwenImage, using Nunchaku-optimized blocks.
 
-    This model stacks multiple NunchakuQwenImageTransformerBlock layers for joint image-text modeling,
-    with quantized and fused operations for efficient inference.
-
     Parameters
     ----------
     patch_size : int, optional
