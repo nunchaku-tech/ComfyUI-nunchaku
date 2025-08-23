@@ -32,3 +32,25 @@ A node for loading Nunchaku FLUX models. It manages model loading, device select
 .. seealso::
 
     See API reference: :class:`~comfyui_nunchaku.nodes.models.flux.NunchakuFluxDiTLoader`.
+
+.. _nunchaku-qwen-image-dit-loader:
+
+Nunchaku Qwen-Image DiT Loader
+------------------------------
+
+.. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/nodes/NunchakuQwenImageDiTLoader.png
+    :alt: NunchakuQwenImageDiTLoader
+
+A node for loading Nunchaku Qwen-Image models.
+
+**Inputs:**
+
+- **model_name**: The name of the Nunchaku Qwen-Image model. You can download the model from `HuggingFace <hf_nunchaku_>`_ or `ModelScope <ms_nunchaku_>`_.
+
+**Outputs:**
+
+- **model**: The loaded diffusion model.
+
+.. seealso::
+
+    See API reference: :class:`~comfyui_nunchaku.nodes.models.qwenimage.NunchakuQwenImageDiTLoader`.
