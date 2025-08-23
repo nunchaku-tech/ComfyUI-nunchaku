@@ -5,6 +5,7 @@ Example Workflows
     :maxdepth: 2
 
     flux.rst
+    qwenimage.rst
     kontext.rst
     controlnet.rst
     pulid.rst
