@@ -191,8 +191,33 @@ class NunchakuWheelInstaller:
 
     def run(self, source: str, version: str, dev_version_github: str, backend: str):
         try:
+            # MODIFICATION START: Automatic uninstall if nunchaku is detected
             if is_nunchaku_installed():
-                raise RuntimeError("Nunchaku is already installed. Please uninstall it manually first.")
+                print("An existing version of Nunchaku was detected. Attempting to uninstall automatically...")
+                # Command to uninstall without user confirmation (-y)
+                uninstall_command = [sys.executable, "-m", "pip", "uninstall", "nunchaku", "-y"]
+                
+                process = subprocess.Popen(uninstall_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+                
+                # Capture and print output for logging
+                output_log = []
+                for line in iter(process.stdout.readline, ""):
+                    print(line, end="")
+                    output_log.append(line)
+                process.wait()
+
+                if process.returncode != 0:
+                    full_log = "".join(output_log)
+                    raise subprocess.CalledProcessError(process.returncode, uninstall_command, output=full_log)
+                
+                # If uninstall is successful, inform the user and stop execution.
+                status_message = (
+                    "✅ An existing version of Nunchaku was detected and uninstalled.\n\n"
+                    "**Please restart ComfyUI completely.**\n\n"
+                    "Then, run this node again to install the desired version."
+                )
+                return (status_message,)
+            # MODIFICATION END
             
             ## NEW: Logic to prioritize dev version selection.
             if dev_version_github != "None":
