@@ -1,8 +1,9 @@
 """
 This module provides an advanced utility node for installing the Nunchaku Python wheel.
-It dynamically fetches available versions from GitHub, allows the user to select an
-installer backend (pip or uv), and automatically finds the most compatible wheel.
-The installation status is displayed directly on the node UI.
+It dynamically fetches available versions from GitHub and Hugging Face, mirrors the data
+for ModelScope, allows the user to select an installer backend (pip or uv), and 
+automatically finds the most compatible wheel. The installation status is displayed 
+directly on the node UI.
 """
 
 import importlib.metadata
@@ -13,65 +14,113 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
+import copy  ## NEW: Added for deepcopying release data.
 
 from packaging.version import parse as parse_version
 
 # --- Helper Functions ---
-API_URL = "https://api.github.com/repos/nunchaku-tech/nunchaku"
-
+## CHANGED: Defined separate URLs for each source.
+GITHUB_API_URL = "https://api.github.com/repos/nunchaku-tech/nunchaku"
+HF_API_URL = "https://huggingface.co/api/models/mit-han-lab/nunchaku/tree/main"
 
 def is_nunchaku_installed() -> bool:
-    """Checks if nunchaku is already installed in the environment."""
     try:
         importlib.metadata.version("nunchaku")
         return True
     except importlib.metadata.PackageNotFoundError:
         return False
 
-
 def _get_json_from_url(url: str) -> List[Dict] | Dict:
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "ComfyUI-Nunchaku-InstallerNode"})
+        ## CHANGED: Added a User-Agent header for API requests.
+        headers = {"User-Agent": "ComfyUI-Nunchaku-InstallerNode"}
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as response:
             if response.status == 200:
                 return json.loads(response.read())
-            print(f"Error: GitHub API returned status {response.status}")
             return []
-    except Exception as e:
-        print(f"Error fetching data from GitHub API: {e}")
+    except Exception:
         return []
 
+## NEW: Function dedicated to fetching from GitHub.
+def get_nunchaku_releases_from_github() -> List[Dict]:
+    releases = _get_json_from_url(f"{GITHUB_API_URL}/releases")
+    if isinstance(releases, list):
+        for release in releases:
+            release["source"] = "github"
+        return releases
+    return []
 
-def get_nunchaku_releases() -> List[Dict]:
-    print("Fetching Nunchaku versions from GitHub...")
-    releases = _get_json_from_url(f"{API_URL}/releases")
-    if not releases or not isinstance(releases, list):
-        print("Warning: Could not fetch Nunchaku versions. Using a fallback value.")
-        return [{"tag_name": "latest"}]
-    return releases
+## NEW: Helper to parse wheel files from sources like Hugging Face.
+def _parse_wheels_from_file_list(file_list: List[Dict], source_name: str, path_key: str, url_prefix: str) -> List[Dict]:
+    releases = {}
+    wheel_regex = re.compile(r"nunchaku-(.+?)\+")
+    for file_info in file_list:
+        filename = file_info.get(path_key)
+        if filename and filename.endswith(".whl"):
+            match = wheel_regex.search(filename)
+            if match:
+                version_str = match.group(1)
+                tag_name = f"v{version_str}"
+                if tag_name not in releases:
+                    releases[tag_name] = {"tag_name": tag_name, "name": f"Release {tag_name}", "assets": [], "source": source_name}
+                releases[tag_name]["assets"].append({"name": filename, "browser_download_url": f"{url_prefix}{filename}"})
+    return list(releases.values())
 
+## NEW: Function dedicated to fetching from Hugging Face.
+def get_nunchaku_releases_from_huggingface() -> List[Dict]:
+    api_response = _get_json_from_url(HF_API_URL)
+    if not isinstance(api_response, list):
+        return []
+    return _parse_wheels_from_file_list(api_response, "huggingface", "path", "https://huggingface.co/mit-han-lab/nunchaku/resolve/main/")
+
+## NEW: Major function to fetch from all sources at once and mirror HF to ModelScope.
+def fetch_and_structure_all_releases() -> Dict[str, Dict[str, Dict]]:
+    structured_releases = {"github": {}, "huggingface": {}, "modelscope": {}}
+    source_map = {"github": get_nunchaku_releases_from_github, "huggingface": get_nunchaku_releases_from_huggingface}
+    
+    for source_name, fetch_func in source_map.items():
+        for release in fetch_func():
+            if tag := release.get("tag_name"):
+                structured_releases[source_name][tag] = release
+    
+    if structured_releases["huggingface"]:
+        structured_releases["modelscope"] = copy.deepcopy(structured_releases["huggingface"])
+        modelscope_prefix = "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/"
+        for release_data in structured_releases["modelscope"].values():
+            release_data["source"] = "modelscope"
+            for asset in release_data.get("assets", []):
+                asset["browser_download_url"] = f"{modelscope_prefix}{asset['name']}"
+
+    if not any(structured_releases.values()):
+        return {"github": {"latest": {"tag_name": "latest"}}}
+    return structured_releases
+
+## NEW: Separates official and dev versions for the UI.
+def prepare_version_lists(structured_data: Dict[str, Dict[str, Dict]]) -> Tuple[List[str], List[str]]:
+    official_tags, dev_tags = set(), set()
+    for source_data in structured_data.values():
+        for tag in source_data.keys():
+            if "dev" not in tag:
+                official_tags.add(tag.lstrip("v"))
+    for tag in structured_data.get("github", {}).keys():
+        if "dev" in tag:
+            dev_tags.add(tag.lstrip("v"))
+    return ["latest"] + sorted(list(official_tags), key=parse_version, reverse=True), sorted(list(dev_tags), key=parse_version, reverse=True)
 
 def get_torch_version_string() -> Optional[str]:
     try:
         version = importlib.metadata.version("torch")
-        if not version:
-            return None
         version_parts = version.split(".")
         return f"torch{version_parts[0]}.{version_parts[1]}"
     except importlib.metadata.PackageNotFoundError:
         return None
 
-
 def get_system_info() -> Dict[str, str]:
     os_name = platform.system().lower()
     os_key = "linux" if os_name == "linux" else "win" if os_name == "windows" else "unsupported"
-    return {
-        "os": os_key,
-        "python_version": f"cp{sys.version_info.major}{sys.version_info.minor}",
-        "torch_version": get_torch_version_string(),
-    }
-
+    return {"os": os_key, "python_version": f"cp{sys.version_info.major}{sys.version_info.minor}", "torch_version": get_torch_version_string()}
 
 def find_compatible_wheel(assets: List[Dict], sys_info: Dict[str, str]) -> Optional[Dict]:
     compatible_wheels = []
@@ -82,130 +131,109 @@ def find_compatible_wheel(assets: List[Dict], sys_info: Dict[str, str]) -> Optio
             torch_v, python_v, _ = match.groups()
             os_key = "linux" if "linux" in asset["name"] else "win"
             if sys_info["os"] == os_key and sys_info["python_version"] == python_v:
-                compatible_wheels.append(
-                    {
-                        "url": asset["browser_download_url"],
-                        "name": asset["name"],
-                        "torch_version_str": torch_v,
-                        "torch_version_obj": parse_version(torch_v.replace("torch", "")),
-                    }
-                )
-    if not compatible_wheels:
-        return None
+                compatible_wheels.append({"url": asset["browser_download_url"], "name": asset["name"], "torch_version_str": torch_v, "torch_version_obj": parse_version(torch_v.replace("torch", ""))})
+    
+    if not compatible_wheels: return None
     if sys_info["torch_version"]:
         for wheel in compatible_wheels:
             if wheel["torch_version_str"] == sys_info["torch_version"]:
-                print(f"✅ Found wheel perfectly matching your PyTorch version ({sys_info['torch_version']}).")
                 return wheel
-        print(f"⚠️ No wheel exactly matches PyTorch version ({sys_info['torch_version']}). Selecting best alternative.")
     return max(compatible_wheels, key=lambda w: w["torch_version_obj"])
 
-
 def install_wheel(wheel_url: str, backend: str) -> str:
-    print(f"\n🚀 Starting installation of {wheel_url} using '{backend}'...")
-    command = [sys.executable, "-m", backend, "pip", "install", wheel_url]
-    output_log = []
+    ## CHANGED: Corrected installation command logic with an explicit if/else.
+    if backend == 'uv':
+        command = [sys.executable, "-m", "uv", "pip", "install", wheel_url]
+    else: # Default to pip
+        command = [sys.executable, "-m", "pip", "install", wheel_url]
+        
     try:
-        process = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace"
-        )
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+        output_log = []
         for line in iter(process.stdout.readline, ""):
-            print(line, end="")
+            print(line, end="") # This prints the live output from the installer
             output_log.append(line)
-        process.stdout.close()
-        return_code = process.wait()
+        process.wait()
         full_log = "".join(output_log)
-        if return_code != 0:
-            raise subprocess.CalledProcessError(return_code, command, output=full_log)
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, command, output=full_log)
         return full_log
     except FileNotFoundError:
-        raise FileNotFoundError(f"Error: Command '{backend}' not found. Is it installed and in your PATH?")
+        raise FileNotFoundError(f"Error: Command '{backend}' not found. Is it in your PATH?")
     except subprocess.CalledProcessError as e:
-        error_message = f"Installation failed (exit code {e.returncode}).\n\n--- LOG ---\n{e.output}"
-        raise RuntimeError(error_message) from e
-
+        raise RuntimeError(f"Installation failed (exit code {e.returncode}).\n\n--- LOG ---\n{e.output}") from e
 
 # --- ComfyUI Node Definition ---
-ALL_RELEASES = get_nunchaku_releases()
-AVAILABLE_VERSIONS = [release["tag_name"] for release in ALL_RELEASES if "tag_name" in release] or ["latest"]
 
+## NEW: Pre-fetch all release data on startup to improve performance.
+ALL_RELEASES_DATA = fetch_and_structure_all_releases()
+OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_version_lists(ALL_RELEASES_DATA)
+DEV_CHOICES = ["None"] + DEV_VERSIONS
 
 class NunchakuWheelInstaller:
     OUTPUT_NODE = True
     FUNCTION = "run"
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku Installer"
-
     @classmethod
-    def IS_CHANGED(s, **kwargs):
-        from time import time
-
-        return time()
-
+    def IS_CHANGED(cls, **kwargs): from time import time; return time()
     @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "version": (AVAILABLE_VERSIONS, {}),
+    def INPUT_TYPES(cls):
+        ## CHANGED: Inputs now include a source selector and a separate dropdown for dev versions.
+        return {"required": {
+                "source": (["github", "huggingface", "modelscope"], {}),
+                "version": (OFFICIAL_VERSIONS, {}),
+                "dev_version_github": (DEV_CHOICES, {"default": "None"}),
                 "backend": (["pip", "uv"], {}),
-            }
-        }
+            }}
+            
+    RETURN_TYPES = ("STRING",); RETURN_NAMES = ("status",)
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("status",)
-
-    def run(self, version: str, backend: str):
-        status_message = "Ready. Waiting to start..."
+    def run(self, source: str, version: str, dev_version_github: str, backend: str):
         try:
-            print("--- Nunchaku Installer Node ---")
-
             if is_nunchaku_installed():
-                raise RuntimeError(
-                    "Nunchaku is already installed.\n"
-                    "Please uninstall it manually with the command:\n\n"
-                    "pip uninstall nunchaku\n\n"
-                    "Then, re-run this node."
-                )
-
+                raise RuntimeError("Nunchaku is already installed. Please uninstall it manually first.")
+            
+            ## NEW: Logic to prioritize dev version selection.
+            if dev_version_github != "None":
+                final_version_tag = f"v{dev_version_github}"
+                source = "github"
+            else:
+                final_version_tag = "latest" if version == "latest" else f"v{version}"
+            
             sys_info = get_system_info()
-            print(
-                f"🔍 Detecting system config: OS={sys_info['os']}, Python={sys_info['python_version']}, PyTorch={sys_info['torch_version'] or 'Not found'}"
-            )
-            if sys_info["os"] == "unsupported":
-                raise RuntimeError(f"Unsupported OS: {platform.system()}")
+            if sys_info["os"] == "unsupported": raise RuntimeError(f"Unsupported OS: {platform.system()}")
+            
+            source_versions = ALL_RELEASES_DATA.get(source, {})
+            
+            ## CHANGED: 'latest' is now resolved dynamically based on the selected source.
+            if final_version_tag == "latest":
+                official_tags = [v.lstrip('v') for v in source_versions.keys() if "dev" not in v]
+                if not official_tags: raise RuntimeError(f"No official versions found on source '{source}'.")
+                final_version_tag = f"v{sorted(official_tags, key=parse_version, reverse=True)[0]}"
 
-            print(f"⬇️ Finding release data for tag '{version}'...")
-            release_data = next((r for r in ALL_RELEASES if r.get("tag_name") == version), None)
+            release_data = source_versions.get(final_version_tag)
+            ## NEW: Better error handling if a version isn't on the selected source.
             if not release_data:
-                url_to_fetch = (
-                    f"{API_URL}/releases/latest" if version == "latest" else f"{API_URL}/releases/tags/{version}"
-                )
-                release_data = _get_json_from_url(url_to_fetch)
-                if isinstance(release_data, list):
-                    release_data = release_data[0] if release_data else None
-            if not release_data:
-                raise RuntimeError(f"Could not find release info for version '{version}'.")
-
-            print(f"Found release: {release_data.get('name', version)}")
+                available_on = [s for s, data in ALL_RELEASES_DATA.items() if final_version_tag in data]
+                msg = f"Version '{final_version_tag}' not available from '{source}'."
+                if available_on: msg += f" Try sources: {available_on}"
+                raise RuntimeError(msg)
+            
             assets = release_data.get("assets", [])
+            if not assets: raise RuntimeError(f"No downloadable files found for version '{final_version_tag}'.")
+            
             wheel_to_install = find_compatible_wheel(assets, sys_info)
-            if not wheel_to_install:
-                raise RuntimeError("❌ Could not find a compatible wheel for your system.")
-
-            print(f"🎯 Compatible wheel found: {wheel_to_install['name']}")
+            if not wheel_to_install: raise RuntimeError("Could not find a compatible wheel for your system.")
+            
             log = install_wheel(wheel_to_install["url"], backend)
-
-            status_message = (
-                f"✅ Success! Installed:\n{wheel_to_install['name']}\n\n"
-                "IMPORTANT: Please close ComfyUI completely and restart it for the changes to take effect.\n\n"
-                f"--- INSTALLATION LOG ---\n{log}"
-            )
+            status_message = f"✅ Success! Installed: {wheel_to_install['name']}\n\nRestart completely ComfyUI to apply changes.\n\n--- LOG ---\n{log}"
+        
         except Exception as e:
             print(f"\n❌ An error occurred during installation:\n{e}")
             status_message = f"❌ ERROR:\n{str(e)}"
-
+        
         return (status_message,)
-
 
 NODE_CLASS_MAPPINGS = {"NunchakuWheelInstaller": NunchakuWheelInstaller}
 NODE_DISPLAY_NAME_MAPPINGS = {"NunchakuWheelInstaller": "Nunchaku Installer"}
