@@ -183,11 +183,10 @@ class NunchakuFluxLoraStack:
                         "Make sure the model is loaded by `Nunchaku FLUX DiT Loader`."
                     },
                 ),
-
             },
-            "optional": {}
+            "optional": {},
         }
-        
+
         # Add fixed number of LoRA inputs (15 slots)
         for i in range(1, 16):  # Support up to 15 LoRAs
             inputs["optional"][f"lora_name_{i}"] = (
@@ -204,7 +203,7 @@ class NunchakuFluxLoraStack:
                     "tooltip": f"Strength for LoRA {i}. This value can be negative.",
                 },
             )
-            
+
         return inputs
 
     RETURN_TYPES = ("MODEL",)
@@ -237,21 +236,21 @@ class NunchakuFluxLoraStack:
         """
         # Collect LoRA information to apply
         loras_to_apply = []
-        
+
         for i in range(1, 16):  # Check all 15 LoRA slots
             lora_name = kwargs.get(f"lora_name_{i}")
             lora_strength = kwargs.get(f"lora_strength_{i}", 1.0)
-            
+
             # Skip unset or None LoRAs
             if lora_name is None or lora_name == "None" or lora_name == "":
                 continue
-                
+
             # Skip LoRAs with zero strength
             if abs(lora_strength) < 1e-5:
                 continue
-                
+
             loras_to_apply.append((lora_name, lora_strength))
-        
+
         # If no LoRAs need to be applied, return the original model
         if not loras_to_apply:
             return (model,)
@@ -270,7 +269,7 @@ class NunchakuFluxLoraStack:
 
         # Clear existing LoRA list
         ret_model_wrapper.loras = []
-        
+
         # Track the maximum input channels needed
         max_in_channels = ret_model.model.model_config.unet_config["in_channels"]
 
