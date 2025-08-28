@@ -61,9 +61,7 @@ def get_nunchaku_releases_from_github() -> List[Dict]:
 
 
 # CHANGE: Uses a more robust regex to extract the version.
-def _parse_wheels_from_file_list(
-    file_list: List[Dict], source_name: str, path_key: str, url_prefix: str
-) -> List[Dict]:
+def _parse_wheels_from_file_list(file_list: List[Dict], source_name: str, path_key: str, url_prefix: str) -> List[Dict]:
     releases = {}
 
     # This new regex `nunchaku-([^-+]+)` stops at the first `-` or `+`,
