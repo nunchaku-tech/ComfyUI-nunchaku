@@ -23,7 +23,9 @@ from packaging.version import parse as parse_version
 GITHUB_API_URL = "https://api.github.com/repos/nunchaku-tech/nunchaku"
 HF_API_URL = "https://huggingface.co/api/models/mit-han-lab/nunchaku/tree/main"
 # CHANGE: Added the direct ModelScope API URL, replacing the previous mirror logic.
-MODEL_SCOPE_API_URL = "https://modelscope.cn/api/v1/models/nunchaku-tech/nunchaku/repo/files?Revision=master&PageSize=500"
+MODEL_SCOPE_API_URL = (
+    "https://modelscope.cn/api/v1/models/nunchaku-tech/nunchaku/repo/files?Revision=master&PageSize=500"
+)
 
 
 def is_nunchaku_installed() -> bool:
@@ -59,13 +61,15 @@ def get_nunchaku_releases_from_github() -> List[Dict]:
 
 
 # CHANGE: Uses a more robust regex to extract the version.
-def _parse_wheels_from_file_list(file_list: List[Dict], source_name: str, path_key: str, url_prefix: str) -> List[Dict]:
+def _parse_wheels_from_file_list(
+    file_list: List[Dict], source_name: str, path_key: str, url_prefix: str
+) -> List[Dict]:
     releases = {}
-    
+
     # This new regex `nunchaku-([^-+]+)` stops at the first `-` or `+`,
     # making it more reliable for various wheel filename formats.
     wheel_regex = re.compile(r"nunchaku-([^-+]+)")
-    
+
     for file_info in file_list:
         filename = file_info.get(path_key)
         if filename and filename.endswith(".whl"):
@@ -83,7 +87,7 @@ def _parse_wheels_from_file_list(file_list: List[Dict], source_name: str, path_k
                 releases[tag_name]["assets"].append(
                     {"name": filename, "browser_download_url": f"{url_prefix}{filename}"}
                 )
-                
+
     return list(releases.values())
 
 
@@ -95,36 +99,37 @@ def get_nunchaku_releases_from_huggingface() -> List[Dict]:
         api_response, "huggingface", "path", "https://huggingface.co/mit-han-lab/nunchaku/resolve/main/"
     )
 
+
 # NEW: Function to fetch releases directly from the ModelScope API.
 def get_nunchaku_releases_from_modelscope() -> List[Dict]:
     api_response = _get_json_from_url(MODEL_SCOPE_API_URL)
-    
+
     # Navigate the specific ModelScope API response structure: Data -> Files
     if isinstance(api_response, dict):
         inner_data = api_response.get("Data", {})
         file_list = inner_data.get("Files") if isinstance(inner_data, dict) else None
     else:
         file_list = None
-    
+
     if not isinstance(file_list, list):
         return []
-        
+
     # Use the "Name" key (capitalized) to get the filename.
     return _parse_wheels_from_file_list(
-        file_list, 
-        "modelscope", 
-        "Name", 
-        "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/"
+        file_list,
+        "modelscope",
+        "Name",
+        "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/",
     )
 
 
 def fetch_and_structure_all_releases() -> Dict[str, Dict[str, Dict]]:
     structured_releases = {"github": {}, "huggingface": {}, "modelscope": {}}
-    
+
     source_map = {
-        "github": get_nunchaku_releases_from_github, 
+        "github": get_nunchaku_releases_from_github,
         "huggingface": get_nunchaku_releases_from_huggingface,
-        "modelscope": get_nunchaku_releases_from_modelscope # Calls the new ModelScope function.
+        "modelscope": get_nunchaku_releases_from_modelscope,  # Calls the new ModelScope function.
     }
 
     for source_name, fetch_func in source_map.items():
@@ -134,7 +139,7 @@ def fetch_and_structure_all_releases() -> Dict[str, Dict[str, Dict]]:
 
     if not any(structured_releases.values()):
         return {"github": {"latest": {"tag_name": "latest"}}}
-        
+
     return structured_releases
 
 
@@ -240,6 +245,7 @@ class NunchakuWheelInstaller:
     @classmethod
     def IS_CHANGED(cls, **kwargs):
         from time import time
+
         return time()
 
     @classmethod
@@ -278,7 +284,7 @@ class NunchakuWheelInstaller:
                 if process.returncode != 0:
                     full_log = "".join(output_log)
                     raise subprocess.CalledProcessError(process.returncode, uninstall_command, output=full_log)
-                
+
                 status_message = (
                     "✅ An existing version of Nunchaku was detected and uninstalled.\n\n"
                     "**Please restart ComfyUI completely.**\n\n"
