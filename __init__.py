@@ -43,11 +43,12 @@ except ImportError:
     logger.exception("Node `NunchakuQwenImageDiTLoader` import failed:")
 
 try:
-    from .nodes.lora.flux import NunchakuFluxLoraLoader
+    from .nodes.lora.flux import NunchakuFluxLoraLoader, NunchakuFluxLoraStack
 
     NODE_CLASS_MAPPINGS["NunchakuFluxLoraLoader"] = NunchakuFluxLoraLoader
+    NODE_CLASS_MAPPINGS["NunchakuFluxLoraStack"] = NunchakuFluxLoraStack
 except ImportError:
-    logger.exception("Node `NunchakuFluxLoraLoader` import failed:")
+    logger.exception("Nodes `NunchakuFluxLoraLoader` and `NunchakuFluxLoraStack` import failed:")
 
 
 try:
