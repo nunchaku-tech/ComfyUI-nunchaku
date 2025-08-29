@@ -73,3 +73,45 @@ Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
 
 Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
+
+(Optional) Step 3: Install Radial Attention Dependencies
+--------------------------------------------------------
+
+For advanced video generation optimization with `Radial Attention <paper_radial_attention_>`_, install the sparse attention backends:
+
+System Requirements
+~~~~~~~~~~~~~~~~~~~
+
+* **Python**: >= 3.9
+* **PyTorch**: >= 2.3.0
+* **CUDA**: >= 12.0 (12.4+ recommended for fp8 support)
+* **GPU**: RTX 30/40/50 series, A100, H100, or compatible
+* **Additional**: ninja (for compilation)
+
+(Recommended) Option 1: Block-Sparse-SageAttention-2.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+
+   # Install build dependencies
+   pip install ninja torch torchvision transformers diffusers einops
+   pip install git+https://github.com/thu-ml/SpargeAttn
+
+Option 2: Sparse_SageAttention_API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+   # Install the sparse attention API, but you also need to install triton
+   pip install git+https://github.com/jt-zhang/Sparse_SageAttention_API
+
+Verification
+~~~~~~~~~~~~
+
+To verify radial attention is available, check the ComfyUI logs for:
+
+.. code-block:: text
+
+   RadialAttention: ✓ Available
+   MaskMap: ✓ Available
+
+If you see ``✗ Not found``, the sparse attention backends are not properly installed.
