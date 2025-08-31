@@ -28,25 +28,8 @@ jobs:
     env:
       COMFYUI_MODELS_ROOT: "/home/nunchaku/comfyui_models"
     steps:
-      - name: Determine ref
-        id: set-ref
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # Use the merged commit SHA for PRs
-            echo "ref=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            # Use github.event.inputs.ref if provided, else default to main
-            if [[ -n "${{ github.event.inputs.ref }}" ]]; then
-              echo "ref=${{ github.event.inputs.ref }}" >> $GITHUB_OUTPUT
-            else
-              echo "ref=main" >> $GITHUB_OUTPUT
-            fi
-          fi
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.set-ref.outputs.ref }}
-          submodules: true
       - name: Show current commit
         run: git log -1 --oneline
       - name: Set up Python
