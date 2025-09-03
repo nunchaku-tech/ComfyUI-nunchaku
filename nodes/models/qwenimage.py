@@ -12,7 +12,7 @@ import folder_paths
 import torch
 from comfy import model_detection, model_management
 
-from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config, get_gpu_memory
+from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_precision_from_quantization_config
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 
@@ -62,7 +62,6 @@ def load_diffusion_model_state_dict(
     load_device = model_management.get_torch_device()
     check_hardware_compatibility(quantization_config, load_device)
 
-    # model_config = model_detection.model_config_from_unet_config({"image_model": "qwen_image"}, state_dict=sd)
     model_config = NunchakuQwenImage(
         {"image_model": "qwen_image", "scale_shift": 0, "rank": rank, "precision": precision}
     )
@@ -178,5 +177,8 @@ class NunchakuQwenImageDiTLoader:
             assert cpu_offload == "disable", "Invalid CPU offload option"
             cpu_offload_enabled = False
             logger.info("Disabling CPU offload")
+
+        if cpu_offload_enabled:
+            model.model.diffusion_model.set_offload(cpu_offload_enabled)
 
         return (model,)

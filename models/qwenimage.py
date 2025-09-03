@@ -6,6 +6,7 @@ This module implements the Nunchaku Qwen-Image model and related components.
     Inherits and modifies from https://github.com/comfyanonymous/ComfyUI/blob/v0.3.51/comfy/ldm/qwen_image/model.py
 """
 
+import gc
 from typing import Optional, Tuple
 
 import torch
@@ -22,9 +23,9 @@ from comfy.ldm.qwen_image.model import (
 from torch import nn
 
 from nunchaku.models.linear import AWQW4A16Linear, SVDQW4A4Linear
-from nunchaku.ops.fused import fused_gelu_mlp
 from nunchaku.models.utils import CPUOffloadManager
-import gc
+from nunchaku.ops.fused import fused_gelu_mlp
+
 from ..mixins.model import NunchakuModelMixin
 
 
