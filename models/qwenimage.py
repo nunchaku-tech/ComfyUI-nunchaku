@@ -23,6 +23,9 @@ from torch import nn
 
 from nunchaku.models.linear import AWQW4A16Linear, SVDQW4A4Linear
 from nunchaku.ops.fused import fused_gelu_mlp
+from nunchaku.models.utils import CPUOffloadManager
+import gc
+from ..mixins.model import NunchakuModelMixin
 
 
 class NunchakuGELU(GELU):
@@ -499,7 +502,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         return encoder_hidden_states, hidden_states
 
 
-class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
+class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel, NunchakuModelMixin):
     """
     Full transformer model for QwenImage, using Nunchaku-optimized blocks.
 
@@ -609,3 +612,200 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel):
             device=device,
         )
         self.gradient_checkpointing = False
+
+    def forward(
+        self,
+        x,
+        timesteps,
+        context,
+        attention_mask=None,
+        guidance: torch.Tensor = None,
+        ref_latents=None,
+        transformer_options={},
+        **kwargs,
+    ):
+        """
+        Forward pass of the Nunchaku Qwen-Image model.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image tensor of shape (batch, channels, height, width).
+        timesteps : torch.Tensor or int
+            Timestep(s) for diffusion process.
+        context : torch.Tensor
+            Textual context tensor (e.g., from a text encoder).
+        attention_mask : torch.Tensor, optional
+            Optional attention mask for the context.
+        guidance : torch.Tensor, optional
+            Optional guidance tensor for classifier-free guidance.
+        ref_latents : list[torch.Tensor], optional
+            Optional list of reference latent tensors for multi-image conditioning.
+        transformer_options : dict, optional
+            Dictionary of options for transformer block patching and replacement.
+        **kwargs
+            Additional keyword arguments. Supports 'ref_latents_method' to control reference latent handling.
+
+        Returns
+        -------
+        torch.Tensor
+            Output tensor of shape (batch, channels, height, width), matching the input spatial dimensions.
+
+        """
+        device = x.device
+        if self.offload:
+            self.offload_manager.set_device(device)
+
+        timestep = timesteps
+        encoder_hidden_states = context
+        encoder_hidden_states_mask = attention_mask
+
+        hidden_states, img_ids, orig_shape = self.process_img(x)
+        num_embeds = hidden_states.shape[1]
+
+        if ref_latents is not None:
+            h = 0
+            w = 0
+            index = 0
+            index_ref_method = kwargs.get("ref_latents_method", "index") == "index"
+            for ref in ref_latents:
+                if index_ref_method:
+                    index += 1
+                    h_offset = 0
+                    w_offset = 0
+                else:
+                    index = 1
+                    h_offset = 0
+                    w_offset = 0
+                    if ref.shape[-2] + h > ref.shape[-1] + w:
+                        w_offset = w
+                    else:
+                        h_offset = h
+                    h = max(h, ref.shape[-2] + h_offset)
+                    w = max(w, ref.shape[-1] + w_offset)
+
+                kontext, kontext_ids, _ = self.process_img(ref, index=index, h_offset=h_offset, w_offset=w_offset)
+                hidden_states = torch.cat([hidden_states, kontext], dim=1)
+                img_ids = torch.cat([img_ids, kontext_ids], dim=1)
+
+        txt_start = round(
+            max(
+                ((x.shape[-1] + (self.patch_size // 2)) // self.patch_size) // 2,
+                ((x.shape[-2] + (self.patch_size // 2)) // self.patch_size) // 2,
+            )
+        )
+        txt_ids = (
+            torch.arange(txt_start, txt_start + context.shape[1], device=x.device)
+            .reshape(1, -1, 1)
+            .repeat(x.shape[0], 1, 3)
+        )
+        ids = torch.cat((txt_ids, img_ids), dim=1)
+        image_rotary_emb = self.pe_embedder(ids).squeeze(1).unsqueeze(2).to(x.dtype)
+        del ids, txt_ids, img_ids
+
+        hidden_states = self.img_in(hidden_states)
+        encoder_hidden_states = self.txt_norm(encoder_hidden_states)
+        encoder_hidden_states = self.txt_in(encoder_hidden_states)
+
+        if guidance is not None:
+            guidance = guidance * 1000
+
+        temb = (
+            self.time_text_embed(timestep, hidden_states)
+            if guidance is None
+            else self.time_text_embed(timestep, guidance, hidden_states)
+        )
+
+        patches_replace = transformer_options.get("patches_replace", {})
+        blocks_replace = patches_replace.get("dit", {})
+
+        # Setup compute stream for offloading
+        if self.offload:
+            self.offload_manager.initialize()
+            compute_stream = self.offload_manager.compute_stream
+        else:
+            compute_stream = torch.cuda.current_stream()
+
+        for i, block in enumerate(self.transformer_blocks):
+            with torch.cuda.stream(compute_stream):
+                if self.offload:
+                    block = self.offload_manager.get_block(i)
+                if ("double_block", i) in blocks_replace:
+
+                    def block_wrap(args):
+                        out = {}
+                        out["txt"], out["img"] = block(
+                            hidden_states=args["img"],
+                            encoder_hidden_states=args["txt"],
+                            encoder_hidden_states_mask=encoder_hidden_states_mask,
+                            temb=args["vec"],
+                            image_rotary_emb=args["pe"],
+                        )
+                        return out
+
+                    out = blocks_replace[("double_block", i)](
+                        {"img": hidden_states, "txt": encoder_hidden_states, "vec": temb, "pe": image_rotary_emb},
+                        {"original_block": block_wrap},
+                    )
+                    hidden_states = out["img"]
+                    encoder_hidden_states = out["txt"]
+                else:
+                    encoder_hidden_states, hidden_states = block(
+                        hidden_states=hidden_states,
+                        encoder_hidden_states=encoder_hidden_states,
+                        encoder_hidden_states_mask=encoder_hidden_states_mask,
+                        temb=temb,
+                        image_rotary_emb=image_rotary_emb,
+                    )
+            if self.offload:
+                self.offload_manager.step()
+
+        hidden_states = self.norm_out(hidden_states, temb)
+        hidden_states = self.proj_out(hidden_states)
+
+        hidden_states = hidden_states[:, :num_embeds].view(
+            orig_shape[0], orig_shape[-2] // 2, orig_shape[-1] // 2, orig_shape[1], 2, 2
+        )
+        hidden_states = hidden_states.permute(0, 3, 1, 4, 2, 5)
+        return hidden_states.reshape(orig_shape)[:, :, :, : x.shape[-2], : x.shape[-1]]
+
+    def set_offload(self, offload: bool, **kwargs):
+        """
+        Enable or disable CPU offloading for the transformer blocks.
+
+        Parameters
+        ----------
+        offload : bool
+            If True, enable CPU offloading. If False, disable it.
+        **kwargs
+            Additional keyword arguments:
+                - use_pin_memory (bool): Whether to use pinned memory (default: True).
+                - num_blocks_on_gpu (int): Number of transformer blocks to keep on GPU (default: 1).
+
+        Notes
+        -----
+        - When offloading is enabled, only a subset of modules remain on GPU.
+        - When disabling, memory is released and CUDA cache is cleared.
+        """
+        if offload == self.offload:
+            # Nothing changed, just return
+            return
+        self.offload = offload
+        if offload:
+            self.offload_manager = CPUOffloadManager(
+                self.transformer_blocks,
+                use_pin_memory=kwargs.get("use_pin_memory", True),
+                on_gpu_modules=[
+                    self.img_in,
+                    self.txt_in,
+                    self.txt_norm,
+                    self.time_text_embed,
+                    self.norm_out,
+                    self.proj_out,
+                ],
+                num_blocks_on_gpu=kwargs.get("num_blocks_on_gpu", 1),
+            )
+        else:
+            self.offload_manager = None
+            gc.collect()
+            torch.cuda.empty_cache()

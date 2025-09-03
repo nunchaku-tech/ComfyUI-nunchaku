@@ -12,7 +12,7 @@ import folder_paths
 import torch
 from comfy import model_detection, model_management
 
-from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config
+from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config, get_gpu_memory
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 
@@ -128,6 +128,14 @@ class NunchakuQwenImageDiTLoader:
                     folder_paths.get_filename_list("diffusion_models"),
                     {"tooltip": "The Nunchaku Qwen-Image model."},
                 ),
+                "cpu_offload": (
+                    ["auto", "enable", "disable"],
+                    {
+                        "default": "auto",
+                        "tooltip": "Whether to enable CPU offload for the transformer model."
+                        "auto' will enable it if the GPU memory is less than 15G.",
+                    },
+                ),
             },
         }
 
@@ -136,7 +144,7 @@ class NunchakuQwenImageDiTLoader:
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku Qwen-Image DiT Loader"
 
-    def load_model(self, model_name: str, **kwargs):
+    def load_model(self, model_name: str, cpu_offload: str, **kwargs):
         """
         Load the Qwen-Image model from file and return a patched model.
 
@@ -144,6 +152,8 @@ class NunchakuQwenImageDiTLoader:
         ----------
         model_name : str
             The filename of the Qwen-Image model to load.
+        cpu_offload : str
+            Whether to enable CPU offload for the transformer model.
 
         Returns
         -------
@@ -153,4 +163,20 @@ class NunchakuQwenImageDiTLoader:
         model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
         model = load_diffusion_model_state_dict(sd, metadata=metadata)
+
+        if cpu_offload == "auto":
+            if get_gpu_memory() < 15:  # 15GB threshold
+                cpu_offload_enabled = True
+                logger.info("VRAM < 15GiB, enabling CPU offload")
+            else:
+                cpu_offload_enabled = False
+                logger.info("VRAM > 15GiB, disabling CPU offload")
+        elif cpu_offload == "enable":
+            cpu_offload_enabled = True
+            logger.info("Enabling CPU offload")
+        else:
+            assert cpu_offload == "disable", "Invalid CPU offload option"
+            cpu_offload_enabled = False
+            logger.info("Disabling CPU offload")
+
         return (model,)
