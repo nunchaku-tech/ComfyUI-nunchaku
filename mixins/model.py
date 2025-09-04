@@ -37,7 +37,7 @@ class NunchakuModelMixin:
         """
         raise NotImplementedError("CPU offload needs to be implemented in the child class")
 
-    def to(self, *args, **kwargs):
+    def to_safely(self, *args, **kwargs):
         """
         Safely move the model to a device or change its dtype.
 
@@ -95,4 +95,4 @@ class NunchakuModelMixin:
             if device_arg_or_kwarg_present:
                 warn("Skipping moving the model to GPU as offload is enabled", UserWarning)
                 return self
-        return super(type(self), self).to(*args, **kwargs)
+        return self.to(*args, **kwargs)
