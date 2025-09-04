@@ -721,11 +721,9 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         blocks_replace = patches_replace.get("dit", {})
 
         # Setup compute stream for offloading
+        compute_stream = torch.cuda.current_stream()
         if self.offload:
-            self.offload_manager.initialize()
-            compute_stream = self.offload_manager.compute_stream
-        else:
-            compute_stream = torch.cuda.current_stream()
+            self.offload_manager.initialize(compute_stream)
 
         for i, block in enumerate(self.transformer_blocks):
             with torch.cuda.stream(compute_stream):
@@ -759,7 +757,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                         image_rotary_emb=image_rotary_emb,
                     )
             if self.offload:
-                self.offload_manager.step()
+                self.offload_manager.step(compute_stream)
 
         hidden_states = self.norm_out(hidden_states, temb)
         hidden_states = self.proj_out(hidden_states)
