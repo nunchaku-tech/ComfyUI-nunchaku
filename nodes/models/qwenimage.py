@@ -15,6 +15,7 @@ from comfy import model_detection, model_management
 from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_precision_from_quantization_config
 
 from ...model_configs.qwenimage import NunchakuQwenImage
+from ...model_patcher import NunchakuModelPatcher
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -92,7 +93,7 @@ def load_diffusion_model_state_dict(
     model = model_config.get_model(new_sd, "")
     model = model.to(offload_device)
     model.load_model_weights(new_sd, "")
-    return comfy.model_patcher.ModelPatcher(model, load_device=load_device, offload_device=offload_device)
+    return NunchakuModelPatcher(model, load_device=load_device, offload_device=offload_device)
 
 
 class NunchakuQwenImageDiTLoader:

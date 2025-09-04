@@ -503,7 +503,7 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
         return encoder_hidden_states, hidden_states
 
 
-class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel, NunchakuModelMixin):
+class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransformer2DModel):
     """
     Full transformer model for QwenImage, using Nunchaku-optimized blocks.
 
@@ -614,7 +614,7 @@ class NunchakuQwenImageTransformer2DModel(QwenImageTransformer2DModel, NunchakuM
         )
         self.gradient_checkpointing = False
 
-    def forward(
+    def _forward(
         self,
         x,
         timesteps,
