@@ -8,5 +8,7 @@ API Reference
    models
    model_configs
    model_base
+   mixins
+   model_patcher
    wrappers
    utils
