@@ -10,11 +10,6 @@ import torch
 class NunchakuModelMixin:
     """
     Mixin class for Nunchaku models.
-
-    Attributes
-    ----------
-    offload : bool
-        Indicates whether CPU offloading is enabled for the model.
     """
 
     offload: bool = False
@@ -41,7 +36,8 @@ class NunchakuModelMixin:
         """
         Safely move the model to a device or change its dtype.
 
-        This method overrides the default `.to()` behavior to:
+        This method overrides the default ``.to()`` behavior to:
+
         - Prevent moving the model to GPU if offload is enabled.
         - Prevent changing the dtype of quantized models.
 
