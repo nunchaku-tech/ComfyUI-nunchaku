@@ -241,7 +241,7 @@ try:
     OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_version_lists(ALL_RELEASES_DATA)
     DEV_CHOICES = ["None"] + DEV_VERSIONS
 
-except urllib.error.URLError as e:
+except Exception as e:
     # If a network error occurs, initialize with placeholder values.
     print(f"Network error during initialization: {e}. Node will run in offline mode.")
     ALL_RELEASES_DATA = {"github": {}, "huggingface": {}, "modelscope": {}}
