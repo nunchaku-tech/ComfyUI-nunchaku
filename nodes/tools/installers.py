@@ -229,9 +229,25 @@ def install_wheel(wheel_url: str, backend: str) -> str:
 # --- ComfyUI Node Definition ---
 
 # Pre-fetch all release data on startup to improve performance.
-ALL_RELEASES_DATA = fetch_and_structure_all_releases()
-OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_version_lists(ALL_RELEASES_DATA)
-DEV_CHOICES = ["None"] + DEV_VERSIONS
+try:
+    # Attempt to fetch release data from all sources.
+    ALL_RELEASES_DATA = fetch_and_structure_all_releases()
+    
+    # Check if any data was actually fetched. If not, it's likely a network issue.
+    if not any(ALL_RELEASES_DATA.values()):
+        raise urllib.error.URLError("No release data could be fetched from any source.")
+
+    # If data is available, prepare the version lists as normal.
+    OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_version_lists(ALL_RELEASES_DATA)
+    DEV_CHOICES = ["None"] + DEV_VERSIONS
+
+except urllib.error.URLError as e:
+    # If a network error occurs, initialize with placeholder values.
+    print(f"Network error during initialization: {e}. Node will run in offline mode.")
+    ALL_RELEASES_DATA = {"github": {}, "huggingface": {}, "modelscope": {}}
+    OFFICIAL_VERSIONS = ["no internet"]
+    DEV_VERSIONS = []
+    DEV_CHOICES = ["None"]
 
 
 class NunchakuWheelInstaller:
@@ -261,6 +277,16 @@ class NunchakuWheelInstaller:
     RETURN_NAMES = ("status",)
 
     def run(self, source: str, version: str, dev_version_github: str, backend: str):
+
+        # Handle the "no internet" case first.
+        if version == "no internet":
+            status_message = (
+                "❌ No internet connection detected on startup.\n\n"
+                "Please check your network connection and restart ComfyUI "
+                "to fetch available versions."
+            )
+            return (status_message,)
+
         try:
             # CHANGE: Added automatic uninstallation of any pre-existing nunchaku version.
             if is_nunchaku_installed():
