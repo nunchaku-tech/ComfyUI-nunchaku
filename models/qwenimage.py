@@ -623,6 +623,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         guidance: torch.Tensor = None,
         ref_latents=None,
         transformer_options={},
+        control=None,
         **kwargs,
     ):
         """
@@ -756,6 +757,33 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                         temb=temb,
                         image_rotary_emb=image_rotary_emb,
                     )
+                # ControlNet helpers(device/dtype-safe residual adds)
+                _control = (
+                    control
+                    if control is not None
+                    else (transformer_options.get("control", None) if isinstance(transformer_options, dict) else None)
+                )
+                if isinstance(_control, dict):
+                    control_i = _control.get("input")
+                    try:
+                        _scale = float(_control.get("weight", _control.get("scale", 1.0)))
+                    except Exception:
+                        _scale = 1.0
+                else:
+                    control_i = None
+                    _scale = 1.0
+                if control_i is not None and i < len(control_i):
+                    add = control_i[i]
+                    if add is not None:
+                        if (
+                            getattr(add, "device", None) != hidden_states.device
+                            or getattr(add, "dtype", None) != hidden_states.dtype
+                        ):
+                            add = add.to(device=hidden_states.device, dtype=hidden_states.dtype, non_blocking=True)
+                        t = min(hidden_states.shape[1], add.shape[1])
+                        if t > 0:
+                            hidden_states[:, :t].add_(add[:, :t], alpha=_scale)
+
             if self.offload:
                 self.offload_manager.step(compute_stream)
 

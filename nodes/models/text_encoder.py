@@ -296,10 +296,9 @@ def nunchaku_flux_clip(nunchaku_t5_path: str | os.PathLike[str], dtype_t5=None) 
             )
 
             # Use meta device for T5XXL to avoid loading into memory before replacement
-            with torch.device("meta"):
-                self.t5xxl = comfy.text_encoders.sd3_clip.T5XXLModel(
-                    device=device, dtype=dtype_t5, model_options=model_options
-                )
+            self.t5xxl = comfy.text_encoders.sd3_clip.T5XXLModel(
+                device="meta", dtype=dtype_t5, model_options=model_options
+            )
 
             transformer = NunchakuT5EncoderModel.from_pretrained(nunchaku_t5_path, device=device, torch_dtype=dtype_t5)
             transformer.forward = types.MethodType(nunchaku_t5_forward, transformer)
