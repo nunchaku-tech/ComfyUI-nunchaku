@@ -232,7 +232,7 @@ def install_wheel(wheel_url: str, backend: str) -> str:
 try:
     # Attempt to fetch release data from all sources.
     ALL_RELEASES_DATA = fetch_and_structure_all_releases()
-    
+
     # Check if any data was actually fetched. If not, it's likely a network issue.
     if not any(ALL_RELEASES_DATA.values()):
         raise urllib.error.URLError("No release data could be fetched from any source.")
