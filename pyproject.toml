@@ -21,10 +21,57 @@ description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference e
 version = "1.0.1"
 license = { file = "LICENCE.txt" }
 requires-python = ">=3.10, <3.14"
+dependencies = [
+    "diffusers>=0.35",
+    "accelerate>=1.10",
+    "sentencepiece",
+    "protobuf",
+    "huggingface_hub>=0.34",
+    "tomli",
+    "peft>=0.17",
+]
+
+[project.optional-dependencies]
+torch25 = ["torch>=2.5,<2.6", "nunchaku==1.0.0+torch2.5"]
+torch26 = ["torch>=2.6,<2.7", "nunchaku==1.0.0+torch2.6"]
+torch27 = ["torch>=2.7,<2.8", "nunchaku==1.0.0+torch2.7"]
+torch28 = ["torch>=2.8,<2.9", "nunchaku==1.0.0+torch2.8"]
+torch29 = ["torch>=2.9,<3.0", "nunchaku==1.0.0+torch2.9"]
+compile = ["nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git"]
+pulid = [
+    "insightface",
+    "opencv-python",
+    "facexlib",
+    "onnxruntime",
+    "timm"
+]
 
 [project.urls]
 Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 #  Used by Comfy Registry https://comfyregistry.org
+
+[project.entry-points."comfyui.custom_nodes"]
+nunchaku_comfyui = "nunchaku_comfyui"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "nunchaku_comfyui" = "." }
+packages = [
+    "nunchaku_comfyui",
+    "nunchaku_comfyui.mixins",
+    "nunchaku_comfyui.model_base",
+    "nunchaku_comfyui.model_configs",
+    "nunchaku_comfyui.models",
+    "nunchaku_comfyui.nodes",
+    "nunchaku_comfyui.nodes.lora",
+    "nunchaku_comfyui.nodes.models",
+    "nunchaku_comfyui.nodes.preprocessors",
+    "nunchaku_comfyui.nodes.tools",
+    "nunchaku_comfyui.wrappers"
+]
 
 [tool.comfy]
 PublisherId = "lmxyy1999"
@@ -39,3 +86,12 @@ ignore = ["D000", "D001"]
 [tool.rstcheck]
 ignore_directives = ["tabs"]
 ignore_messages = ["ERROR/3", "INFO/1"]
+
+[[tool.uv.index]]
+name = "nunchaku-wheels"
+url = "https://raw.githubusercontent.com/AppMana/comfyui-nunchaku/refs/heads/main/pypi/nunchaku_index.html"
+format = "flat"
+
+[tool.uv.sources]
+nunchaku = { index = "nunchaku-wheels" }
+

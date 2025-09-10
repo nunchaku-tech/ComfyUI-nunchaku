@@ -15,6 +15,7 @@ from types import MethodType
 
 import comfy
 import folder_paths
+from ..utils import get_filename_list, get_full_path_or_raise
 import numpy as np
 import torch
 
@@ -174,8 +175,8 @@ class NunchakuPuLIDLoaderV2:
         dict
             A dictionary specifying the required inputs and their descriptions for the node interface.
         """
-        pulid_files = folder_paths.get_filename_list("pulid")
-        clip_files = folder_paths.get_filename_list("clip")
+        pulid_files = get_filename_list("pulid")
+        clip_files = get_filename_list("clip")
         return {
             "required": {
                 "model": ("MODEL", {"tooltip": "The nunchaku model."}),
@@ -217,8 +218,8 @@ class NunchakuPuLIDLoaderV2:
         device = comfy.model_management.get_torch_device()
         weight_dtype = next(transformer.parameters()).dtype
 
-        pulid_path = folder_paths.get_full_path_or_raise("pulid", pulid_file)
-        eva_clip_path = folder_paths.get_full_path_or_raise("clip", eva_clip_file)
+        pulid_path = get_full_path_or_raise("pulid", pulid_file)
+        eva_clip_path = get_full_path_or_raise("clip", eva_clip_file)
         insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
         facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
 

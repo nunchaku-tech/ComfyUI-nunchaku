@@ -1,0 +1,9 @@
+try:
+    from comfy.model_downloader import get_filename_list, get_full_path_or_raise
+except (ImportError, ModuleNotFoundError):
+    from folder_paths import get_filename_list, get_full_path_or_raise
+
+get_filename_list = get_filename_list
+get_full_path_or_raise = get_full_path_or_raise
+
+__all__ = ["get_filename_list", "get_full_path_or_raise"]

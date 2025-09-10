@@ -12,6 +12,7 @@ from pathlib import Path
 import comfy.model_management
 import comfy.model_patcher
 import folder_paths
+from ..utils import get_filename_list, get_full_path_or_raise
 import torch
 from comfy.supported_models import Flux, FluxSchnell
 
@@ -79,48 +80,17 @@ class NunchakuFluxDiTLoader:
         dict
             A dictionary specifying the required inputs and their descriptions for the node interface.
         """
-        prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
-        local_folders = set()
-        for prefix in prefixes:
-            if os.path.exists(prefix) and os.path.isdir(prefix):
-                local_folders_ = os.listdir(prefix)
-                local_folders_ = [
-                    folder
-                    for folder in local_folders_
-                    if not folder.startswith(".") and os.path.isdir(os.path.join(prefix, folder))
-                ]
-                local_folders.update(local_folders_)
-        model_paths = sorted(list(local_folders))
-        safetensor_files = folder_paths.get_filename_list("diffusion_models")
+        safetensor_files = get_filename_list("diffusion_models")
 
-        # exclude the safetensors in the legacy svdquant folders
-        new_safetensor_files = []
-        for safetensor_file in safetensor_files:
-            safetensor_path = folder_paths.get_full_path_or_raise("diffusion_models", safetensor_file)
-            safetensor_path = Path(safetensor_path)
-            if not (safetensor_path.parent / "config.json").exists():
-                new_safetensor_files.append(safetensor_file)
-        safetensor_files = new_safetensor_files
-        model_paths = model_paths + safetensor_files
-
-        ngpus = torch.cuda.device_count()
-
-        all_turing = True
-        for i in range(torch.cuda.device_count()):
-            if not is_turing(f"cuda:{i}"):
-                all_turing = False
-
-        if all_turing:
-            attention_options = ["nunchaku-fp16"]  # turing GPUs do not support flashattn2
-            dtype_options = ["float16"]
-        else:
-            attention_options = ["nunchaku-fp16", "flash-attention2"]
-            dtype_options = ["bfloat16", "float16"]
+        # this should really be in validation
+        ngpus = 8
+        attention_options = ["nunchaku-fp16", "flash-attention2"]
+        dtype_options = ["bfloat16", "float16"]
 
         return {
             "required": {
                 "model_path": (
-                    model_paths,
+                    safetensor_files,
                     {"tooltip": "The Nunchaku FLUX model."},
                 ),
                 "cache_threshold": (
@@ -140,7 +110,7 @@ class NunchakuFluxDiTLoader:
                     attention_options,
                     {
                         "default": attention_options[0],
-                        "tooltip": "Attention implementation. The default implementation is `flash-attention2`. "
+                        "tooltip": "Attention implementation. "
                         "`nunchaku-fp16` use FP16 attention, offering ~1.2× speedup. "
                         "Note that 20-series GPUs can only use `nunchaku-fp16`.",
                     },
@@ -228,15 +198,7 @@ class NunchakuFluxDiTLoader:
         """
         device = torch.device(f"cuda:{device_id}")
 
-        if model_path.endswith((".sft", ".safetensors")):
-            model_path = Path(folder_paths.get_full_path_or_raise("diffusion_models", model_path))
-        else:
-            prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
-            for prefix in prefixes:
-                prefix = Path(prefix)
-                if (prefix / model_path).exists() and (prefix / model_path).is_dir():
-                    model_path = prefix / model_path
-                    break
+        model_path = get_full_path_or_raise("diffusion_models", model_path)
 
         # Check if the device_id is valid
         if device_id >= torch.cuda.device_count():
@@ -246,22 +208,22 @@ class NunchakuFluxDiTLoader:
         gpu_properties = torch.cuda.get_device_properties(device_id)
         gpu_memory = gpu_properties.total_memory / (1024**2)  # Convert to MiB
         gpu_name = gpu_properties.name
-        print(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
+        logger.debug(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
 
         # Check if CPU offload needs to be enabled
         if cpu_offload == "auto":
             if gpu_memory < 14336:  # 14GB threshold
                 cpu_offload_enabled = True
-                print("VRAM < 14GiB, enabling CPU offload")
+                logger.debug("VRAM < 14GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                print("VRAM > 14GiB, disabling CPU offload")
+                logger.debug("VRAM > 14GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
-            print("Enabling CPU offload")
+            logger.debug("Enabling CPU offload")
         else:
             cpu_offload_enabled = False
-            print("Disabling CPU offload")
+            logger.debug("Disabling CPU offload")
 
         if (
             self.model_path != model_path

@@ -7,13 +7,46 @@ import torch
 
 from .mixins.model import NunchakuModelMixin
 from comfy.model_base import BaseModel
+from comfy.model_patcher import ModelPatcher
 
 
-class NunchakuModelPatcher:
+class NunchakuModelPatcher(ModelPatcher):
     """
     This class extends the ComfyUI ModelPatcher to provide custom logic for loading and unloading the model correctly.
     """
 
+    def load(self, device_to=None, lowvram_model_memory=0, force_patch_weights=False, full_load=False):
+        """
+        Load the diffusion model onto the specified device.
+
+        Parameters
+        ----------
+        device_to : torch.device or str, optional
+            The device to which the diffusion model should be moved.
+        lowvram_model_memory : int, optional
+            Not used in this implementation.
+        force_patch_weights : bool, optional
+            Not used in this implementation.
+        full_load : bool, optional
+            Not used in this implementation.
+        """
+        with self.use_ejected():
+            self.model.diffusion_model.to_safely(device_to)
+
+    def detach(self, unpatch_all: bool = True):
+        """
+        Detach the model and move it to the offload device.
+
+        Parameters
+        ----------
+        unpatch_all : bool, optional
+            If True, unpatch all model components (default is True).
+        """
+        self.eject_model()
+        self.model.diffusion_model.to_safely(self.offload_device)
+
+
+class NunchakuModelPatcherNoInheritance:
     def __init__(self, model: BaseModel, load_device: torch.device, offload_device: torch.device):
         self.model: BaseModel = model
         self.load_device = load_device
@@ -79,16 +112,18 @@ class NunchakuModelPatcher:
         return self.current_device
 
     def get_model_object(self, name: str) -> torch.nn.Module:
-        from . import utils
+        from comfy import utils
         return utils.get_attr(self.model, name)
 
     @property
     def model_options(self):
-        return self.model_options
+        if not hasattr(self, "_model_options"):
+            setattr(self, "_model_options", {"transformer_options": {}})
+        return getattr(self, "_model_options")
 
     @model_options.setter
     def model_options(self, value):
-        self.model_options = value
+        setattr(self, "_model_options", value)
 
     def __del__(self):
         if hasattr(self.model, "__del__"):
@@ -117,3 +152,53 @@ class NunchakuModelPatcher:
         :return:
         """
         return []
+
+    @property
+    def hook_mode(self):
+        from comfy.hooks import EnumHookMode
+        return EnumHookMode.MinVram
+
+    @hook_mode.setter
+    def hook_mode(self, value):
+        return
+
+    def restore_hook_patches(self):
+        return
+
+    @property
+    def wrappers(self):
+        return {}
+
+    @property
+    def callbacks(self):
+        return {}
+
+    @callbacks.setter
+    def callbacks(self, value):
+        pass
+
+    def cleanup(self):
+        pass
+
+    def pre_run(self):
+        self.model.current_patcher = self
+
+    def prepare_state(self, *args, **kwargs):
+        pass
+
+    def register_all_hook_patches(self, a, b, c, d):
+        pass
+
+    def get_nested_additional_models(self):
+        return []
+
+    def apply_hooks(self, *args, **kwargs):
+        return {}
+
+    @property
+    def current_device(self) -> torch.device:
+        """
+        Only needed in Hidden Switch, does not need to be overridden
+        :return:
+        """
+        return next(self.model.parameters()).device

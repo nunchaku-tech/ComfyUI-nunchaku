@@ -11,6 +11,7 @@ from typing import Optional, Tuple
 
 import torch
 from comfy.ldm.flux.layers import EmbedND
+# todo: there is a sage-attention dispatch bug, users will see black images until https://github.com/comfyanonymous/ComfyUI/issues/9773 is fixed
 from comfy.ldm.modules.attention import optimized_attention_masked
 from comfy.ldm.qwen_image.model import (
     GELU,

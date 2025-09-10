@@ -7,7 +7,7 @@ import logging
 import os
 
 import comfy.utils
-import folder_paths
+from ..utils import get_filename_list, get_full_path_or_raise
 import torch
 from comfy import model_detection, model_management
 
@@ -124,7 +124,7 @@ class NunchakuQwenImageDiTLoader:
         return {
             "required": {
                 "model_name": (
-                    folder_paths.get_filename_list("diffusion_models"),
+                    get_filename_list("diffusion_models"),
                     {"tooltip": "The Nunchaku Qwen-Image model."},
                 ),
                 "cpu_offload": (
@@ -189,7 +189,7 @@ class NunchakuQwenImageDiTLoader:
         tuple
             A tuple containing the loaded and patched model.
         """
-        model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
+        model_path = get_full_path_or_raise("diffusion_models", model_name)
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
         model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
