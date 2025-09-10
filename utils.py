@@ -74,12 +74,15 @@ def get_plugin_version() -> str:
     str
         The plugin version string.
     """
-    cur_path = Path(__file__)
-    toml_path = cur_path.parent / "pyproject.toml"
-    with open(toml_path, "rb") as f:
-        data = tomllib.load(f)
-        project_version = data["project"]["version"]
-        return project_version
+    try:
+        cur_path = Path(__file__)
+        toml_path = cur_path.parent / "pyproject.toml"
+        with open(toml_path, "rb") as f:
+            data = tomllib.load(f)
+            project_version = data["project"]["version"]
+            return project_version
+    except:
+        return "1.0.0"
 
 
 supported_versions = ["v1.0.0"]
