@@ -1,0 +1,12 @@
+{
+  "versions": ["1.0.0", "0.3.2", "0.3.1", "0.3.0"],
+  "dev_versions": ["1.0.0.dev20250904", "1.0.0.dev20250903"],
+  "supported_torch": ["torch2.5", "torch2.6", "torch2.7", "torch2.8", "torch2.9"],
+  "supported_python": ["cp310", "cp311", "cp312", "cp313"],
+  "filename_template": "nunchaku-{version}+{torch_version}-{python_version}-{python_version}-{platform}.whl",
+  "url_templates": {
+    "github": "https://github.com/nunchaku-tech/nunchaku/releases/download/{version_tag}/{filename}",
+    "huggingface": "https://huggingface.co/nunchaku-tech/nunchaku/resolve/main/{filename}",
+    "modelscope": "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/{filename}"
+  }
+}
