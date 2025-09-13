@@ -6,7 +6,6 @@ import json
 import logging
 import os
 
-import comfy.model_patcher
 import comfy.utils
 import folder_paths
 import torch
@@ -137,6 +136,30 @@ class NunchakuQwenImageDiTLoader:
                     },
                 ),
             },
+            "optional": {
+                "num_blocks_on_gpu": (
+                    "INT",
+                    {
+                        "default": 1,
+                        "min": 1,
+                        "max": 60,
+                        "tooltip": (
+                            "When CPU offload is enabled, this option determines how many transformer blocks remain on GPU memory. "
+                            "Increasing this value decreases CPU RAM usage but increases GPU memory usage."
+                        ),
+                    },
+                ),
+                "use_pin_memory": (
+                    ["enable", "disable"],
+                    {
+                        "default": "disable",
+                        "tooltip": (
+                            "Enable this to use pinned memory for transformer blocks when CPU offload is enabled. "
+                            "This can improve data transfer speed between CPU and GPU, but may increase system memory usage."
+                        ),
+                    },
+                ),
+            },
         }
 
     RETURN_TYPES = ("MODEL",)
@@ -144,7 +167,9 @@ class NunchakuQwenImageDiTLoader:
     CATEGORY = "Nunchaku"
     TITLE = "Nunchaku Qwen-Image DiT Loader"
 
-    def load_model(self, model_name: str, cpu_offload: str, **kwargs):
+    def load_model(
+        self, model_name: str, cpu_offload: str, num_blocks_on_gpu: int = 1, use_pin_memory: str = "disable", **kwargs
+    ):
         """
         Load the Qwen-Image model from file and return a patched model.
 
@@ -180,6 +205,9 @@ class NunchakuQwenImageDiTLoader:
             logger.info("Disabling CPU offload")
 
         if cpu_offload_enabled:
-            model.model.diffusion_model.set_offload(cpu_offload_enabled)
+            assert use_pin_memory in ["enable", "disable"], "Invalid use_pin_memory option"
+            model.model.diffusion_model.set_offload(
+                cpu_offload_enabled, num_blocks_on_gpu=num_blocks_on_gpu, use_pin_memory=use_pin_memory == "enable"
+            )
 
         return (model,)
