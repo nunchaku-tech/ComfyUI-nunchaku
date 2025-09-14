@@ -2,7 +2,7 @@
 This module provides an advanced utility node for installing the Nunchaku Python wheel.
 It operates with a 100% offline startup using a local cache file ('nunchaku_versions.json').
 The node features separate dropdowns for official and development versions. Selecting
-'latest' or 'latest-dev' triggers an online update of the local version lists before
+'latest' triggers an online update of the local version lists before
 installing, ensuring a simple, reliable, and error-free user experience.
 """
 
@@ -15,6 +15,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from packaging.version import parse as parse_version
@@ -22,7 +23,7 @@ from packaging.version import parse as parse_version
 # --- Configuration and Constants ---
 
 LOCAL_VERSIONS_FILE = "nunchaku_versions.json"
-NODE_DIR = os.path.dirname(os.path.abspath(__file__))
+NODE_DIR = Path(__file__).parent.parent.parent
 
 GITHUB_API_URL = "https://api.github.com/repos/nunchaku-tech/nunchaku"
 HF_API_URL = "https://huggingface.co/api/models/nunchaku-tech/nunchaku/tree/main"
@@ -120,7 +121,7 @@ def generate_and_save_config() -> Dict:
     }
 
     try:
-        file_path = os.path.join(NODE_DIR, LOCAL_VERSIONS_FILE)
+        file_path = NODE_DIR / LOCAL_VERSIONS_FILE
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
         print(f"Successfully created/updated '{LOCAL_VERSIONS_FILE}'")
@@ -153,7 +154,7 @@ def load_version_config() -> Dict:
 def prepare_all_version_lists(version_config: Dict) -> Tuple[List[str], List[str]]:
     """Prepares both official and dev version lists for the dropdowns."""
     official_list = ["latest"] + version_config.get("versions", [])
-    dev_list = ["None", "latest-dev"] + version_config.get("dev_versions", [])
+    dev_list = ["none", "latest"] + version_config.get("dev_versions", [])
     return official_list, dev_list
 
 
@@ -253,7 +254,7 @@ VERSION_CONFIG = load_version_config()
 if not VERSION_CONFIG:
     print(f"'{LOCAL_VERSIONS_FILE}' not found. Node will start in minimal mode.")
     OFFICIAL_VERSIONS = ["latest"]
-    DEV_VERSIONS = ["None", "latest-dev"]
+    DEV_VERSIONS = ["none", "latest"]
 else:
     OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(VERSION_CONFIG)
 
@@ -272,87 +273,101 @@ class NunchakuWheelInstaller:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "version": (OFFICIAL_VERSIONS, {}),
-                "dev_version": (DEV_VERSIONS, {"default": "None"}),
+                "version": (
+                    OFFICIAL_VERSIONS,
+                    {"tooltip": "Official Nunchaku version to install. Use 'lastest' to pull the latest version list."},
+                ),
+                "dev_version": (
+                    DEV_VERSIONS,
+                    {
+                        "default": "none",
+                        "tooltip": "Development Nunchaku version to install. Use 'lastest' to pull the latest version list.",
+                    },
+                ),
+                "mode": (
+                    ["install", "uninstall"],
+                    {"default": "install", "tooltip": "Install or uninstall Nunchaku."},
+                ),
             }
         }
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("status",)
 
-    def run(self, version: str, dev_version: str):
+    def run(self, version: str, dev_version: str, mode: str):
         global VERSION_CONFIG, OFFICIAL_VERSIONS, DEV_VERSIONS
 
         try:
-            if is_nunchaku_installed():
-                subprocess.run(
-                    [sys.executable, "-m", "pip", "uninstall", "nunchaku", "-y"], check=True, capture_output=True
-                )
+            if mode == "uninstall":
+                if is_nunchaku_installed():
+                    subprocess.run(
+                        [sys.executable, "-m", "pip", "uninstall", "nunchaku", "-y"], check=True, capture_output=True
+                    )
+                    return (
+                        "✅ Existing Nunchaku uninstalled.\n**Please restart ComfyUI completely.**\nThen, run again to install.",
+                    )
+            else:
+                current_config = VERSION_CONFIG
+                # Step 1: Check if an online update is needed
+                if version == "latest" or dev_version == "latest":
+                    updated_config = generate_and_save_config()
+                    if updated_config:
+                        VERSION_CONFIG = updated_config
+                        OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(updated_config)
+                        current_config = updated_config
+                        print("Version lists updated. Please restart or refresh web UI to see changes.")
+                    elif not current_config:
+                        raise RuntimeError("Update check failed and no local cache exists. Check internet connection.")
+
+                # Step 2: Determine the final version to install
+                if dev_version not in ["none", "latest"]:
+                    final_version = dev_version
+                    sources_to_try = ["github"]
+                elif dev_version == "latest":
+                    if not current_config.get("dev_versions"):
+                        raise RuntimeError("No dev versions found. Run with 'latest' first or check GitHub.")
+                    final_version = current_config["dev_versions"][0]
+                    sources_to_try = ["github"]
+                else:  # Official version
+                    if not current_config.get("versions"):
+                        raise RuntimeError("No official versions found. Run with 'latest' to fetch them.")
+                    final_version = current_config["versions"][0] if version == "latest" else version
+                    sources_to_try = ["modelscope", "huggingface", "github"]
+
+                # Step 3: Find compatible wheel and install
+                sys_info = get_system_info()
+                if sys_info["os"] == "unsupported":
+                    raise RuntimeError(f"Unsupported OS: {platform.system()}")
+
+                backend = get_install_backend()
+                print(f"Using installer backend: {backend}")
+
+                wheel_to_install = None
+                last_error = ""
+                for source in sources_to_try:
+                    print(f"\n--- Trying source: {source} for version {final_version} ---")
+                    try:
+                        wheel_info = construct_compatible_wheel_info(final_version, source, sys_info, current_config)
+                        if not wheel_info:
+                            last_error = f"No compatible wheel found on '{source}' for your system."
+                            print(last_error)
+                            continue
+
+                        print(f"Attempting to install: {wheel_info['name']}")
+                        final_log = install_wheel(wheel_info["url"], backend)
+                        wheel_to_install = wheel_info
+                        print(f"--- Successfully installed from {source} ---")
+                        break
+                    except Exception as e:
+                        print(f"Failed to install from {source}: {e}. Trying next source...")
+                        last_error = str(e)
+
+                if not wheel_to_install:
+                    raise RuntimeError(f"Failed to install from all available sources.\n\nLast error: {last_error}")
+
                 return (
-                    "✅ Existing Nunchaku uninstalled.\n\n**Please restart ComfyUI completely.**\n\nThen, run again to install.",
+                    f"✅ Success! Installed: {wheel_to_install['name']}\n\nRestart ComfyUI completely to apply changes.\n\n--- LOG ---\n{final_log}",
                 )
-
-            current_config = VERSION_CONFIG
-            # Step 1: Check if an online update is needed
-            if version == "latest" or dev_version == "latest-dev":
-                updated_config = generate_and_save_config()
-                if updated_config:
-                    VERSION_CONFIG = updated_config
-                    OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(updated_config)
-                    current_config = updated_config
-                    print("Version lists updated. Please restart or refresh web UI to see changes.")
-                elif not current_config:
-                    raise RuntimeError("Update check failed and no local cache exists. Check internet connection.")
-
-            # Step 2: Determine the final version to install
-            if dev_version not in ["None", "latest-dev"]:
-                final_version = dev_version
-                sources_to_try = ["github"]
-            elif dev_version == "latest-dev":
-                if not current_config.get("dev_versions"):
-                    raise RuntimeError("No dev versions found. Run with 'latest' first or check GitHub.")
-                final_version = current_config["dev_versions"][0]
-                sources_to_try = ["github"]
-            else:  # Official version
-                if not current_config.get("versions"):
-                    raise RuntimeError("No official versions found. Run with 'latest' to fetch them.")
-                final_version = current_config["versions"][0] if version == "latest" else version
-                sources_to_try = ["modelscope", "huggingface", "github"]
-
-            # Step 3: Find compatible wheel and install
-            sys_info = get_system_info()
-            if sys_info["os"] == "unsupported":
-                raise RuntimeError(f"Unsupported OS: {platform.system()}")
-
-            backend = get_install_backend()
-            print(f"Using installer backend: {backend}")
-
-            wheel_to_install = None
-            last_error = ""
-            for source in sources_to_try:
-                print(f"\n--- Trying source: {source} for version {final_version} ---")
-                try:
-                    wheel_info = construct_compatible_wheel_info(final_version, source, sys_info, current_config)
-                    if not wheel_info:
-                        last_error = f"No compatible wheel found on '{source}' for your system."
-                        print(last_error)
-                        continue
-
-                    print(f"Attempting to install: {wheel_info['name']}")
-                    final_log = install_wheel(wheel_info["url"], backend)
-                    wheel_to_install = wheel_info
-                    print(f"--- Successfully installed from {source} ---")
-                    break
-                except Exception as e:
-                    print(f"Failed to install from {source}: {e}. Trying next source...")
-                    last_error = str(e)
-
-            if not wheel_to_install:
-                raise RuntimeError(f"Failed to install from all available sources.\n\nLast error: {last_error}")
-
-            return (
-                f"✅ Success! Installed: {wheel_to_install['name']}\n\nRestart ComfyUI completely to apply changes.\n\n--- LOG ---\n{final_log}",
-            )
 
         except Exception as e:
             return (f"❌ ERROR:\n{e}",)
