@@ -6,25 +6,28 @@ Tool Nodes
 Nunchaku Wheel Installer
 ------------------------
 
-.. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/nodes/NunchakuWheelInstaller.png
+.. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/NunchakuWheelInstaller-v1.0.1.png
     :alt: NunchakuWheelInstaller
 
-A utility node for automatically installing the correct version of the `nunchaku <github_nunchaku_>`_ wheel in ComfyUI.
-After installation, please **restart ComfyUI** to apply the changes.
+This node automates the installation of Nunchaku wheels from `GitHub Releases <github_nunchaku_releases_>`_, `Hugging Face <hf_nunchaku_wheels_>`_, or `ModelScope <ms_nunchaku_wheels_>`_.
+For official releases, it attempts installation in the following order: ModelScope, then Hugging Face, and finally GitHub Releases.
+For development versions, only GitHub Releases are used.
+
+If you select "latest" for either version, the node will fetch the most up-to-date version list from the internet and update `nunchaku_versions.json` before proceeding with installation.
+
+**Important:** After installation, you must **restart ComfyUI** for changes to take effect.
+
+If both ``version`` and ``dev_version`` are specified, the development version takes precedence.
 
 **Inputs:**
 
-- **source**: Select the wheel source. Options include:
-
-  - `GitHub Releases <github_nunchaku_releases_>`_
-  - `HuggingFace <hf_nunchaku_wheels_>`_
-  - `ModelScope <ms_nunchaku_wheels_>`_
-
-- **version**: Choose the compatible `nunchaku <github_nunchaku_>`_ version to install.
+- **version**: Choose the official Nunchaku version to install. Select "latest" to refresh and use the newest available version.
+- **dev_version**: Choose a development version to install. Select "latest" to refresh and use the newest available development version. If both version and dev_version are set, dev_version will be prioritized.
+- **mode**: Select "install" to install Nunchaku or "uninstall" to remove it.
 
 **Outputs:**
 
-- **status**: The status of the installation.
+- **status**: Displays the result of the installation or uninstallation process.
 
 .. seealso::
 

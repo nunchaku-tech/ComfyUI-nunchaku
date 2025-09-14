@@ -204,3 +204,4 @@ cython_debug/
 *.pt
 *.nsys-rep
 *.ncu-rep
+nunchaku_versions.json

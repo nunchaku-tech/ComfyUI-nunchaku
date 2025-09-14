@@ -1,7 +1,7 @@
 {
   "id": "e33d94b5-334c-4607-8ef0-6ca542730844",
   "revision": 0,
-  "last_node_id": 3,
+  "last_node_id": 4,
   "last_link_id": 1,
   "nodes": [
     {
@@ -42,7 +42,7 @@
       ],
       "size": [
         270,
-        82
+        106
       ],
       "flags": {},
       "order": 0,
@@ -58,23 +58,26 @@
         }
       ],
       "properties": {
+        "cnr_id": "ComfyUI-nunchaku",
+        "ver": "d5c65ca257dae5e0e32c44000f0c25fefc4970bf",
         "Node name for S&R": "NunchakuWheelInstaller"
       },
       "widgets_values": [
-        "ModelScope",
-        "v0.3.0"
+        "none",
+        "1.0.1.dev20250912",
+        "install"
       ]
     },
     {
-      "id": 3,
-      "type": "Note",
+      "id": 4,
+      "type": "MarkdownNote",
       "pos": [
-        310.68572998046875,
-        429.6354064941406
+        295.88165283203125,
+        414.9019775390625
       ],
       "size": [
-        250.13458251953125,
-        121.31512451171875
+        276.38037109375,
+        214.74928283691406
       ],
       "flags": {},
       "order": 1,
@@ -83,7 +86,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "This workflow will automatically install the compatible Nunchaku wheels from GitHub Releases, Hugging Face, or ModelScope. Once installation is complete, please restart ComfyUI."
+        "This workflow automatically installs the appropriate Nunchaku wheels from [**GitHub Releases**](https://github.com/nunchaku-tech/nunchaku/releases), [**Hugging Face**](https://huggingface.co/nunchaku-tech/nunchaku), or [**ModelScope**](https://modelscope.cn/models/nunchaku-tech/nunchaku).  \nAfter installation, please **restart ComfyUI**.\n\n- Selecting **latest** updates the version list and installs the newest release.  \n- If the automatic update does not work, you can manually download the version list from [here](https://nunchaku.tech/cdn/nunchaku_versions.json) and place it in `custom_nodes/ComfyUI-nunchaku`.\n\n**Note:** If both `version` and `dev_version` are specified, the development version takes priority."
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -103,13 +106,13 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1,
+      "scale": 1.8890879730973666,
       "offset": [
-        286.0416564941406,
-        72.68229675292969
+        -56.80060867802236,
+        -124.87499485734956
       ]
     },
-    "frontendVersion": "1.20.7"
+    "frontendVersion": "1.25.11"
   },
   "version": 0.4
 }

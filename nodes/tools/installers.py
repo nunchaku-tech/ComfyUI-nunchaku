@@ -35,7 +35,19 @@ MODEL_SCOPE_API_URL = (
 
 
 def _get_json_from_url(url: str) -> List[Dict] | Dict:
-    """Fetches and parses JSON data from a URL with a timeout."""
+    """
+    Fetch and parse JSON data from a URL.
+
+    Parameters
+    ----------
+    url : str
+        The URL to fetch JSON from.
+
+    Returns
+    -------
+    list[dict] or dict
+        Parsed JSON data, or empty dict/list on error.
+    """
     try:
         headers = {"User-Agent": "ComfyUI-Nunchaku-InstallerNode"}
         req = urllib.request.Request(url, headers=headers)
@@ -50,7 +62,14 @@ def _get_json_from_url(url: str) -> List[Dict] | Dict:
 
 
 def get_nunchaku_versions_from_sources() -> Tuple[set, set]:
-    """Fetches all unique version numbers by parsing wheel filenames from all sources."""
+    """
+    Fetch all unique Nunchaku version numbers from all sources.
+
+    Returns
+    -------
+    tuple of set
+        (official_versions, dev_versions)
+    """
     official_tags, dev_tags = set(), set()
     wheel_regex = re.compile(r"nunchaku-([^-+]+)")
 
@@ -99,7 +118,14 @@ def get_nunchaku_versions_from_sources() -> Tuple[set, set]:
 
 
 def generate_and_save_config() -> Dict:
-    """Fetches all versions and creates/updates the local nunchaku_versions.json file."""
+    """
+    Fetch all available versions and update the local ``nunchaku_versions.json`` file.
+
+    Returns
+    -------
+    dict
+        The updated configuration dictionary, or empty dict on failure.
+    """
     print("Checking for new versions from internet sources...")
     official_versions, dev_versions = get_nunchaku_versions_from_sources()
 
@@ -135,6 +161,14 @@ def generate_and_save_config() -> Dict:
 
 
 def is_nunchaku_installed() -> bool:
+    """
+    Check if Nunchaku is currently installed.
+
+    Returns
+    -------
+    bool
+        True if installed, False otherwise.
+    """
     try:
         importlib.metadata.version("nunchaku")
         return True
@@ -143,6 +177,14 @@ def is_nunchaku_installed() -> bool:
 
 
 def load_version_config() -> Dict:
+    """
+    Load the local Nunchaku version configuration file.
+
+    Returns
+    -------
+    dict
+        The configuration dictionary, or empty dict if not found.
+    """
     try:
         file_path = os.path.join(NODE_DIR, LOCAL_VERSIONS_FILE)
         return json.load(open(file_path, "r", encoding="utf-8")) if os.path.exists(file_path) else {}
@@ -152,13 +194,33 @@ def load_version_config() -> Dict:
 
 
 def prepare_all_version_lists(version_config: Dict) -> Tuple[List[str], List[str]]:
-    """Prepares both official and dev version lists for the dropdowns."""
-    official_list = ["latest"] + version_config.get("versions", [])
+    """
+    Prepare dropdown lists for official and development versions.
+
+    Parameters
+    ----------
+    version_config : dict
+        The loaded version configuration.
+
+    Returns
+    -------
+    tuple of list[str]
+        (official_versions, dev_versions)
+    """
+    official_list = ["none", "latest"] + version_config.get("versions", [])
     dev_list = ["none", "latest"] + version_config.get("dev_versions", [])
     return official_list, dev_list
 
 
 def get_system_info() -> Dict[str, str]:
+    """
+    Detect the current system's OS, platform tag, Python, and torch version.
+
+    Returns
+    -------
+    dict
+        System information for wheel selection.
+    """
     os_name = platform.system().lower()
     os_key = "linux" if os_name == "linux" else "win" if os_name == "windows" else "unsupported"
     platform_tag = "linux_x86_64" if os_key == "linux" else "win_amd64" if os_key == "win" else "unsupported"
@@ -179,6 +241,14 @@ def get_system_info() -> Dict[str, str]:
 
 
 def get_install_backend() -> str:
+    """
+    Detect the available installer backend.
+
+    Returns
+    -------
+    str
+        "uv" if available, otherwise "pip".
+    """
     try:
         subprocess.run([sys.executable, "-m", "uv", "--version"], check=True, capture_output=True)
         return "uv"
@@ -189,7 +259,25 @@ def get_install_backend() -> str:
 def construct_compatible_wheel_info(
     version: str, source: str, sys_info: Dict[str, str], config: Dict
 ) -> Optional[Dict]:
-    # ... (This function is stable and does not need changes)
+    """
+    Construct the download URL and filename for a compatible Nunchaku wheel.
+
+    Parameters
+    ----------
+    version : str
+        The Nunchaku version to install.
+    source : str
+        The source to use ("github", "huggingface", or "modelscope").
+    sys_info : dict
+        System information as returned by :func:`get_system_info`.
+    config : dict
+        The version configuration.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with "url" and "name" keys, or None if not compatible.
+    """
     url_template = config.get("url_templates", {}).get(source)
     if not url_template or sys_info["python_version"] not in config.get("supported_python", []):
         return None
@@ -225,7 +313,26 @@ def construct_compatible_wheel_info(
 
 
 def install_wheel(wheel_url: str, backend: str) -> str:
-    # ... (This function is stable and does not need changes)
+    """
+    Download and install a wheel file using the specified backend.
+
+    Parameters
+    ----------
+    wheel_url : str
+        The URL of the wheel file.
+    backend : str
+        The installer backend ("pip" or "uv").
+
+    Returns
+    -------
+    str
+        The installation log output.
+
+    Raises
+    ------
+    RuntimeError
+        If installation fails.
+    """
     command = (
         [sys.executable, "-m", "uv", "pip", "install", wheel_url]
         if backend == "uv"
@@ -260,6 +367,12 @@ else:
 
 
 class NunchakuWheelInstaller:
+    """
+    This node allows users to install or uninstall the Nunchaku Python package
+    directly from the ComfyUI interface. It supports both official and development
+    versions, and can update its version list from online sources.
+    """
+
     OUTPUT_NODE = True
     FUNCTION = "run"
     CATEGORY = "Nunchaku"
@@ -267,21 +380,45 @@ class NunchakuWheelInstaller:
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
+        """
+        Node change detection stub.
+
+        Returns
+        -------
+        float
+            Always returns NaN (no change detection).
+        """
         return float("nan")
 
     @classmethod
     def INPUT_TYPES(cls):
+        """
+        Returns the input types required for the node.
+
+        Returns
+        -------
+        dict
+            Dictionary specifying required inputs: version, dev_version, and mode.
+        """
         return {
             "required": {
                 "version": (
                     OFFICIAL_VERSIONS,
-                    {"tooltip": "Official Nunchaku version to install. Use 'lastest' to pull the latest version list."},
+                    {
+                        "tooltip": (
+                            "Official Nunchaku version to install. Use 'lastest' to pull the latest version list. "
+                            "When you specify both version and dev_version, the dev_version will be used."
+                        ),
+                    },
                 ),
                 "dev_version": (
                     DEV_VERSIONS,
                     {
                         "default": "none",
-                        "tooltip": "Development Nunchaku version to install. Use 'lastest' to pull the latest version list.",
+                        "tooltip": (
+                            "Development Nunchaku version to install. Use 'lastest' to pull the latest version list. "
+                            "When you specify both version and dev_version, the dev_version will be used."
+                        ),
                     },
                 ),
                 "mode": (
@@ -295,6 +432,23 @@ class NunchakuWheelInstaller:
     RETURN_NAMES = ("status",)
 
     def run(self, version: str, dev_version: str, mode: str):
+        """
+        Execute the install or uninstall operation.
+
+        Parameters
+        ----------
+        version : str
+            The official Nunchaku version to install.
+        dev_version : str
+            The development Nunchaku version to install.
+        mode : str
+            "install" or "uninstall".
+
+        Returns
+        -------
+        tuple[str]
+            Status message as a tuple.
+        """
         global VERSION_CONFIG, OFFICIAL_VERSIONS, DEV_VERSIONS
 
         try:

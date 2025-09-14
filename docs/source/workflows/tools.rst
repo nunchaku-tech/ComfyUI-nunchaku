@@ -6,7 +6,7 @@ Tool Workflows
 install_wheel.json
 ------------------
 
-.. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/install_wheel.png
+.. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/install_wheel-v1.0.1.png
     :alt: install_wheel.json
     :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/install_wheel.json
 
