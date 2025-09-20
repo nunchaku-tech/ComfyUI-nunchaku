@@ -47,7 +47,7 @@ A node for loading Nunchaku Qwen-Image models.
 
 - **model_name**: The filename of the Nunchaku Qwen-Image model to load. You can download the model from `HuggingFace <hf_nunchaku_>`_ or `ModelScope <ms_nunchaku_>`_.
 - **cpu_offload**: Whether to enable CPU offload for the transformer model. Options:
-  
+
   - ``auto``: Enables CPU offload if GPU memory is less than 15GiB.
   - ``enable``: Force enable CPU offload.
   - ``disable``: Disable CPU offload.
