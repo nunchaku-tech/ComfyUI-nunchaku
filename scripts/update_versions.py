@@ -57,7 +57,6 @@ def get_nunchaku_versions_from_sources() -> Tuple[Set[str], Set[str]]:
         api_response = _get_json_from_url(url)
         if not api_response:
             continue
-        
         file_list = []
         if source_name == "modelscope" and isinstance(api_response, dict):
             file_list = api_response.get("Data", {}).get("Files", [])
