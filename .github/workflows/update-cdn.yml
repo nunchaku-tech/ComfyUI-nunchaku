@@ -1,5 +1,3 @@
-# .github/workflows/update-cdn.yml
-
 name: Update CDN Versions File
 
 on:
