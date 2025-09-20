@@ -1,33 +1,25 @@
 name: Update CDN Versions File
-
 on:
   # Triggers automatically every day at 5:00 AM UTC.
   schedule:
     - cron: '0 5 * * *'
-  
   # Allows manual triggering from the GitHub Actions UI for testing or forcing an update.
   workflow_dispatch:
-
 jobs:
   build-and-upload:
     name: Build and Upload Versions File
     runs-on: ubuntu-latest
-    
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install script dependencies
         run: pip install packaging
-
       - name: Generate the versions.json file
         run: python scripts/update_versions.py
-
       - name: Upload file to Nunchaku CDN
         #
         # NOTE: The following command is a placeholder.
