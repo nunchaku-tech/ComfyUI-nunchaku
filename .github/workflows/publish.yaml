@@ -5,6 +5,8 @@ on:
       release_tag:
         description: 'Release tag (e.g. v1.2.3)'
         required: true
+permissions:
+  contents: write
 jobs:
   publish:
     name: Publish Custom Node to registry and create a release
