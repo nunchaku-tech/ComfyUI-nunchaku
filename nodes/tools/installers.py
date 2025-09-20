@@ -10,7 +10,6 @@ import importlib.metadata
 import json
 import os
 import platform
-import re
 import subprocess
 import sys
 import urllib.error
