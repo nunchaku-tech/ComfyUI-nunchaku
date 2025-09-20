@@ -2,8 +2,8 @@
 This module provides an advanced utility node for installing the Nunchaku Python wheel.
 It operates with a 100% offline startup using a local cache file ('nunchaku_versions.json').
 The node features separate dropdowns for official and development versions. Selecting
-'latest' triggers an online update of the local version lists before
-installing, ensuring a simple, reliable, and error-free user experience.
+'latest' triggers an online update of the local version lists from a centralized
+CDN, ensuring a simple, reliable, and error-free user experience for everyone.
 """
 
 import importlib.metadata
@@ -25,11 +25,9 @@ from packaging.version import parse as parse_version
 LOCAL_VERSIONS_FILE = "nunchaku_versions.json"
 NODE_DIR = Path(__file__).parent.parent.parent
 
-GITHUB_API_URL = "https://api.github.com/repos/nunchaku-tech/nunchaku"
-HF_API_URL = "https://huggingface.co/api/models/nunchaku-tech/nunchaku/tree/main"
-MODEL_SCOPE_API_URL = (
-    "https://modelscope.cn/api/v1/models/nunchaku-tech/nunchaku/repo/files?Revision=master&PageSize=500"
-)
+# Centralized CDN URL for the versions file, accessible to all users.
+NUNCHAKU_CDN_URL = "https://nunchaku.tech/cdn/nunchaku_versions.json"
+
 
 # --- Network Fetching and Config Management ---
 
@@ -61,96 +59,27 @@ def _get_json_from_url(url: str) -> List[Dict] | Dict:
         return {}
 
 
-def get_nunchaku_versions_from_sources() -> Tuple[set, set]:
-    """
-    Fetch all unique Nunchaku version numbers from all sources.
-
-    Returns
-    -------
-    tuple of set
-        (official_versions, dev_versions)
-    """
-    official_tags, dev_tags = set(), set()
-    wheel_regex = re.compile(r"nunchaku-([^-+]+)")
-
-    # GitHub (Official + Dev) - Parsing from asset filenames for accuracy
-    releases = _get_json_from_url(f"{GITHUB_API_URL}/releases")
-    if isinstance(releases, list):
-        for release in releases:
-            for asset in release.get("assets", []):
-                filename = asset.get("name", "")
-                if filename.endswith(".whl"):
-                    match = wheel_regex.search(filename)
-                    if match:
-                        version_str = match.group(1)
-                        if "dev" in version_str:
-                            dev_tags.add(version_str)
-                        else:
-                            official_tags.add(version_str)
-                        break
-
-    # Hugging Face / ModelScope
-    sources = {"huggingface": (HF_API_URL, "path"), "modelscope": (MODEL_SCOPE_API_URL, "Name")}
-    for source_name, (url, path_key) in sources.items():
-        api_response = _get_json_from_url(url)
-        if not api_response:
-            print(f"Could not get response from {source_name}, skipping.")
-            continue
-
-        file_list = []
-        if source_name == "modelscope" and isinstance(api_response, dict):
-            file_list = api_response.get("Data", {}).get("Files", [])
-        elif source_name == "huggingface" and isinstance(api_response, list):
-            file_list = api_response
-
-        for file_info in file_list:
-            filename = file_info.get(path_key)
-            if filename and filename.endswith(".whl"):
-                match = wheel_regex.search(filename)
-                if match:
-                    version_str = match.group(1)
-                    if "dev" in version_str:
-                        dev_tags.add(version_str)
-                    else:
-                        official_tags.add(version_str)
-
-    return official_tags, dev_tags
-
-
 def generate_and_save_config() -> Dict:
     """
-    Fetch all available versions and update the local ``nunchaku_versions.json`` file.
+    Fetch the centralized versions file from the CDN and update the local cache.
 
     Returns
     -------
     dict
         The updated configuration dictionary, or empty dict on failure.
     """
-    print("Checking for new versions from internet sources...")
-    official_versions, dev_versions = get_nunchaku_versions_from_sources()
+    print(f"Checking for new versions from CDN: {NUNCHAKU_CDN_URL}...")
+    config = _get_json_from_url(NUNCHAKU_CDN_URL)
 
-    if not official_versions and not dev_versions:
-        print("Could not fetch any version information. Network might be down.")
+    if not config:
+        print("Could not fetch the version list. Network might be down.")
         return {}
-
-    config = {
-        "versions": sorted(list(official_versions), key=parse_version, reverse=True),
-        "dev_versions": sorted(list(dev_versions), key=parse_version, reverse=True),
-        "supported_torch": ["torch2.5", "torch2.6", "torch2.7", "torch2.8", "torch2.9"],
-        "supported_python": ["cp310", "cp311", "cp312", "cp313"],
-        "filename_template": "nunchaku-{version}+{torch_version}-{python_version}-{python_version}-{platform}.whl",
-        "url_templates": {
-            "github": "https://github.com/nunchaku-tech/nunchaku/releases/download/{version_tag}/{filename}",
-            "huggingface": "https://huggingface.co/nunchaku-tech/nunchaku/resolve/main/{filename}",
-            "modelscope": "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/{filename}",
-        },
-    }
 
     try:
         file_path = NODE_DIR / LOCAL_VERSIONS_FILE
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
-        print(f"Successfully created/updated '{LOCAL_VERSIONS_FILE}'")
+        print(f"Successfully created/updated '{LOCAL_VERSIONS_FILE}' from CDN.")
         return config
     except Exception as e:
         print(f"Error writing '{LOCAL_VERSIONS_FILE}': {e}")
