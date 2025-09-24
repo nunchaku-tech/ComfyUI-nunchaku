@@ -89,7 +89,7 @@ def load_diffusion_model_state_dict(
     if model_options.get("fp8_optimizations", False):
         model_config.optimizations["fp8"] = True
 
-    model = model_config.get_model(new_sd, "")
+    model = model_config.get_model(new_sd, "", load_device)
     model = model.to(offload_device)
     model.load_model_weights(new_sd, "")
     return NunchakuModelPatcher(model, load_device=load_device, offload_device=offload_device)
