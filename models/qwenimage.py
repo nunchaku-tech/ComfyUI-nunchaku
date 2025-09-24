@@ -539,6 +539,8 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         Module providing normalization and linear layers.
     scale_shift : float, optional
         Value added to scale in modulation (default: 1.0).
+    transformer_offload_device: torch.device, optional
+        If not None, transformer blocks will be initialized to this device (usually cpu) rather than `device`
     **kwargs
         Additional arguments for quantized linear layers.
     """
@@ -560,6 +562,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         device=None,
         operations=None,
         scale_shift: float = 1.0,
+        transformer_offload_device=None,
         **kwargs,
     ):
         super(QwenImageTransformer2DModel, self).__init__()
@@ -589,7 +592,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                     num_attention_heads=num_attention_heads,
                     attention_head_dim=attention_head_dim,
                     dtype=dtype,
-                    device=device,
+                    device=transformer_offload_device if transformer_offload_device is not None else device,
                     operations=operations,
                     scale_shift=scale_shift,
                     **kwargs,

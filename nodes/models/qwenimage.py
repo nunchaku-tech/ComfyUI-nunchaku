@@ -62,14 +62,20 @@ def load_diffusion_model_state_dict(
     load_device = model_management.get_torch_device()
     check_hardware_compatibility(quantization_config, load_device)
 
+    offload_device = model_management.unet_offload_device()
     model_config = NunchakuQwenImage(
-        {"image_model": "qwen_image", "scale_shift": 0, "rank": rank, "precision": precision}
+        {
+            "image_model": "qwen_image",
+            "scale_shift": 0,
+            "rank": rank,
+            "precision": precision,
+            "transformer_offload_device": offload_device if model_options.get("cpu_offload_enabled", False) else None
+        }
     )
     model_config.optimizations["fp8"] = False
 
     new_sd = sd
 
-    offload_device = model_management.unet_offload_device()
     unet_weight_dtype = list(model_config.supported_inference_dtypes)
     if model_config.scaled_fp8 is not None:
         weight_dtype = None
@@ -89,11 +95,7 @@ def load_diffusion_model_state_dict(
     if model_options.get("fp8_optimizations", False):
         model_config.optimizations["fp8"] = True
 
-    offload_enabled = model_options.get("cpu_offload_enabled", False)
-    if offload_enabled:
-        model = model_config.get_model(new_sd, "", offload_device)
-    else:
-        model = model_config.get_model(new_sd, "", load_device)
+    model = model_config.get_model(new_sd, "", load_device)
     model = model.to(offload_device)
     model.load_model_weights(new_sd, "")
     return NunchakuModelPatcher(model, load_device=load_device, offload_device=offload_device)
