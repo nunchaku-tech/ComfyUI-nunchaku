@@ -10,6 +10,7 @@ import importlib.metadata
 import json
 import os
 import platform
+import re
 import subprocess
 import sys
 import urllib.error
@@ -135,8 +136,8 @@ def prepare_all_version_lists(version_config: Dict) -> Tuple[List[str], List[str
     tuple of list[str]
         (official_versions, dev_versions)
     """
-    official_list = ["none", "latest"] + version_config.get("versions", [])
-    dev_list = ["none", "latest"] + version_config.get("dev_versions", [])
+    official_list = ["none"] + version_config.get("versions", [])
+    dev_list = ["none"] + version_config.get("dev_versions", [])
     return official_list, dev_list
 
 
@@ -287,9 +288,9 @@ def install_wheel(wheel_url: str, backend: str) -> str:
 
 VERSION_CONFIG = load_version_config()
 if not VERSION_CONFIG:
-    print(f"'{LOCAL_VERSIONS_FILE}' not found. Node will start in minimal mode.")
-    OFFICIAL_VERSIONS = ["latest"]
-    DEV_VERSIONS = ["none", "latest"]
+    print(f"'{LOCAL_VERSIONS_FILE}' not found. Node will start in minimal mode. Use 'update node' to fetch versions.")
+    OFFICIAL_VERSIONS = ["none"]
+    DEV_VERSIONS = ["none"]
 else:
     OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(VERSION_CONFIG)
 
@@ -328,14 +329,14 @@ class NunchakuWheelInstaller:
         dict
             Dictionary specifying required inputs: version, dev_version, and mode.
         """
-        return {
+        inputs = {
             "required": {
                 "version": (
                     OFFICIAL_VERSIONS,
                     {
                         "tooltip": (
-                            "Official Nunchaku version to install. Use 'lastest' to pull the latest version list. "
-                            "When you specify both version and dev_version, the dev_version will be used."
+                            "Official Nunchaku version to install. Use 'update node' mode to get the latest list."
+                            "If dev_version is also selected, it will take priority."
                         ),
                     },
                 ),
@@ -344,22 +345,27 @@ class NunchakuWheelInstaller:
                     {
                         "default": "none",
                         "tooltip": (
-                            "Development Nunchaku version to install. Use 'lastest' to pull the latest version list. "
-                            "When you specify both version and dev_version, the dev_version will be used."
+                            "Development Nunchaku version to install. Use 'update node' mode to get the latest list."
+                            "This option has priority over the official version."
                         ),
                     },
                 ),
                 "mode": (
-                    ["install", "uninstall"],
-                    {"default": "install", "tooltip": "Install or uninstall Nunchaku."},
+                    ["install", "uninstall", "update node"],
+                    {"default": "install", "tooltip": "Install, uninstall, or update the version list."},
                 ),
             }
         }
 
+        if platform.system() == "Windows":
+            del inputs["required"]["dev_version"]
+
+        return inputs
+
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("status",)
 
-    def run(self, version: str, dev_version: str, mode: str):
+    def run(self, version: str, mode: str, dev_version: str = "none"):
         """
         Execute the install or uninstall operation.
 
@@ -367,10 +373,10 @@ class NunchakuWheelInstaller:
         ----------
         version : str
             The official Nunchaku version to install.
-        dev_version : str
-            The development Nunchaku version to install.
         mode : str
-            "install" or "uninstall".
+            "install", "uninstall", or "update node".
+        dev_version : str, optional
+            The development Nunchaku version to install, by default "none".
 
         Returns
         -------
@@ -388,33 +394,38 @@ class NunchakuWheelInstaller:
                     return (
                         "✅ Existing Nunchaku uninstalled.\n**Please restart ComfyUI completely.**\nThen, run again to install.",
                     )
-            else:
-                current_config = VERSION_CONFIG
-                # Step 1: Check if an online update is needed
-                if version == "latest" or dev_version == "latest":
-                    updated_config = generate_and_save_config()
-                    if updated_config:
-                        VERSION_CONFIG = updated_config
-                        OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(updated_config)
-                        current_config = updated_config
-                        print("Version lists updated. Please restart or refresh web UI to see changes.")
-                    elif not current_config:
-                        raise RuntimeError("Update check failed and no local cache exists. Check internet connection.")
+                else:
+                    return ("Nunchaku is not installed. Nothing to do.",)
+
+            elif mode == "update node":
+                updated_config = generate_and_save_config()
+                if updated_config:
+                    VERSION_CONFIG = updated_config
+                    OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(updated_config)
+                    return (
+                        "✅ Version list updated.\nPlease refresh the web UI (press 'r') to see the new version list.",
+                    )
+                else:
+                    return ("❌ Update failed. Check internet connection and logs.",)
+
+            else:  # install mode
+                if not VERSION_CONFIG:
+                    raise RuntimeError(
+                        "Local version list not found. Please run in 'update node' mode first to fetch versions."
+                    )
 
                 # Step 2: Determine the final version to install
-                if dev_version not in ["none", "latest"]:
+                final_version = None
+                sources_to_try = []
+                if dev_version != "none":
                     final_version = dev_version
                     sources_to_try = ["github"]
-                elif dev_version == "latest":
-                    if not current_config.get("dev_versions"):
-                        raise RuntimeError("No dev versions found. Run with 'latest' first or check GitHub.")
-                    final_version = current_config["dev_versions"][0]
-                    sources_to_try = ["github"]
-                else:  # Official version
-                    if not current_config.get("versions"):
-                        raise RuntimeError("No official versions found. Run with 'latest' to fetch them.")
-                    final_version = current_config["versions"][0] if version == "latest" else version
+                elif version != "none":
+                    final_version = version
                     sources_to_try = ["modelscope", "huggingface", "github"]
+
+                if not final_version:
+                    return ("No version selected. Please choose a version to install or update the node.",)
 
                 # Step 3: Find compatible wheel and install
                 sys_info = get_system_info()
@@ -429,7 +440,7 @@ class NunchakuWheelInstaller:
                 for source in sources_to_try:
                     print(f"\n--- Trying source: {source} for version {final_version} ---")
                     try:
-                        wheel_info = construct_compatible_wheel_info(final_version, source, sys_info, current_config)
+                        wheel_info = construct_compatible_wheel_info(final_version, source, sys_info, VERSION_CONFIG)
                         if not wheel_info:
                             last_error = f"No compatible wheel found on '{source}' for your system."
                             print(last_error)
