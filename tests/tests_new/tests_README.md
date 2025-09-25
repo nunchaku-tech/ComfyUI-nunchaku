@@ -114,9 +114,17 @@ pytest test_nunchaku_workflows.py::test_custom_workflow -v -k "qwen-image-edit"
 pytest test_nunchaku_workflows.py --tb=short --maxfail=5
 ```
 
-Results:
+## Expected Results
 
-if all pass:
+When all tests pass successfully, you should see output similar to this:
+
+```bash
+test_nunchaku_workflows.py::test_custom_workflow[nunchaku-qwen-image-api.json-workflow_file0] PASSED [ 33%]
+test_nunchaku_workflows.py::test_custom_workflow[nunchaku-qwen-image-edit-api.json-workflow_file1] PASSED [ 66%]
+test_nunchaku_workflows.py::test_custom_workflow[flux.1-dev-nunchaku-api.json-workflow_file2] PASSED [100%]
+
+========================= 3 passed in 45.23s =========================
+```
 
 
 

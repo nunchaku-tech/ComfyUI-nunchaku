@@ -3,6 +3,8 @@ import json
 import shutil
 from pathlib import Path
 import pytest
+import pytest_asyncio
+import torch
 
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
@@ -11,10 +13,16 @@ from comfy.model_downloader import add_known_models, KNOWN_LORAS
 from comfy.model_downloader_types import CivitFile, HuggingFile
 from comfy_extras.nodes.nodes_audio import TorchAudioNotFoundError
 
-@pytest.fixture(scope="module", autouse=False)
-async def client(tmp_path_factory) -> Comfy:
-    async with Comfy() as client:
-        yield client
+@pytest.fixture(scope="session")
+def has_gpu() -> bool:
+    """Fixture to check if GPU is available"""
+    return torch.cuda.is_available()
+
+
+@pytest_asyncio.fixture(scope="module")
+async def client() -> Comfy:
+    async with Comfy() as client_instance:
+        yield client_instance
 
 
 def _prepare_for_custom_workflows() -> dict[str, Path]:
