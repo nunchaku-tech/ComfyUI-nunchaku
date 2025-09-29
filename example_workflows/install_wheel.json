@@ -63,8 +63,8 @@
         "Node name for S&R": "NunchakuWheelInstaller"
       },
       "widgets_values": [
+        "latest",
         "none",
-        "1.0.1.dev20250912",
         "install"
       ]
     },
