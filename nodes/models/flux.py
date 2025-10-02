@@ -96,7 +96,9 @@ class NunchakuFluxDiTLoader:
         # exclude the safetensors in the legacy svdquant folders
         new_safetensor_files = []
         for safetensor_file in safetensor_files:
-            safetensor_path = folder_paths.get_full_path_or_raise("diffusion_models", safetensor_file)
+            safetensor_path = folder_paths.get_full_path("diffusion_models", safetensor_file)
+            if safetensor_path is None:
+                continue  # Skip broken symlinks and missing files
             safetensor_path = Path(safetensor_path)
             if not (safetensor_path.parent / "config.json").exists():
                 new_safetensor_files.append(safetensor_file)
