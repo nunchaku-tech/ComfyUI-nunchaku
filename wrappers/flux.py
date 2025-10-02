@@ -5,6 +5,7 @@ LoRA composition, and advanced caching strategies.
 """
 
 from typing import Callable
+import logging
 
 import torch
 from comfy.ldm.common_dit import pad_to_patch_size
@@ -14,7 +15,9 @@ from torch import nn
 from nunchaku import NunchakuFluxTransformer2dModel
 from nunchaku.caching.fbcache import cache_context, create_cache_context
 from nunchaku.lora.flux.compose import compose_lora
-from nunchaku.utils import load_state_dict_in_safetensors
+from nunchaku.utils import load_state_dict_in_safetensors, is_turing
+
+logger = logging.getLogger(__name__)
 
 
 class ComfyFluxWrapper(nn.Module):
@@ -221,7 +224,39 @@ class ComfyFluxWrapper(nn.Module):
             composed_lora = compose_lora(lora_to_be_composed)
 
             if len(composed_lora) == 0:
-                model.reset_lora()
+                # Turing GPU compatibility: reset LoRA with proper handling
+                # RTX 2080 Ti and other Turing GPUs may have issues with certain CUDA kernels
+                device_str = str(model.x_embedder.weight.device)
+                is_turing_gpu = is_turing(device_str)
+                
+                if is_turing_gpu:
+                    logger.info(f"[Nunchaku] Turing GPU detected on {device_str}, using safe LoRA reset")
+                    # For Turing GPUs, use a safer approach:
+                    # Update with empty dict instead of calling reset_lora() directly
+                    # This avoids triggering the problematic misc_kernels.cu:281 CUDA kernel
+                    try:
+                        torch.cuda.synchronize()
+                        model.update_lora_params({})
+                        torch.cuda.synchronize()
+                    except RuntimeError as e:
+                        logger.warning(f"[Nunchaku] Safe LoRA reset also failed: {e}")
+                        logger.warning(f"[Nunchaku] Attempting fallback reset method...")
+                        # Last resort: clear LoRA metadata without kernel operations
+                        if hasattr(model, 'comfy_lora_meta_list'):
+                            model.comfy_lora_meta_list.clear()
+                        if hasattr(model, 'comfy_lora_sd_list'):
+                            model.comfy_lora_sd_list.clear()
+                else:
+                    # For non-Turing GPUs, use the standard reset
+                    try:
+                        model.reset_lora()
+                    except RuntimeError as e:
+                        if "invalid configuration argument" in str(e):
+                            logger.warning(f"[Nunchaku] Standard reset_lora failed: {e}")
+                            logger.warning(f"[Nunchaku] Falling back to update_lora_params({{}})")
+                            model.update_lora_params({})
+                        else:
+                            raise e
             else:
                 if "x_embedder.lora_A.weight" in composed_lora:
                     new_in_channels = composed_lora["x_embedder.lora_A.weight"].shape[1]
