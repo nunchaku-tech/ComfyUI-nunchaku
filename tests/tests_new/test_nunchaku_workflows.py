@@ -1,17 +1,18 @@
-import importlib.resources
+# import importlib.resources
 import json
 import shutil
 from pathlib import Path
+
 import pytest
 import pytest_asyncio
 import torch
-
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
 from comfy.cmd import folder_paths
-from comfy.model_downloader import add_known_models, KNOWN_LORAS
+from comfy.model_downloader import KNOWN_LORAS, add_known_models
 from comfy.model_downloader_types import CivitFile, HuggingFile
 from comfy_extras.nodes.nodes_audio import TorchAudioNotFoundError
+
 
 @pytest.fixture(scope="session")
 def has_gpu() -> bool:
@@ -32,14 +33,14 @@ def _prepare_for_custom_workflows() -> dict[str, Path]:
 
     # Get the custom_workflows directory path
     custom_workflows_dir = Path(__file__).parent / "workflows_api"
-    
+
     # Return dict of workflow files
     workflow_files = {}
     if custom_workflows_dir.exists():
         for file_path in custom_workflows_dir.iterdir():
             if file_path.is_file() and file_path.name.endswith(".json"):
                 workflow_files[file_path.name] = file_path
-    
+
     return workflow_files
 
 
@@ -48,18 +49,19 @@ def _prepare_test_image() -> None:
     # Get the input directory
     input_dir = Path(folder_paths.get_input_directory())
     input_dir.mkdir(exist_ok=True)
-    
+
     # Source test image from images_input directory - try PNG first, fallback to JPG
     source_png = Path(__file__).parent / "images_input" / "input.png"
     source_jpg = Path(__file__).parent / "images_input" / "moon.jpg"
     target_image = input_dir / "input.png"
-    
+
     # Choose the source image (prefer PNG)
     source_image = source_png if source_png.exists() else source_jpg
-    
+
     # Copy the test image if it doesn't exist or if source is newer
-    if source_image.exists() and (not target_image.exists() or 
-                                 source_image.stat().st_mtime > target_image.stat().st_mtime):
+    if source_image.exists() and (
+        not target_image.exists() or source_image.stat().st_mtime > target_image.stat().st_mtime
+    ):
         shutil.copy2(source_image, target_image)
 
 
@@ -87,7 +89,7 @@ async def test_custom_workflow(workflow_name: str, workflow_file: Path, has_gpu:
 
     # Validate the workflow as a prompt (same as test_workflows.py)
     prompt = Prompt.validate(workflow)
-    
+
     # Execute the workflow
     try:
         outputs = await client.queue_prompt(prompt)
@@ -96,10 +98,19 @@ async def test_custom_workflow(workflow_name: str, workflow_file: Path, has_gpu:
     except Exception as e:
         # Skip if model files are missing or other expected errors
         error_msg = str(e).lower()
-        if any(skip_phrase in error_msg for skip_phrase in [
-            "model file not found", "checkpoint", "safetensors", "model not found",
-            "no such file", "file not found", "missing model", "could not load model"
-        ]):
+        if any(
+            skip_phrase in error_msg
+            for skip_phrase in [
+                "model file not found",
+                "checkpoint",
+                "safetensors",
+                "model not found",
+                "no such file",
+                "file not found",
+                "missing model",
+                "could not load model",
+            ]
+        ):
             pytest.skip(f"Missing model files: {e}")
         else:
             # Re-raise unexpected errors
