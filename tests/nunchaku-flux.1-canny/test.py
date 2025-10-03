@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
+
 import pytest
 import pytest_asyncio
-
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
 
