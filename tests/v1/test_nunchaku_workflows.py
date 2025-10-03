@@ -1,4 +1,4 @@
-# import importlib.resources
+import importlib.resources
 import json
 import shutil
 from pathlib import Path

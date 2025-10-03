@@ -20,7 +20,7 @@ name = "ComfyUI-nunchaku"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
 version = "1.0.1"
 license = { file = "LICENCE.txt" }
-requires-python = ">=3.10, <3.13"
+requires-python = ">=3.10"
 
 [project.urls]
 Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
