@@ -1,13 +1,7 @@
 images:
-  - base_url: "https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/ComfyUI-nunchaku/inputs/{filename}"
+  - base_url: "https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/inputs/{filename}"
     files:
-      - logo.png
       - robot.png
-      - strawberry.png
-      - strawberry-mask.png
-      - mushroom_depth.webp
-      - removal.png
-      - monalisa.jpg
   - base_url: "https://github.com/ToTheBeginning/PuLID/blob/main/example_inputs/{filename}?raw=true"
     files:
       - lecun.jpg
