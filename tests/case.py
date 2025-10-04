@@ -37,7 +37,8 @@ def collect_cases() -> tuple[list[Case], list[str]]:
                 for id, case_data in enumerate(test_cases):
                     test_case = Case(workflow_name=workflow_dir.name, **case_data)
                     for k in test_case.inputs.keys():
-                        test_case.inputs[k] = test_case.inputs[k].format(precision=get_precision())
+                        if isinstance(test_case.inputs[k], str):
+                            test_case.inputs[k] = test_case.inputs[k].format(precision=get_precision())
                     ret_cases.append(test_case)
                     ret_ids.append(workflow_dir.name + "_" + str(id))
     return ret_cases, ret_ids
