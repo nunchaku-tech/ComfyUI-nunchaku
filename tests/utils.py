@@ -98,7 +98,8 @@ def prepare_models():
     )
 
 
-def set_nested_value(d: dict, keys: tuple, value: Any):
+def set_nested_value(d: dict, key: str, value: Any):
+    keys = key.split(",")
     for k in keys[:-1]:
         d = d[k]
     d[keys[-1]] = value

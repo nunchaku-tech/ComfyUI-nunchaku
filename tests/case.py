@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from nunchaku.utils import get_precision
+
 
 class Case:
     def __init__(
@@ -32,9 +34,12 @@ def collect_cases() -> tuple[list[Case], list[str]]:
         if test_cases_path.exists():
             with open(test_cases_path, "r", encoding="utf-8") as f:
                 test_cases = json.load(f)
-                for id, case in test_cases.items():
-                    ret_cases.append(Case(workflow_name=workflow_dir.name, **case))
-                    ret_ids.append(workflow_dir.name + "_" + id)
+                for id, case_data in enumerate(test_cases):
+                    test_case = Case(workflow_name=workflow_dir.name, **case_data)
+                    for k in test_case.inputs.keys():
+                        test_case.inputs[k] = test_case.inputs[k].format(precision=get_precision())
+                    ret_cases.append(test_case)
+                    ret_ids.append(workflow_dir.name + "_" + str(id))
     return ret_cases, ret_ids
 
 
