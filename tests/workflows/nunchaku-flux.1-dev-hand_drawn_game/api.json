@@ -1,0 +1,211 @@
+{
+  "6": {
+    "inputs": {
+      "text": "masterful impressionism oil painting titled \"the violinist\", the composition follows the rule of thirds, placing the violinist centrally in the frame. the subject is a young woman with fair skin and light blonde hair is styled in a long, flowing hairstyle with natural waves. she is dressed in an opulent, luxurious silver silk gown with a high waist and intricate gold detailing along the bodice. the gown's texture is smooth and reflective. she holds a violin under her chin, her right hand poised to play, and her left hand supporting the neck of the instrument. she wears a delicate gold necklace with small, sparkling gemstones that catch the light. her beautiful eyes focused on the viewer. the background features an elegantly furnished room with classical late 19th century decor. to the left, there is a large, ornate portrait of a man in a dark suit, set in a gilded frame. below this, a wooden desk with a closed book. to the right, a red upholstered chair with a wooden frame is partially visible. the room is bathed in natural light streaming through a window with red curtains, creating a warm, inviting atmosphere. the lighting highlights the violinist, casting soft shadows that enhance the depth and realism of the scene, highly aesthetic, harmonious colors, impressioniststrokes, \n<lora:style-impressionist_strokes-flux-by_daalis:1.0> \n<lora:image_upgrade-flux-by_zeronwo7829:1.0>",
+      "clip": [
+        "48",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "10": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "13": {
+    "inputs": {
+      "noise": [
+        "25",
+        0
+      ],
+      "guider": [
+        "22",
+        0
+      ],
+      "sampler": [
+        "16",
+        0
+      ],
+      "sigmas": [
+        "17",
+        0
+      ],
+      "latent_image": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "16": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "17": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 25,
+      "denoise": 1,
+      "model": [
+        "30",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "22": {
+    "inputs": {
+      "model": [
+        "30",
+        0
+      ],
+      "conditioning": [
+        "26",
+        0
+      ]
+    },
+    "class_type": "BasicGuider",
+    "_meta": {
+      "title": "BasicGuider"
+    }
+  },
+  "25": {
+    "inputs": {
+      "noise_seed": 92344444
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "26": {
+    "inputs": {
+      "guidance": 3.5,
+      "conditioning": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "27": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "30": {
+    "inputs": {
+      "max_shift": 1.15,
+      "base_shift": 0.5,
+      "width": 1024,
+      "height": 1024,
+      "model": [
+        "47",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingFlux",
+    "_meta": {
+      "title": "ModelSamplingFlux"
+    }
+  },
+  "45": {
+    "inputs": {
+      "model_path": "svdq-fp4_r32-flux.1-dev.safetensors",
+      "cache_threshold": 0,
+      "attention": "nunchaku-fp16",
+      "cpu_offload": "auto",
+      "device_id": 0,
+      "data_type": "bfloat16",
+      "i2f_mode": "enabled"
+    },
+    "class_type": "NunchakuFluxDiTLoader",
+    "_meta": {
+      "title": "Nunchaku FLUX DiT Loader"
+    }
+  },
+  "47": {
+    "inputs": {
+      "lora_name": "hand_drawn_game.safetensors",
+      "lora_strength": 1.0000000000000002,
+      "model": [
+        "45",
+        0
+      ]
+    },
+    "class_type": "NunchakuFluxLoraLoader",
+    "_meta": {
+      "title": "Nunchaku FLUX LoRA Loader"
+    }
+  },
+  "48": {
+    "inputs": {
+      "model_type": "flux.1",
+      "text_encoder1": "clip_l.safetensors",
+      "text_encoder2": "t5xxl_fp16.safetensors",
+      "t5_min_length": 512
+    },
+    "class_type": "NunchakuTextEncoderLoaderV2",
+    "_meta": {
+      "title": "Nunchaku Text Encoder Loader V2"
+    }
+  }
+}
