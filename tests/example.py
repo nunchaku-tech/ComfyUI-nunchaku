@@ -1,3 +1,8 @@
+from comfy.model_downloader import add_known_models
+from comfy.model_downloader_types import HuggingFile
+
+from nunchaku.utils import get_precision
+
 # This sample shows how to execute a ComfyUI workflow, saving an image file to the location you specify.
 # It does not require the server to be run. It runs ComfyUI embedded, as a library. No process is started.
 #
@@ -25,7 +30,23 @@ _PROMPT_FROM_WEB_UI = {
             "steps": 20,
         },
     },
-    "4": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "v1-5-pruned-emaonly.safetensors"}},
+    # "4": {
+    #     "class_type": "CheckpointLoaderSimple",
+    #     "inputs": {"ckpt_name": f"svdq-{get_precision()}_r32-flux.1-canny-dev.safetensors"},
+    # },
+    "4": {
+        "inputs": {
+            "model_path": "svdq-int4_r32-flux.1-canny-dev.safetensors",
+            "cache_threshold": 0,
+            "attention": "nunchaku-fp16",
+            "cpu_offload": "auto",
+            "device_id": 0,
+            "data_type": "bfloat16",
+            "i2f_mode": "enabled",
+        },
+        "class_type": "NunchakuFluxDiTLoader",
+        "_meta": {"title": "Nunchaku FLUX DiT Loader"},
+    },
     "5": {"class_type": "EmptyLatentImage", "inputs": {"batch_size": 1, "height": 512, "width": 512}},
     "6": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["4", 1], "text": "masterpiece best quality girl"}},
     "7": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["4", 1], "text": "bad hands"}},
@@ -41,6 +62,17 @@ _PROMPT_FROM_WEB_UI = {
 #
 # We'll now write the entrypoint of our script. This is an `async def main()` because async helps us start and stop the
 # code object that will run your workflow, just like pressing the Queue Prompt button.
+
+add_known_models(
+    "diffusion_models",
+    None,
+    HuggingFile(
+        repo_id="nunchaku-tech/nunchaku-flux.1-canny-dev",
+        filename=f"svdq-{get_precision()}_r32-flux.1-canny-dev.safetensors",
+    ),
+)
+
+
 async def main():
     import copy
 

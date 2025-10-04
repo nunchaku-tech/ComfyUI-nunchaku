@@ -6,15 +6,10 @@ from typing import Any
 import torch
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
-
-from nunchaku.utils import get_precision, is_turing
-
-from typing import Any
-
-from comfy.model_downloader import add_known_models, KNOWN_UNET_MODELS
+from comfy.model_downloader import KNOWN_UNET_MODELS, add_known_models
 from comfy.model_downloader_types import HuggingFile
 
-from nunchaku.utils import get_precision
+from nunchaku.utils import get_precision, is_turing
 
 # from ..common import compute_metrics, prepare_models, set_nested_value
 
