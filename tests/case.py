@@ -27,7 +27,7 @@ def collect_cases() -> tuple[list[Case], list[str]]:
     ret_cases = []
     ret_ids = []
     # Find all test_cases.json files in workflow folders under the same directory
-    current_dir = Path(__file__).parent
+    current_dir = Path(__file__).parent / "workflows"
     dirs = sorted([d for d in current_dir.iterdir() if d.is_dir()])
     for workflow_dir in dirs:
         test_cases_path = workflow_dir / "test_cases.json"
