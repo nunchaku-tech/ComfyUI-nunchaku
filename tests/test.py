@@ -6,7 +6,7 @@ import pytest_asyncio
 import torch
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
-import gc
+
 from nunchaku.utils import get_precision, is_turing
 
 from .case import Case, cases, ids
