@@ -6,7 +6,7 @@ import pytest_asyncio
 import torch
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
-
+import gc
 from nunchaku.utils import get_precision, is_turing
 
 from .case import Case, cases, ids
@@ -18,7 +18,7 @@ dtype_str = "fp16" if torch_dtype == torch.float16 else "bf16"
 prepare_models()
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function", autouse=False)
 async def client() -> Comfy:
     async with Comfy() as client_instance:
         yield client_instance
