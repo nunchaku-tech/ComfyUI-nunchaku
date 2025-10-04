@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 def main():
-    with open(Path(__file__).resolve().parent.parent / "test_data" / "images.yaml", "r") as f:
+    with open(Path(__file__).resolve().parent.parent / "test_data" / "inputs.yaml", "r") as f:
         config = yaml.safe_load(f)
     for group in config.get("images", []):
         base_url = group["base_url"]

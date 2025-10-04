@@ -1,7 +1,8 @@
-images:
+inputs:
   - base_url: "https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/inputs/{filename}"
     files:
       - robot.png
+      - logo.png
   - base_url: "https://github.com/ToTheBeginning/PuLID/blob/main/example_inputs/{filename}?raw=true"
     files:
       - lecun.jpg
