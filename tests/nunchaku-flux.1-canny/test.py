@@ -10,7 +10,7 @@ from comfy.client.embedded_comfy_client import Comfy
 
 from nunchaku.utils import get_precision, is_turing
 
-from ..common import compute_metrics, prepare_models
+from ..common import compute_metrics, prepare_models, set_nested_value
 
 precision = get_precision()
 torch_dtype = torch.float16 if is_turing() else torch.bfloat16
@@ -56,6 +56,8 @@ async def test(case: Case):
     api_file = Path(__file__).parent / "api.json"
     # Read and parse the workflow file
     workflow = json.loads(api_file.read_text(encoding="utf8"))
+    for key, value in case.inputs.items():
+        set_nested_value(workflow, key, value)
     prompt = Prompt.validate(workflow)
     outputs = await client.queue_prompt(prompt)
     save_image_node_id = next(key for key in prompt if prompt[key].class_type == "SaveImage")

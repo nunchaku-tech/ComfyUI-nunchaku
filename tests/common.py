@@ -1,12 +1,15 @@
+from typing import Any
+
+import numpy as np
+import torch
 from comfy.model_downloader import add_known_models
 from comfy.model_downloader_types import HuggingFile
-from nunchaku.utils import get_precision
+from diffusers.utils import load_image
 from PIL import Image
 from torchmetrics.image import LearnedPerceptualImagePatchSimilarity, PeakSignalNoiseRatio
 from torchmetrics.multimodal import CLIPImageQualityAssessment
-from diffusers.utils import load_image
-import torch
-import numpy as np
+
+from nunchaku.utils import get_precision
 
 
 def compute_metrics(gen_image_path: str, ref_image_path: str) -> tuple[float, float, float]:
@@ -93,3 +96,9 @@ def prepare_models():
             ),
         ),
     )
+
+
+def set_nested_value(d: dict, keys: tuple, value: Any):
+    for k in keys[:-1]:
+        d = d[k]
+    d[keys[-1]] = value
