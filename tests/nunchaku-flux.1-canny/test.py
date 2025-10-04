@@ -164,8 +164,9 @@ async def main():
     async with Comfy() as client:
         outputs = await client.queue_prompt(prompt)
         save_image_node_id = next(key for key in prompt if prompt[key].class_type == "SaveImage")
-    path = outputs[save_image_node_id]["images"][0]["abs_path"]
-    print(path)
+        print(outputs)
+        path = outputs[save_image_node_id]["images"][0]["abs_path"]
+        print(path)
 
 
 if __name__ == "__main__":
