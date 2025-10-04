@@ -8,7 +8,3 @@ inputs:
       - masked_strawberry.png
       - removal.png
       - yarn-art-pikachu.png
-  - base_url: "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/{filename}"
-    files:
-      - yarn-art-pikachu.png
-    download_dir: "output"
