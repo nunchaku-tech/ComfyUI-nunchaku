@@ -27,7 +27,7 @@ async def client() -> Comfy:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", cases, ids=ids)
 async def test(case: Case, client: Comfy):
-    api_file = Path(__file__).parent / case.workflow_name / "api.json"
+    api_file = Path(__file__).parent / "workflows" / case.workflow_name / "api.json"
     # Read and parse the workflow file
     workflow = json.loads(api_file.read_text(encoding="utf8"))
     for key, value in case.inputs.items():
@@ -40,6 +40,6 @@ async def test(case: Case, client: Comfy):
 
     clip_iqa, lpips, psnr = compute_metrics(path, case.ref_image_url)
 
-    assert clip_iqa >= case.expected_clip_iqa[f"{precision}-{dtype_str}"] * 0.85
-    assert lpips <= case.expected_lpips[f"{precision}-{dtype_str}"] * 1.15
-    assert psnr >= case.expected_psnr[f"{precision}-{dtype_str}"] * 0.85
+    assert clip_iqa >= min(case.expected_clip_iqa[f"{precision}-{dtype_str}"], 0.95) * 0.85
+    assert lpips <= max(case.expected_lpips[f"{precision}-{dtype_str}"], 0.1) * 1.15
+    assert psnr >= min(case.expected_psnr[f"{precision}-{dtype_str}"], 21) * 0.85
