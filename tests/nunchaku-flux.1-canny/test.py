@@ -1,25 +1,21 @@
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 import pytest_asyncio
+import torch
 from comfy.api.components.schema.prompt import Prompt
 from comfy.client.embedded_comfy_client import Comfy
-from comfy.model_downloader import KNOWN_LORAS, add_known_models
-from comfy.model_downloader_types import CivitFile, HuggingFile
 
-from torchmetrics.image import LearnedPerceptualImagePatchSimilarity, PeakSignalNoiseRatio
-from torchmetrics.multimodal import CLIPImageQualityAssessment
-from diffusers.utils import load_image
-import torch
-from PIL import Image
-import numpy as np
 from nunchaku.utils import get_precision, is_turing
 
+from ..common import compute_metrics, prepare_models
 
 precision = get_precision()
 torch_dtype = torch.float16 if is_turing() else torch.bfloat16
 dtype_str = "fp16" if torch_dtype == torch.float16 else "bf16"
+prepare_models()
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -35,15 +31,27 @@ class Case:
         expected_clip_iqa: dict[str, float] = {},
         expected_lpips: dict[str, float] = {},
         expected_psnr: dict[str, float] = {},
+        inputs: dict[tuple, Any] = {},
     ):
         self.ref_image_url = ref_image_url
         self.expected_clip_iqa = expected_clip_iqa
         self.expected_lpips = expected_lpips
         self.expected_psnr = expected_psnr
+        self.inputs = inputs
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("case", [Case()])
+@pytest.mark.parametrize(
+    "case",
+    [
+        Case(
+            expected_clip_iqa={"int4-bf16": 0.5},
+            expected_lpips={"int4-bf16": 0.5},
+            expected_psnr={"int4-bf16": 15},
+            inputs={("39", "inputs", "model_path"): f"svdq-{precision}-r32-flux.1-canny-dev.safetensors"},
+        )
+    ],
+)
 async def test(case: Case):
     api_file = Path(__file__).parent / "api.json"
     # Read and parse the workflow file
@@ -54,23 +62,7 @@ async def test(case: Case):
     path = outputs[save_image_node_id]["images"][0]["abs_path"]
     print(path)
 
-    # clip_iqa metric
-    metric = CLIPImageQualityAssessment(model_name_or_path="openai/clip-vit-large-patch14").to("cuda")
-    image = Image.open(path).convert("RGB")
-    gen_tensor = torch.from_numpy(np.array(image)).permute(2, 0, 1).to(torch.float32).unsqueeze(0).to("cuda")
-    clip_iqa = metric(gen_tensor).item()
-    print(f"CLIP-IQA: {clip_iqa}")
-
-    ref_image = load_image(case.ref_image_url).convert("RGB")
-    metric = LearnedPerceptualImagePatchSimilarity().to("cuda")
-    ref_tensor = torch.from_numpy(np.array(ref_image)).permute(2, 0, 1).to(torch.float32)
-    ref_tensor = ref_tensor.unsqueeze(0).to("cuda")
-    lpips = metric(gen_tensor / 255, ref_tensor / 255).item()
-    print(f"LPIPS: {lpips}")
-
-    metric = PeakSignalNoiseRatio(data_range=(0, 255)).cuda()
-    psnr = metric(gen_tensor, ref_tensor).item()
-    print(f"PSNR: {psnr}")
+    clip_iqa, lpips, psnr = compute_metrics(path, case.ref_image_url)
 
     assert clip_iqa >= case.expected_clip_iqa[f"{precision}-{dtype_str}"] * 0.85
     assert lpips <= case.expected_lpips[f"{precision}-{dtype_str}"] * 1.15
