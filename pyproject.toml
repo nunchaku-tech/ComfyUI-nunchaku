@@ -22,8 +22,6 @@ target-version = [ 'py311' ]
 [tool.ruff]
 line-length = 120
 
-per-file-ignores."tests/scripts/*.py" = [ "E402" ]
-per-file-ignores."tests/legacy_scripts/*.py" = [ "E402" ]
 per-file-ignores."__init__.py" = [ "E402" ]
 
 [tool.isort]
