@@ -10,7 +10,7 @@ from comfy.client.embedded_comfy_client import Comfy
 
 from nunchaku.utils import get_precision, is_turing
 
-from ..common import compute_metrics, prepare_models, set_nested_value
+from .common import compute_metrics, prepare_models, set_nested_value
 
 precision = get_precision()
 torch_dtype = torch.float16 if is_turing() else torch.bfloat16
@@ -48,12 +48,12 @@ async def client() -> Comfy:
             expected_clip_iqa={"int4-bf16": 0.5},
             expected_lpips={"int4-bf16": 0.5},
             expected_psnr={"int4-bf16": 15},
-            inputs={("39", "inputs", "model_path"): f"svdq-{precision}-r32-flux.1-canny-dev.safetensors"},
+            inputs={("39", "inputs", "model_path"): f"svdq-{precision}_r32-flux.1-canny-dev.safetensors"},
         )
     ],
 )
-async def test(case: Case):
-    api_file = Path(__file__).parent / "api.json"
+async def test(case: Case, client: Comfy):
+    api_file = Path(__file__).parent / "nunchaku-flux.1-canny" / "api.json"
     # Read and parse the workflow file
     workflow = json.loads(api_file.read_text(encoding="utf8"))
     for key, value in case.inputs.items():
@@ -69,8 +69,3 @@ async def test(case: Case):
     assert clip_iqa >= case.expected_clip_iqa[f"{precision}-{dtype_str}"] * 0.85
     assert lpips <= case.expected_lpips[f"{precision}-{dtype_str}"] * 1.15
     assert psnr >= case.expected_psnr[f"{precision}-{dtype_str}"] * 0.85
-
-
-case = Case(
-    inputs={("39", "inputs", "model_path"): f"svdq-{precision}_r32-flux.1-canny-dev.safetensors"},
-)
