@@ -5,6 +5,7 @@ inputs:
       - logo.png
       - mushroom_depth.webp
       - lecun.jpg
+      - masked_strawberry.png
   - base_url: "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/{filename}"
     files:
       - yarn-art-pikachu.png
