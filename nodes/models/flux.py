@@ -7,20 +7,17 @@ import gc
 import json
 import logging
 import os
-from pathlib import Path
 
 import comfy.model_management
 import comfy.model_patcher
-import folder_paths
-from ..utils import get_filename_list, get_full_path_or_raise
 import torch
 from comfy.supported_models import Flux, FluxSchnell
 
 from nunchaku import NunchakuFluxTransformer2dModel
 from nunchaku.caching.diffusers_adapters.flux import apply_cache_on_transformer
-from nunchaku.utils import is_turing
 
 from ...wrappers.flux import ComfyFluxWrapper
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

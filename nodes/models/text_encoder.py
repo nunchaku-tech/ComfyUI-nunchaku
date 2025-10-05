@@ -10,12 +10,13 @@ from typing import Callable
 
 import comfy
 import folder_paths
-from ..utils import get_filename_list, get_full_path_or_raise
 import torch
 from comfy.text_encoders.flux import FluxClipModel
 from torch import nn
 
 from nunchaku import NunchakuT5EncoderModel
+
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

@@ -1,13 +1,14 @@
 """
 This module wraps the ComfyUI model patcher for Nunchaku models to load and unload the model correctly.
 """
+
 from typing import Optional
 
 import torch
-
-from .mixins.model import NunchakuModelMixin
 from comfy.model_base import BaseModel
 from comfy.model_patcher import ModelPatcher
+
+from .mixins.model import NunchakuModelMixin
 
 
 class NunchakuModelPatcher(ModelPatcher):
@@ -60,12 +61,20 @@ class NunchakuModelPatcherNoInheritance:
             self.model.to(device_to)
 
     # required
-    def patch_model(self, device_to: torch.device | None = None, lowvram_model_memory: int = 0, load_weights: bool = True, force_patch_weights: bool = False) -> torch.nn.Module:
+    def patch_model(
+        self,
+        device_to: torch.device | None = None,
+        lowvram_model_memory: int = 0,
+        load_weights: bool = True,
+        force_patch_weights: bool = False,
+    ) -> torch.nn.Module:
         self._to(device_to=device_to)
         return self.model
 
     # required
-    def unpatch_model(self, device_to: torch.device | None = None, unpatch_weights: Optional[bool] = False) -> torch.nn.Module:
+    def unpatch_model(
+        self, device_to: torch.device | None = None, unpatch_weights: Optional[bool] = False
+    ) -> torch.nn.Module:
         self._to(device_to=device_to)
         return self.model
 
@@ -77,6 +86,7 @@ class NunchakuModelPatcherNoInheritance:
 
     def model_size(self) -> int:
         from comfy.model_management import module_size
+
         return module_size(self.model)
 
     def model_patches_to(self, arg: torch.device | torch.dtype):
@@ -113,6 +123,7 @@ class NunchakuModelPatcherNoInheritance:
 
     def get_model_object(self, name: str) -> torch.nn.Module:
         from comfy import utils
+
         return utils.get_attr(self.model, name)
 
     @property
@@ -156,6 +167,7 @@ class NunchakuModelPatcherNoInheritance:
     @property
     def hook_mode(self):
         from comfy.hooks import EnumHookMode
+
         return EnumHookMode.MinVram
 
     @hook_mode.setter

@@ -1,10 +1,14 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+
+requires = [ "setuptools>=61", "wheel" ]
+
 [project]
-name = "ComfyUI-nunchaku"
-version = "1.0.2dev0"
+name = "comfyui-nunchaku"
+version = "1.0.1"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
 license = { file = "LICENCE.txt" }
-requires-python = ">=3.10"
-
+requires-python = ">=3.10,<3.14"
 #  Used by Comfy Registry https://comfyregistry.org
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
@@ -13,7 +17,47 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
+dependencies = [
+  "accelerate>=1.10",
+  "diffusers>=0.35",
+  "huggingface-hub>=0.34",
+  "peft>=0.17",
+  "protobuf",
+  "sentencepiece",
+  "tomli",
+]
+
+optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git" ]
+optional-dependencies.pulid = [
+  "facexlib",
+  "insightface",
+  "onnxruntime",
+  "opencv-python",
+  "timm",
+]
+optional-dependencies.torch25 = [ "nunchaku==1.0.0+torch2.5", "torch>=2.5,<2.6" ]
+optional-dependencies.torch26 = [ "nunchaku==1.0.0+torch2.6", "torch>=2.6,<2.7" ]
+optional-dependencies.torch27 = [ "nunchaku==1.0.0+torch2.7", "torch>=2.7,<2.8" ]
+optional-dependencies.torch28 = [ "nunchaku==1.0.0+torch2.8", "torch>=2.8,<2.9" ]
+optional-dependencies.torch29 = [ "nunchaku==1.0.0+torch2.9", "torch>=2.9,<3" ]
 urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
+entry-points."comfyui.custom_nodes".nunchaku_comfyui = "nunchaku_comfyui"
+
+[tool.setuptools]
+package-dir = { "nunchaku_comfyui" = "." }
+packages = [
+  "nunchaku_comfyui",
+  "nunchaku_comfyui.mixins",
+  "nunchaku_comfyui.model_base",
+  "nunchaku_comfyui.model_configs",
+  "nunchaku_comfyui.models",
+  "nunchaku_comfyui.nodes",
+  "nunchaku_comfyui.nodes.lora",
+  "nunchaku_comfyui.nodes.models",
+  "nunchaku_comfyui.nodes.preprocessors",
+  "nunchaku_comfyui.nodes.tools",
+  "nunchaku_comfyui.wrappers",
+]
 
 [tool.black]
 line-length = 120
@@ -22,72 +66,14 @@ target-version = [ 'py311' ]
 [tool.ruff]
 line-length = 120
 
+per-file-ignores."tests/scripts/*.py" = [ "E402" ]
+per-file-ignores."tests/legacy_scripts/*.py" = [ "E402" ]
 per-file-ignores."__init__.py" = [ "E402" ]
 
-<<<<<<< HEAD
-[project]
-name = "ComfyUI-nunchaku"
-description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
-version = "1.0.1"
-license = { file = "LICENCE.txt" }
-requires-python = ">=3.10, <3.14"
-dependencies = [
-    "diffusers>=0.35",
-    "accelerate>=1.10",
-    "sentencepiece",
-    "protobuf",
-    "huggingface_hub>=0.34",
-    "tomli",
-    "peft>=0.17",
-]
-
-[project.optional-dependencies]
-torch25 = ["torch>=2.5,<2.6", "nunchaku==1.0.0+torch2.5"]
-torch26 = ["torch>=2.6,<2.7", "nunchaku==1.0.0+torch2.6"]
-torch27 = ["torch>=2.7,<2.8", "nunchaku==1.0.0+torch2.7"]
-torch28 = ["torch>=2.8,<2.9", "nunchaku==1.0.0+torch2.8"]
-torch29 = ["torch>=2.9,<3.0", "nunchaku==1.0.0+torch2.9"]
-compile = ["nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git"]
-pulid = [
-    "insightface",
-    "opencv-python",
-    "facexlib",
-    "onnxruntime",
-    "timm"
-]
-
-[project.urls]
-Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
-#  Used by Comfy Registry https://comfyregistry.org
-=======
 [tool.isort]
 profile = "black"
 known_first_party = [ "nunchaku" ]
 line_length = 120
->>>>>>> 1743dd5ba798dcb108b1923908e4ceb3aed7736c
-
-[project.entry-points."comfyui.custom_nodes"]
-nunchaku_comfyui = "nunchaku_comfyui"
-
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = { "nunchaku_comfyui" = "." }
-packages = [
-    "nunchaku_comfyui",
-    "nunchaku_comfyui.mixins",
-    "nunchaku_comfyui.model_base",
-    "nunchaku_comfyui.model_configs",
-    "nunchaku_comfyui.models",
-    "nunchaku_comfyui.nodes",
-    "nunchaku_comfyui.nodes.lora",
-    "nunchaku_comfyui.nodes.models",
-    "nunchaku_comfyui.nodes.preprocessors",
-    "nunchaku_comfyui.nodes.tools",
-    "nunchaku_comfyui.wrappers"
-]
 
 [tool.comfy]
 PublisherId = "lmxyy1999"
@@ -100,9 +86,8 @@ ignore-path = [ "docs/_build" ]
 ignore = [ "D000", "D001" ]
 
 [tool.rstcheck]
-<<<<<<< HEAD
-ignore_directives = ["tabs"]
-ignore_messages = ["ERROR/3", "INFO/1"]
+ignore_directives = [ "tabs" ]
+ignore_messages = [ "ERROR/3", "INFO/1" ]
 
 [[tool.uv.index]]
 name = "nunchaku-wheels"
@@ -111,8 +96,3 @@ format = "flat"
 
 [tool.uv.sources]
 nunchaku = { index = "nunchaku-wheels" }
-
-=======
-ignore_directives = [ "tabs" ]
-ignore_messages = [ "ERROR/3", "INFO/1" ]
->>>>>>> 1743dd5ba798dcb108b1923908e4ceb3aed7736c

@@ -7,11 +7,10 @@ import copy
 import logging
 import os
 
-from ..utils import get_filename_list, get_full_path_or_raise
-
 from nunchaku.lora.flux import to_diffusers
 
 from ...wrappers.flux import ComfyFluxWrapper
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

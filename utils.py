@@ -81,7 +81,7 @@ def get_plugin_version() -> str:
             data = tomllib.load(f)
             project_version = data["project"]["version"]
             return project_version
-    except:
+    except Exception:
         return "1.0.0"
 
 

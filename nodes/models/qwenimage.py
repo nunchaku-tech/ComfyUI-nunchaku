@@ -7,7 +7,6 @@ import logging
 import os
 
 import comfy.utils
-from ..utils import get_filename_list, get_full_path_or_raise
 import torch
 from comfy import model_detection, model_management
 
@@ -15,6 +14,7 @@ from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_pre
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 from ...model_patcher import NunchakuModelPatcher
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

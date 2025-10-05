@@ -1,6 +1,7 @@
 """
 This module provides a mixin class for Nunchaku models. It is intended to be inherited by nunchaku models.
 """
+
 import logging
 
 import torch
