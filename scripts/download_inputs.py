@@ -9,7 +9,7 @@ from tqdm import tqdm
 def main():
     with open(Path(__file__).resolve().parent.parent / "test_data" / "inputs.yaml", "r") as f:
         config = yaml.safe_load(f)
-    for group in config.get("images", []):
+    for group in config.get("inputs", []):
         base_url = group["base_url"]
         download_dir = group.get("download_dir", "input")
         for filename in tqdm(group["files"], desc="Downloading"):
