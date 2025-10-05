@@ -94,7 +94,7 @@ jobs:
           cd ..
           python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
           mkdir -p input
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
+          python custom_nodes/ComfyUI-nunchaku/scripts/download_inputs.py
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
