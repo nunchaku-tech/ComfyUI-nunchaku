@@ -69,7 +69,7 @@ def load_diffusion_model_state_dict(
             "scale_shift": 0,
             "rank": rank,
             "precision": precision,
-            "transformer_offload_device": offload_device if model_options.get("cpu_offload_enabled", False) else None
+            "transformer_offload_device": offload_device if model_options.get("cpu_offload_enabled", False) else None,
         }
     )
     model_config.optimizations["fp8"] = False
@@ -213,12 +213,9 @@ class NunchakuQwenImageDiTLoader:
             cpu_offload_enabled = False
             logger.info("Disabling CPU offload")
 
-        model = load_diffusion_model_state_dict(sd,
-                                                metadata=metadata,
-                                                model_options={
-                                                    "cpu_offload_enabled": cpu_offload_enabled
-                                                    }
-                                                )
+        model = load_diffusion_model_state_dict(
+            sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}
+        )
 
         if cpu_offload_enabled:
             assert use_pin_memory in ["enable", "disable"], "Invalid use_pin_memory option"
