@@ -1,5 +1,5 @@
 diffusers>=0.35
-accelerate
+transformers<4.57
 sentencepiece
 protobuf
 huggingface_hub>=0.34

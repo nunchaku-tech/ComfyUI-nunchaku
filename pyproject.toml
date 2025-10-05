@@ -1,20 +1,30 @@
-[tool.isort]
-profile = "black"
-known_first_party = ["nunchaku"]
-line_length = 120
+[project]
+name = "ComfyUI-nunchaku"
+version = "1.0.2dev0"
+description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
+license = { file = "LICENCE.txt" }
+requires-python = ">=3.10"
+
+#  Used by Comfy Registry https://comfyregistry.org
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 
 [tool.black]
 line-length = 120
-target-version = ['py311']
+target-version = [ 'py311' ]
 
 [tool.ruff]
 line-length = 120
 
-[tool.ruff.per-file-ignores]
-"tests/scripts/*.py" = ["E402"]
-"tests/legacy_scripts/*.py" = ["E402"]
-"__init__.py" = ["E402"]
+per-file-ignores."__init__.py" = [ "E402" ]
 
+<<<<<<< HEAD
 [project]
 name = "ComfyUI-nunchaku"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
@@ -49,6 +59,12 @@ pulid = [
 [project.urls]
 Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 #  Used by Comfy Registry https://comfyregistry.org
+=======
+[tool.isort]
+profile = "black"
+known_first_party = [ "nunchaku" ]
+line_length = 120
+>>>>>>> 1743dd5ba798dcb108b1923908e4ceb3aed7736c
 
 [project.entry-points."comfyui.custom_nodes"]
 nunchaku_comfyui = "nunchaku_comfyui"
@@ -80,10 +96,11 @@ Icon = "https://raw.githubusercontent.com/nunchaku-tech/nunchaku/96615bd93a1f0d2
 
 [tool.doc8]
 max-line-length = 120
-ignore-path = ["docs/_build"]
-ignore = ["D000", "D001"]
+ignore-path = [ "docs/_build" ]
+ignore = [ "D000", "D001" ]
 
 [tool.rstcheck]
+<<<<<<< HEAD
 ignore_directives = ["tabs"]
 ignore_messages = ["ERROR/3", "INFO/1"]
 
@@ -95,3 +112,7 @@ format = "flat"
 [tool.uv.sources]
 nunchaku = { index = "nunchaku-wheels" }
 
+=======
+ignore_directives = [ "tabs" ]
+ignore_messages = [ "ERROR/3", "INFO/1" ]
+>>>>>>> 1743dd5ba798dcb108b1923908e4ceb3aed7736c

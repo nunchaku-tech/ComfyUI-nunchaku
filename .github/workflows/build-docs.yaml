@@ -53,16 +53,11 @@ jobs:
           pip install comfy-cli
           yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.60
           cd ComfyUI
-          cd custom_nodes
-          ln -s ../../ComfyUI-nunchaku
-          pip install -r ComfyUI-nunchaku/requirements.txt
       - name: Build docs
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate nunchaku-docs || { echo "Failed to activate conda env"; exit 1; }
           which python
-          pip install sphinx sphinx-tabs myst-parser sphinx-copybutton breathe sphinxcontrib-mermaid nbsphinx jupyter ipykernel graphviz sphinxext-rediraffe
-          pip install furo sphinxawesome-theme sphinx-book-theme sphinx-rtd-theme
           cd docs
           make html
       - name: Deploy docs
