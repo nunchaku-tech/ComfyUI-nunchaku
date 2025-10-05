@@ -58,6 +58,7 @@ jobs:
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           which python
+          conda install -c conda-forge gxx=11 gcc=11
           rm -rf nunchaku
           git clone --recurse-submodules https://github.com/nunchaku-tech/nunchaku.git
           cd nunchaku
