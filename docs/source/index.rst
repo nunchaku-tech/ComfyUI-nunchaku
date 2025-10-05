@@ -37,3 +37,4 @@ Check out `DeepCompressor <github_deepcompressor_>`_ for the quantization librar
 
     developer/contribution_guide.rst
     developer/build_docs.rst
+    developer/docstring.rst
