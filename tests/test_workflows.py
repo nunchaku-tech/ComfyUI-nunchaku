@@ -40,6 +40,6 @@ async def test(case: Case, client: Comfy):
 
     clip_iqa, lpips, psnr = compute_metrics(path, case.ref_image_url)
 
-    assert clip_iqa >= min(case.expected_clip_iqa[f"{precision}-{dtype_str}"], 1) * 0.85
+    assert clip_iqa >= min(case.expected_clip_iqa[f"{precision}-{dtype_str}"], 1) * 0.9
     assert lpips <= max(case.expected_lpips[f"{precision}-{dtype_str}"], 0.1) * 1.15
     assert psnr >= min(case.expected_psnr[f"{precision}-{dtype_str}"], 24) * 0.85
