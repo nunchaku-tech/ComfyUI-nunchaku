@@ -77,7 +77,7 @@ jobs:
           ln -s "${COMFYUI_MODELS_ROOT}" models
           pip install -r ../ComfyUI-nunchaku/requirements.txt
           ln -s ../ComfyUI-nunchaku/tests tests
-          pip install -r custom_nodes/ComfyUI-nunchaku/requirements.txt
+          pip install -r tests/requirements.txt
           cd custom_nodes
           ln -s ../../ComfyUI-nunchaku
           git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
