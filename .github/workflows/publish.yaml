@@ -1,9 +1,15 @@
-name: Publish to Comfy registry
+name: Publish to Comfy registry and create a release
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g. v1.2.3)'
+        required: true
+permissions:
+  contents: write
 jobs:
-  publish-node:
-    name: Publish Custom Node to registry
+  publish:
+    name: Publish Custom Node to registry and create a release
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -12,3 +18,10 @@ jobs:
         uses: Comfy-Org/publish-node-action@main
         with:
           personal_access_token: ${{ secrets.COMFYUI_REGISTRY_ACCESS_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

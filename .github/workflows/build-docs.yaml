@@ -11,7 +11,7 @@ on:
 jobs:
   build-and-deploy-docs:
     name: Build and deploy docs
-    runs-on: [self-hosted, '4090']
+    runs-on: [self-hosted, build-docs]
     if: github.event_name != 'workflow_dispatch' || github.actor == 'lmxyy'
     env:
       DOC_VERSION: ${{ github.event.inputs.version || 'nightly' }}
@@ -35,16 +35,13 @@ jobs:
           which python
           conda install -c conda-forge gxx=11 gcc=11
           echo "Installing dependencies"
-          pip install torch==2.7 torchvision==0.22 torchaudio==2.7 --index-url https://download.pytorch.org/whl/cu128
-          pip install ninja wheel diffusers==0.33.1 transformers==4.51 accelerate==1.7 sentencepiece==0.2 protobuf==6.31 huggingface_hub==0.31
-          pwd
           cd ..
           git clone https://github.com/nunchaku-tech/nunchaku.git
           cd nunchaku
           git log -1 --oneline
           git submodule init
           git submodule update
-          python setup.py develop
+          pip install -e ".[dev,docs]"
       - name: Install ComfyUI
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
@@ -54,18 +51,13 @@ jobs:
           cd ..
           ln -s ComfyUI-nunchaku comfyui_nunchaku
           pip install comfy-cli
-          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.44
+          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.60
           cd ComfyUI
-          cd custom_nodes
-          ln -s ../../ComfyUI-nunchaku
-          pip install -r ComfyUI-nunchaku/requirements.txt
       - name: Build docs
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate nunchaku-docs || { echo "Failed to activate conda env"; exit 1; }
           which python
-          pip install sphinx sphinx-tabs myst-parser sphinx-copybutton breathe sphinxcontrib-mermaid nbsphinx jupyter ipykernel graphviz sphinxext-rediraffe
-          pip install furo sphinxawesome-theme sphinx-book-theme sphinx-rtd-theme
           cd docs
           make html
       - name: Deploy docs

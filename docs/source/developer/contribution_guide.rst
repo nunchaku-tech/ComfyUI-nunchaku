@@ -6,8 +6,8 @@ This guide outlines how to set up your environment, run tests, and submit a Pull
 Whether you're fixing a minor bug or implementing a major feature, we encourage you to
 follow these steps for a smooth and efficient contribution process.
 
-🚀 Setting Up & Building from Source
-------------------------------------
+🚀 Setting Up Test Environment
+------------------------------
 
 1. Fork and Clone the Repository
 
@@ -20,27 +20,49 @@ follow these steps for a smooth and efficient contribution process.
 
          git clone https://github.com/<your_username>/ComfyUI-nunchaku.git
 
-2. Install Dependencies & Build
+2. Install Nunchaku
 
-   Follow the steps in :doc:`Installation <../get_started/installation>` to set up your environment.
-   For testing, also install the following plugins:
+   Follow the steps in :doc:`Installation <../get_started/installation>` to install Nunchaku.
 
-   - https://github.com/Fannovel16/comfyui_controlnet_aux
-   - https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy
+3. Set Up ComfyUI Test Environment
 
-   If you use `comfy-cli <github_comfy-cli_>`_, you can install them by running the following command:
+   After installing Nunchaku, set up the test environment:
 
-   .. code-block:: shell
+   a. Create an empty directory structure and link your tests:
 
-      comfy node install comfyui_controlnet_aux
-      comfy node install comfyui-inpainteasy
+      .. code-block:: shell
 
-3. Download Models and Test Data
+         mkdir -p ComfyUI-nunchaku-test/custom_nodes
+         cd ComfyUI-nunchaku-test
+         mkdir -p models  # Or: ln -s /path/to/existing/comfyui/models models
+         ln -s /path/to/ComfyUI-nunchaku/tests tests
+         cd custom_nodes
+         ln -s /path/to/ComfyUI-nunchaku
+         cd ..
 
-   .. code-block:: shell
+   b. Install test dependencies:
 
-      HF_TOKEN=$YOUR_HF_TOKEN python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
-      HF_TOKEN=$YOUR_HF_TOKEN python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
+      .. code-block:: shell
+
+         pip install -r tests/requirements.txt
+
+   c. Install required custom nodes (with specific commits):
+
+      .. code-block:: shell
+
+         cd custom_nodes
+         git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
+         cd comfyui_controlnet_aux && git checkout cc6b232 && cd ..
+         git clone https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy.git
+         cd ComfyUI-InpaintEasy && pip install -r requirements.txt && git checkout d631a03 && cd ../..
+
+   d. Download test models and data:
+
+      .. code-block:: shell
+
+         python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
+         mkdir -p input
+         python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
 
 🧹 Code Formatting with Pre-Commit
 ----------------------------------
@@ -62,14 +84,21 @@ We enforce code style using `pre-commit <https://pre-commit.com/>`__ hooks. Plea
 
 We use ``pytest`` for unit testing. When adding features or bug fixes, include new test cases in the ``tests`` directory. **Do not modify existing tests.**
 
+.. _running-tests:
+
 Running Tests
 ~~~~~~~~~~~~~
 
 .. code-block:: shell
 
-   cd ComfyUI  # Ensure `ComfyUI-nunchaku` is in the `custom_nodes` directory
-   ln -s custom_nodes/ComfyUI-nunchaku/tests nunchaku_tests
-   HF_TOKEN=$YOUR_HF_TOKEN pytest -v nunchaku_tests/
+   cd ComfyUI-nunchaku-test
+   HF_TOKEN=$YOUR_HF_TOKEN pytest nunchaku_tests/test_workflows.py -x -vv --reruns 2 --reruns-delay 0
+
+To run only your newly added test, use the ``-k`` flag with your workflow folder name:
+
+.. code-block:: shell
+
+   pytest nunchaku_tests/test_workflows.py -x -vv -k "nunchaku-flux.1-schnell"
 
 .. note::
 
@@ -78,79 +107,81 @@ Running Tests
 Writing Tests
 ~~~~~~~~~~~~~
 
-When contributing new features or bug fixes, add corresponding tests in the ``tests`` directory. **Do not alter existing tests.**
+When contributing new features or bug fixes, you must register a new test in the ``tests/workflows`` directory. **Do not alter existing tests.**
 
 To add a test case:
 
-1. **Install the ComfyUI-to-Python Extension**
+1. **Create a Workflow Folder**
 
-   We use https://github.com/pydn/ComfyUI-to-Python-Extension to convert ComfyUI workflows to Python scripts for testing.
+   Create a new folder in ``tests/workflows/`` with a descriptive name (e.g., ``nunchaku-flux.1-schnell``). This folder must contain four JSON files:
 
-   .. code-block:: shell
+   - ``ref.json``: The reference workflow using BF16/FP8 models (for benchmarking)
+   - ``workflow.json``: The corresponding Nunchaku version of the workflow
+   - ``api.json``: API version of ``workflow.json`` (exported via ComfyUI's ``Export (API)`` option)
+   - ``test_cases.json``: Test configurations with different parameters
 
-      pip install black
-      cd custom_nodes
-      git clone https://github.com/pydn/ComfyUI-to-Python-Extension
+   .. note::
 
-2. **Convert the Workflow to a Python Script**
+      Both ``ref.json`` and ``workflow.json`` are for backup purposes, making it easier for future maintenance, development, testing, and debugging.
 
-   In ComfyUI, use ``workflow -> Save as Script`` to export your workflow.
+2. **Create the API Workflow**
 
-   .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/save_script.png
-      :alt: Save as Script
+   In ComfyUI, after designing your workflow, export it using ``Export (API)`` and save it as ``api.json`` (see example below).
+
+   .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/export_api.png
+      :alt: ComfyUI Export API Example
       :align: center
 
-   Place the generated script in `tests/scripts <https://github.com/nunchaku-tech/ComfyUI-nunchaku/tree/main/tests/scripts>`__ and the corresponding workflow in `tests/workflows <https://github.com/nunchaku-tech/ComfyUI-nunchaku/tree/main/tests/workflows>`__.
+3. **Configure Test Cases**
 
-3. **Modify the Script for Testing**
+   Create ``test_cases.json`` to define test parameters. You can override variables in ``api.json`` using the ``inputs`` field. Here's an example:
 
-   Make minor adjustments to ensure compatibility with the test environment. For example:
+   .. code-block:: json
 
-   .. literalinclude:: ../../../tests/scripts/nunchaku-flux1-schnell.py
-      :language: python
-      :caption: Test script for :ref:`nunchaku-flux.1-schnell-json`
-      :linenos:
-      :emphasize-lines: 7, 120, 149, 153, 195-200, 204
+      [
+        {
+          "ref_image_url": "https://github.com/user/repo/issues/123#issuecomment-456789",
+          "expected_clip_iqa": {
+            "int4-bf16": 0.98,
+            "fp4-bf16": 0.99
+          },
+          "expected_lpips": {
+            "int4-bf16": 0.23,
+            "fp4-bf16": 0.22
+          },
+          "expected_psnr": {
+            "int4-bf16": 19,
+            "fp4-bf16": 19
+          },
+          "inputs": {
+            "30,inputs,model_path": "svdq-{precision}_r32-flux.1-schnell.safetensors",
+            "25,inputs,noise_seed": 778459239
+          }
+        }
+      ]
 
-   Key changes from the generated script:
+   Each test case should include:
 
-   - Pass precision to the main function (see lines 7, 120, 153, 204; use :func:`~nunchaku:nunchaku.utils.get_precision`).
-   - Set a fixed random seed (line 149).
-   - Save the output image path to ``image_path.txt`` (lines 195-200).
+   - ``ref_image_url``: URL to the reference image generated by your BF16/FP8 workflow with the same parameters (remember to fix the seed). Upload the image to a GitHub PR comment to get a public URL.
+   - ``expected_clip_iqa``, ``expected_lpips``, ``expected_psnr``: Image quality metrics. These keys use the format ``{precision}-{torch_dtype}``:
 
-4. **Run the Script**
+     - ``int4``/``fp4``: Nunchaku model precision
+     - ``bf16``/``fp16``: Activation torch dtype (fp16 is typically used on RTX 20-series GPUs; others use bf16)
 
-   .. code-block:: shell
-
-      python nunchaku_tests/nunchaku-flux1-schnell.py
-
-5. **Register the Test Script**
-
-   Register your new test script in `tests/test_workflows.py <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/tests/test_workflows.py>`__ by adding an entry to the parameterized test list. For example:
-
-   .. code-block:: python
-
-      ("nunchaku-flux1-schnell.py", 0.9, 0.29, 19.3),
-
-   Each tuple should contain:
-
-   - ``script_name``: The filename of your test script.
-   - ``expected_clip_iqa``: The minimum acceptable CLIP IQA score for your generated image.
-   - ``expected_lpips``: The maximum acceptable LPIPS score (measuring perceptual similarity to the reference image).
-   - ``expected_psnr``: The minimum acceptable PSNR score (measuring pixel-level similarity to the reference image).
+   - ``inputs``: Override parameters in ``api.json`` for testing different configurations
 
    **How to determine the expected values:**
 
-   - **CLIP IQA**: Run your script several times (e.g., 5 runs) and use the lowest CLIP IQA score as the expected value.
-   - **LPIPS and PSNR**: These metrics compare your generated image to a reference image.
-     You can run your script multiple times (e.g., 5 runs), use the first generated image as the reference,
-     and then set the highest observed LPIPS and PSNR values as the expected thresholds.
+   Run your test locally first (see :ref:`running-tests`). Use the local results as reference values. If you can only test one precision type (int4 or fp4), you can use the same reference values for both.
 
-   After determining your reference image, upload it to our `Hugging Face dataset <https://huggingface.co/datasets/nunchaku-tech/test-data/tree/main/ComfyUI-nunchaku/ref_images>`__.
-   Be sure to upload the image to both the ``int4`` and ``fp4`` directories to support all test configurations.
+4. **Add Additional Test Data (if needed)**
 
-6. **Add Test Data Links**
+   If your test requires additional input images or models:
 
-   Add download links for test data in `test_data/images.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/images.yaml>`__.
+   - Upload input images to a GitHub PR comment to get a public URL
+   - Register the URLs in `test_data/inputs.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/inputs.yaml>`__
+   - If new models are required, update `scripts/download_models.py <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/scripts/download_models.py>`__ and `test_data/models.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/models.yaml>`__
 
-   If new models are required, update `scripts/download_models.py <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/scripts/download_models.py>`__ and `test_data/models.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/models.yaml>`__ accordingly.
+5. **Install Additional Nodes (if needed)**
+
+   If your test requires additional custom nodes, modify `.github/workflows/pr-test.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/.github/workflows/pr-test.yaml>`__ to install the required nodes and their dependencies in the CI environment.
