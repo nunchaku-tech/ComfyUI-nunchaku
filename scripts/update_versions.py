@@ -102,7 +102,7 @@ def main():
 
     with open(OUTPUT_FILENAME, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
-    
+
     print(
         f"Successfully generated '{OUTPUT_FILENAME}' with {len(official_versions)} official and {len(dev_versions)} dev versions."
     )
