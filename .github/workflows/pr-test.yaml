@@ -78,6 +78,7 @@ jobs:
           pip install -r ../ComfyUI-nunchaku/requirements.txt
           ln -s ../ComfyUI-nunchaku/tests tests
           pip install -r tests/requirements.txt
+          mkdir -p custom_nodes
           cd custom_nodes
           ln -s ../../ComfyUI-nunchaku
           git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
