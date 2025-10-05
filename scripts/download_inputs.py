@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-import wget
+import requests
 import yaml
 from tqdm import tqdm
 
@@ -19,7 +19,15 @@ def main():
                 continue
             print(f"Downloading {filename}...")
             full_url = base_url.format(filename=filename)
-            wget.download(full_url, out=output_path)
+
+            # Download with requests - more reliable than wget
+            response = requests.get(full_url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+            with open(output_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
 
 
 if __name__ == "__main__":
