@@ -17,4 +17,4 @@
 - [ ] Additional models (if needed) are registered in [`scripts/download_models.py`](../scripts/download_models.py) and [`test_data/models.yaml`](../test_data/models.yaml).
 - [ ] Additional custom nodes (if needed) are added to [`.github/workflows/pr-test.yaml`](../.github/workflows/pr-test.yaml).
 - [ ] **For reviewers:** If you're only helping merge the main branch and haven't contributed code to this PR, please remove yourself as a co-author when merging.
-- [ ] Please feel free to join our [Slack](https://join.slack.com/t/nunchaku/shared_invite/zt-3170agzoz-NgZzWaTrEj~n2KEV3Hpl5Q), [Discord](https://discord.gg/Wk6PnwX9Sm) or [WeChat](https://huggingface.co/datasets/nunchaku-tech/cdn/blob/main/nunchaku/assets/wechat.jpg) to discuss your PR.
+- [ ] Please feel free to join our [Discord](https://discord.gg/Wk6PnwX9Sm) or [WeChat](https://huggingface.co/datasets/nunchaku-tech/cdn/blob/main/nunchaku/assets/wechat.jpg) to discuss your PR.
