@@ -6,8 +6,8 @@ This guide outlines how to set up your environment, run tests, and submit a Pull
 Whether you're fixing a minor bug or implementing a major feature, we encourage you to
 follow these steps for a smooth and efficient contribution process.
 
-🚀 Setting Up & Building from Source
-------------------------------------
+🚀 Setting Up Test Environment
+------------------------------
 
 1. Fork and Clone the Repository
 
@@ -20,27 +20,49 @@ follow these steps for a smooth and efficient contribution process.
 
          git clone https://github.com/<your_username>/ComfyUI-nunchaku.git
 
-2. Install Dependencies & Build
+2. Install Nunchaku
 
-   Follow the steps in :doc:`Installation <../get_started/installation>` to set up your environment.
-   For testing, also install the following plugins:
+   Follow the steps in :doc:`Installation <../get_started/installation>` to install Nunchaku.
 
-   - https://github.com/Fannovel16/comfyui_controlnet_aux
-   - https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy
+3. Set Up ComfyUI Test Environment
 
-   If you use `comfy-cli <github_comfy-cli_>`_, you can install them by running the following command:
+   After installing Nunchaku, set up the test environment:
 
-   .. code-block:: shell
+   a. Create an empty directory structure and link your tests:
 
-      comfy node install comfyui_controlnet_aux
-      comfy node install comfyui-inpainteasy
+      .. code-block:: shell
 
-3. Download Models and Test Data
+         mkdir -p ComfyUI-nunchaku-test/custom_nodes
+         cd ComfyUI-nunchaku-test
+         mkdir -p models  # Or: ln -s /path/to/existing/comfyui/models models
+         ln -s /path/to/ComfyUI-nunchaku/tests tests
+         cd custom_nodes
+         ln -s /path/to/ComfyUI-nunchaku
+         cd ..
 
-   .. code-block:: shell
+   b. Install test dependencies:
 
-      HF_TOKEN=$YOUR_HF_TOKEN python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
-      HF_TOKEN=$YOUR_HF_TOKEN python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
+      .. code-block:: shell
+
+         pip install -r tests/requirements.txt
+
+   c. Install required custom nodes (with specific commits):
+
+      .. code-block:: shell
+
+         cd custom_nodes
+         git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
+         cd comfyui_controlnet_aux && git checkout cc6b232 && cd ..
+         git clone https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy.git
+         cd ComfyUI-InpaintEasy && pip install -r requirements.txt && git checkout d631a03 && cd ../..
+
+   d. Download test models and data:
+
+      .. code-block:: shell
+
+         python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
+         mkdir -p input
+         python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
 
 🧹 Code Formatting with Pre-Commit
 ----------------------------------
@@ -69,8 +91,7 @@ Running Tests
 
 .. code-block:: shell
 
-   cd ComfyUI  # Ensure `ComfyUI-nunchaku` is in the `custom_nodes` directory
-   ln -s custom_nodes/ComfyUI-nunchaku/tests nunchaku_tests
+   cd ComfyUI-nunchaku-test
    HF_TOKEN=$YOUR_HF_TOKEN pytest nunchaku_tests/test_workflows.py -x -vv --reruns 2 --reruns-delay 0
 
 To run only your newly added test, use the ``-k`` flag with your workflow folder name:
@@ -105,7 +126,11 @@ To add a test case:
 
 2. **Create the API Workflow**
 
-   In ComfyUI, after designing your workflow, export it using ``Export (API)`` and save it as ``api.json``.
+   In ComfyUI, after designing your workflow, export it using ``Export (API)`` and save it as ``api.json`` (see example below).
+
+   .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/export_api.png
+      :alt: ComfyUI Export API Example
+      :align: center
 
 3. **Configure Test Cases**
 
