@@ -356,9 +356,6 @@ class NunchakuWheelInstaller:
             }
         }
 
-        if platform.system() == "Windows":
-            del inputs["required"]["dev_version"]
-
         return inputs
 
     RETURN_TYPES = ("STRING",)
