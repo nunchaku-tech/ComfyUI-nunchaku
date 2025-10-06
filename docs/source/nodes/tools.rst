@@ -9,21 +9,22 @@ Nunchaku Wheel Installer
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/NunchakuWheelInstaller-v1.0.1.png
     :alt: NunchakuWheelInstaller
 
-This node automates the installation of Nunchaku wheels from `GitHub Releases <github_nunchaku_releases_>`_, `Hugging Face <hf_nunchaku_wheels_>`_, or `ModelScope <ms_nunchaku_wheels_>`_.
-For official releases, it attempts installation in the following order: ModelScope, then Hugging Face, and finally GitHub Releases.
-For development versions, only GitHub Releases are used.
+This node installs or uninstalls the Nunchaku Python package directly from the ComfyUI interface.
+It supports both official and development versions, and can update its version list from online sources.
 
-If you select "latest" for either version, the node will fetch the most up-to-date version list from the internet and update `nunchaku_versions.json` before proceeding with installation.
+The node operates in offline mode using a local cache file (``nunchaku_versions.json``).
+It features separate dropdowns for official and development versions.
 
-**Important:** After installation, you must **restart ComfyUI** for changes to take effect.
+For official versions, installation attempts sources in order: ModelScope, Hugging Face, then GitHub Releases.
+For development versions (Linux only), only GitHub Releases are used.
 
-If both ``version`` and ``dev_version`` are specified, the development version takes precedence.
+**Important:** After installation or uninstallation, you must **completely restart ComfyUI** for changes to take effect.
 
 **Inputs:**
 
-- **version**: Choose the official Nunchaku version to install. Select "latest" to refresh and use the newest available version.
-- **dev_version**: Choose a development version to install. Select "latest" to refresh and use the newest available development version. If both version and dev_version are set, dev_version will be prioritized.
-- **mode**: Select "install" to install Nunchaku or "uninstall" to remove it.
+- **version**: Official Nunchaku version to install. Use "update node" mode to get the latest list. If dev_version is also selected, it will take priority.
+- **dev_version**: Development Nunchaku version to install. Use "update node" mode to get the latest list. This option has priority over the official version.
+- **mode**: "install" to install Nunchaku, "uninstall" to remove it, or "update node" to refresh the version list from the CDN.
 
 **Outputs:**
 
