@@ -32,7 +32,9 @@ optional-dependencies.pulid = [
   "facexlib",
   "insightface",
   "onnxruntime",
-  "opencv-python",
+  # todo: this should almost always be the headless version
+  # the ecosystem really needs an alternative to cv2, the way they have packaged things is chaos
+  "opencv-python-headless",
   "timm",
 ]
 optional-dependencies.torch25 = [ "nunchaku>=1.0.1+torch2.5", "torch>=2.5,<2.6" ]
