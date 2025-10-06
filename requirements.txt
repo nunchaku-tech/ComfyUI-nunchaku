@@ -6,10 +6,3 @@ huggingface_hub>=0.34
 tomli
 peft>=0.17
 accelerate>=1.10
-
-# PuLID dependencies
-insightface
-opencv-python
-facexlib
-onnxruntime
-timm
