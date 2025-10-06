@@ -35,11 +35,12 @@ optional-dependencies.pulid = [
   "opencv-python",
   "timm",
 ]
-optional-dependencies.torch25 = [ "nunchaku==1.0.0+torch2.5", "torch>=2.5,<2.6" ]
-optional-dependencies.torch26 = [ "nunchaku==1.0.0+torch2.6", "torch>=2.6,<2.7" ]
-optional-dependencies.torch27 = [ "nunchaku==1.0.0+torch2.7", "torch>=2.7,<2.8" ]
-optional-dependencies.torch28 = [ "nunchaku==1.0.0+torch2.8", "torch>=2.8,<2.9" ]
-optional-dependencies.torch29 = [ "nunchaku==1.0.0+torch2.9", "torch>=2.9,<3" ]
+optional-dependencies.torch25 = [ "nunchaku>=1.0.1+torch2.5", "torch>=2.5,<2.6" ]
+optional-dependencies.torch26 = [ "nunchaku>=1.0.1+torch2.6", "torch>=2.6,<2.7" ]
+optional-dependencies.torch27 = [ "nunchaku>=1.0.1+torch2.7", "torch>=2.7,<2.8" ]
+optional-dependencies.torch28 = [ "nunchaku>=1.0.1+torch2.8", "torch>=2.8,<2.9" ]
+optional-dependencies.torch29 = [ "nunchaku>=1.0.1+torch2.9", "torch>=2.9,<2.10" ]
+optional-dependencies.torch29 = [ "nunchaku>=1.0.1+torch2.10", "torch>=2.10,<3" ]
 urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 entry-points."comfyui.custom_nodes".nunchaku_comfyui = "nunchaku_comfyui"
 
@@ -58,6 +59,10 @@ packages = [
   "nunchaku_comfyui.nodes.tools",
   "nunchaku_comfyui.wrappers",
 ]
+
+[tool.setuptools.package-data]
+"nunchaku_comfyui" = [ "example_workflows/*.json" ]
+"nunchaku_comfyui.nodes.models" = [ "nodes/models/configs/*.json" ]
 
 [tool.black]
 line-length = 120
