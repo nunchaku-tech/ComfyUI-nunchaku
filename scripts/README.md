@@ -11,19 +11,19 @@ Visual Studio 2019 or later with the Desktop C++ workload is **required** for `n
 #### Required Components:
 
 1. **Visual Studio Community 2022** (17.12.1 or later)
-2. **Desktop development with C++ workload**
-3. **MSVC v143 x64 Spectre-mitigated libraries** (v14.42-17.12 or latest)
+1. **Desktop development with C++ workload**
+1. **MSVC v143 x64 Spectre-mitigated libraries** (v14.42-17.12 or latest)
 
 #### Installing Spectre-mitigated Libraries:
 
 The Spectre-mitigated libraries are **critical** and must be installed separately:
 
 1. Open the Visual Studio Installer
-2. Click "Modify" on your Visual Studio 2022 Community installation
-3. Go to the "Individual Components" tab
-4. Search for "Spectre"
-5. Check the boxes for: **"MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs"**
-6. Install the selected components
+1. Click "Modify" on your Visual Studio 2022 Community installation
+1. Go to the "Individual Components" tab
+1. Search for "Spectre"
+1. Check the boxes for: **"MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs"**
+1. Install the selected components
 
 > **Note**: Without the Spectre-mitigated libraries, the build process will fail during native module compilation.
 
@@ -39,13 +39,13 @@ The Spectre-mitigated libraries are **critical** and must be installed separatel
 The `build_comfyui_desktop.cmd` script automates the entire build process by:
 
 1. Installing Python 3.12 via winget
-2. Installing the `uv` package manager
-3. Installing Node Version Manager (NVM) for Windows
-4. Setting up Node.js 20.18.0
-5. Installing Yarn 4.5.0
-6. Cloning the ComfyUI Desktop repository
-7. Installing dependencies and building the application
-8. Configuring PyTorch with CUDA support and Nunchaku integration
+1. Installing the `uv` package manager
+1. Installing Node Version Manager (NVM) for Windows
+1. Setting up Node.js 20.18.0
+1. Installing Yarn 4.5.0
+1. Cloning the ComfyUI Desktop repository
+1. Installing dependencies and building the application
+1. Configuring PyTorch with CUDA support and Nunchaku integration
 
 ## Script Configuration
 
@@ -84,15 +84,16 @@ Upon successful completion, the script will:
 
    - Run: `npx electron-rebuild` in the project directory
 
-2. **Missing Spectre-mitigated libraries error**
+1. **Missing Spectre-mitigated libraries error**
 
    - Ensure you've installed the Spectre-mitigated libraries as described above
 
-3. **Permission denied errors**
+1. **Permission denied errors**
 
    - Run Windows CMD as Administrator. Do not use PowerShell.
 
-4. **Python installation fails**
+1. **Python installation fails**
+
    - Manually install Python 3.12 from python.org or Microsoft Store. You can also try Anaconda or Miniconda.
 
 ## Support

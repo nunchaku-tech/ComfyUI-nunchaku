@@ -22,7 +22,7 @@ set PYTHON_VERSION_STR=%PYTHON_VERSION:.=%
 
 set WORK_DIR=%cd%
 
-REM Assume Python 3.12 installs here. This is the default location for winget installations. 
+REM Assume Python 3.12 installs here. This is the default location for winget installations.
 REM Adjust if your installation path is different.
 set PYTHON_EXE="%LocalAppData%\Programs\Python\Python%PYTHON_VERSION_STR%\python.exe"
 
