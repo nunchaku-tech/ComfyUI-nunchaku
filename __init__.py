@@ -1,6 +1,8 @@
 import logging
 import os
 
+from packaging.version import InvalidVersion, Version
+
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -10,19 +12,28 @@ logger = logging.getLogger(__name__)
 
 logger.info("=" * 40 + " ComfyUI-nunchaku Initialization " + "=" * 40)
 
-from .utils import get_package_version, get_plugin_version, supported_versions
+from .utils import get_package_version, get_plugin_version
 
 nunchaku_full_version = get_package_version("nunchaku").split("+")[0].strip()
 
 logger.info(f"Nunchaku version: {nunchaku_full_version}")
 logger.info(f"ComfyUI-nunchaku version: {get_plugin_version()}")
 
+
+min_nunchaku_version = "1.0.0"
 nunchaku_version = nunchaku_full_version.split("+")[0].strip()
 nunchaku_major_minor_patch_version = ".".join(nunchaku_version.split(".")[:3])
-if f"v{nunchaku_major_minor_patch_version}" not in supported_versions:
+
+try:
+    if Version(nunchaku_major_minor_patch_version) < Version(min_nunchaku_version):
+        logger.warning(
+            f"ComfyUI-nunchaku {get_plugin_version()} requires nunchaku >= v{min_nunchaku_version}, "
+            f"but found nunchaku {nunchaku_full_version}. Please update nunchaku."
+        )
+except InvalidVersion:
     logger.warning(
-        f"ComfyUI-nunchaku {get_plugin_version()} is not compatible with nunchaku {nunchaku_full_version}. "
-        f"Please update nunchaku to a supported version in {supported_versions}."
+        f"Could not parse nunchaku version: {nunchaku_full_version}. "
+        f"Please ensure you have at least v{min_nunchaku_version}."
     )
 
 NODE_CLASS_MAPPINGS = {}
