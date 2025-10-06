@@ -1,0 +1,14 @@
+inputs:
+  - base_url: "https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/inputs/{filename}"
+    files:
+      - robot.png
+      - logo.png
+      - mushroom_depth.webp
+      - lecun.jpg
+      - masked_strawberry.png
+      - removal.png
+      - yarn-art-pikachu.png
+      - comfy_poster.png
+      - puppy.png
+      - man.png
+      - sofa.png
