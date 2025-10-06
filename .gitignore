@@ -1,3 +1,7 @@
+models/
+output/
+input/
+temp/
 # Prerequisites
 *.d
 

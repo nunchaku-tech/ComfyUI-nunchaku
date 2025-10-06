@@ -1,6 +1,102 @@
 import logging
 import os
 
+# vanilla and LTS compatibility snippet
+try:
+    from comfy_compatibility.vanilla import prepare_vanilla_environment
+
+    prepare_vanilla_environment()
+
+    from comfy.model_downloader import add_known_models
+    from comfy.model_downloader_types import HuggingFile
+
+    # add known models
+    NUNCHAKU_SVDQ_MODELS = [
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-fp4_r128-qwen-image-lightningv1.0-4steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-fp4_r128-qwen-image-lightningv1.1-8steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-fp4_r128-qwen-image.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-fp4_r32-qwen-image-lightningv1.0-4steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-fp4_r32-qwen-image-lightningv1.1-8steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-fp4_r32-qwen-image.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-int4_r128-qwen-image-lightningv1.0-4steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-int4_r128-qwen-image-lightningv1.1-8steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-int4_r128-qwen-image.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-int4_r32-qwen-image-lightningv1.0-4steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image",
+                    filename="svdq-int4_r32-qwen-image-lightningv1.1-8steps.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-int4_r32-qwen-image.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-dev", filename="svdq-fp4_r32-flux.1-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-dev", filename="svdq-int4_r32-flux.1-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-kontext-dev",
+                    filename="svdq-fp4_r32-flux.1-kontext-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-kontext-dev",
+                    filename="svdq-int4_r32-flux.1-kontext-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-fill-dev",
+                    filename="svdq-fp4_r32-flux.1-fill-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-fill-dev",
+                    filename="svdq-int4_r32-flux.1-fill-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-krea-dev",
+                    filename="svdq-fp4_r32-flux.1-krea-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-krea-dev",
+                    filename="svdq-int4_r32-flux.1-krea-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-depth-dev",
+                    filename="svdq-fp4_r32-flux.1-depth-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-depth-dev",
+                    filename="svdq-int4_r32-flux.1-depth-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-schnell",
+                    filename="svdq-fp4_r32-flux.1-schnell.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-schnell",
+                    filename="svdq-int4_r32-flux.1-schnell.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-canny-dev",
+                    filename="svdq-fp4_r32-flux.1-canny-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-canny-dev",
+                    filename="svdq-int4_r32-flux.1-canny-dev.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-shuttle-jaguar",
+                    filename="svdq-fp4_r32-shuttle-jaguar.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-shuttle-jaguar",
+                    filename="svdq-int4_r32-shuttle-jaguar.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-sana", filename="svdq-int4_r32-sana1.6b.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-dev-colossus",
+                    filename="svdq-fp4_r32-flux.1-dev-colossusv12.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-dev-colossus",
+                    filename="svdq-int4_r32-flux.1-dev-colossusv12.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-schnell-pix2pix-turbo",
+                    filename="svdq-int4-sketch.safetensors"),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
+                    filename="svdq-int4_r32-qwen-image-edit.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
+                    filename="svdq-fp4_r32-qwen-image-edit.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
+                    filename="svdq-int4_r128-qwen-image-edit.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
+                    filename="svdq-fp4_r128-qwen-image-edit.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
+                    filename="svdq-int4_r32-qwen-image-edit-2509.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
+                    filename="svdq-fp4_r32-qwen-image-edit-2509.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
+                    filename="svdq-int4_r128-qwen-image-edit-2509.safetensors", ),
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
+                    filename="svdq-fp4_r128-qwen-image-edit-2509.safetensors", ),
+    ]
+
+    NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS = [
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-t5", filename="awq-int4-flux.1-t5xxl.safetensors"),
+
+    ]
+
+    add_known_models("diffusion_models", *NUNCHAKU_SVDQ_MODELS)
+    add_known_models("text_encoders", *NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS)
+except (ImportError, ModuleNotFoundError):
+    pass
+
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 

@@ -5,22 +5,31 @@ import pytest
 import pytest_asyncio
 import torch
 from comfy.api.components.schema.prompt import Prompt
+from comfy.cli_args_types import Configuration
 from comfy.client.embedded_comfy_client import Comfy
 
 from nunchaku.utils import get_precision, is_turing
 
 from .case import Case, cases, ids
-from .utils import compute_metrics, prepare_models, set_nested_value
+from .utils import compute_metrics, prepare_models, set_nested_value, prepare_inputs
 
 precision = get_precision()
 torch_dtype = torch.float16 if is_turing() else torch.bfloat16
 dtype_str = "fp16" if torch_dtype == torch.float16 else "bf16"
-prepare_models()
+
+
+@pytest_asyncio.fixture(scope="module", autouse=False)
+async def inputs(tmp_path_factory):
+    config = Configuration()
+    input_path = config.input_directory = str(tmp_path_factory.mktemp("nunchaku_input"))
+    prepare_inputs(input_path)
+    yield config
 
 
 @pytest_asyncio.fixture(scope="function", autouse=False)
-async def client() -> Comfy:
-    async with Comfy() as client_instance:
+async def client(tmp_path_factory, inputs) -> Comfy:
+    async with Comfy(inputs) as client_instance:
+        prepare_models()
         yield client_instance
 
 

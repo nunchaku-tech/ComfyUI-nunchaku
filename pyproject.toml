@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 
-requires = [ "setuptools>=61", "wheel" ]
+requires = ["setuptools>=61", "wheel"]
 
 [project]
 name = "comfyui-nunchaku"
@@ -27,7 +27,7 @@ dependencies = [
   "tomli",
 ]
 
-optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git" ]
+optional-dependencies.compile = ["nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git"]
 optional-dependencies.pulid = [
   "facexlib",
   "insightface",
@@ -37,12 +37,23 @@ optional-dependencies.pulid = [
   "opencv-python",
   "timm",
 ]
-optional-dependencies.torch25 = [ "nunchaku==1.0.1+torch2.5", "torch>=2.5,<2.6" ]
-optional-dependencies.torch26 = [ "nunchaku==1.0.1+torch2.6", "torch>=2.6,<2.7" ]
-optional-dependencies.torch27 = [ "nunchaku==1.0.1+torch2.7", "torch>=2.7,<2.8" ]
-optional-dependencies.torch28 = [ "nunchaku==1.0.1+torch2.8", "torch>=2.8,<2.9" ]
-optional-dependencies.torch29 = [ "nunchaku==1.0.1+torch2.9", "torch>=2.9,<2.10" ]
-optional-dependencies.torch210 = [ "nunchaku==1.0.1+torch2.10", "torch>=2.10,<3" ]
+optional-dependencies.torch25 = ["nunchaku==1.0.1+torch2.5", "torch>=2.5,<2.6"]
+optional-dependencies.torch26 = ["nunchaku==1.0.1+torch2.6", "torch>=2.6,<2.7"]
+optional-dependencies.torch27 = ["nunchaku==1.0.1+torch2.7", "torch>=2.7,<2.8"]
+optional-dependencies.torch28 = ["nunchaku==1.0.1+torch2.8", "torch>=2.8,<2.9"]
+optional-dependencies.torch29 = ["nunchaku==1.0.1+torch2.9", "torch>=2.9,<2.10"]
+optional-dependencies.torch210 = ["nunchaku==1.0.1+torch2.10", "torch>=2.10,<3"]
+optional-dependencies.dev = [
+  "pytest",
+  "torchmetrics",
+  "controlnet_aux",
+  "image_gen_aux@git+https://github.com/asomoza/image_gen_aux.git",
+  "pyyaml",
+  "pytest-rerunfailures",
+  "pytest-asyncio==1.2.0",
+  "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git",
+  "comfyui_controlnet_aux@https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git",
+]
 urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 entry-points."comfyui.custom_nodes".nunchaku_comfyui = "nunchaku_comfyui"
 
@@ -63,23 +74,23 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-"nunchaku_comfyui" = [ "example_workflows/*.json" ]
-"nunchaku_comfyui.nodes.models" = [ "nodes/models/configs/*.json" ]
+"nunchaku_comfyui" = ["example_workflows/*.json"]
+"nunchaku_comfyui.nodes.models" = ["nodes/models/configs/*.json"]
 
 [tool.black]
 line-length = 120
-target-version = [ 'py311' ]
+target-version = ['py311']
 
 [tool.ruff]
 line-length = 120
 
-per-file-ignores."tests/scripts/*.py" = [ "E402" ]
-per-file-ignores."tests/legacy_scripts/*.py" = [ "E402" ]
-per-file-ignores."__init__.py" = [ "E402" ]
+per-file-ignores."tests/scripts/*.py" = ["E402"]
+per-file-ignores."tests/legacy_scripts/*.py" = ["E402"]
+per-file-ignores."__init__.py" = ["E402"]
 
 [tool.isort]
 profile = "black"
-known_first_party = [ "nunchaku" ]
+known_first_party = ["nunchaku"]
 line_length = 120
 
 [tool.comfy]
@@ -89,12 +100,12 @@ Icon = "https://raw.githubusercontent.com/nunchaku-tech/nunchaku/96615bd93a1f0d2
 
 [tool.doc8]
 max-line-length = 120
-ignore-path = [ "docs/_build" ]
-ignore = [ "D000", "D001" ]
+ignore-path = ["docs/_build"]
+ignore = ["D000", "D001"]
 
 [tool.rstcheck]
-ignore_directives = [ "tabs" ]
-ignore_messages = [ "ERROR/3", "INFO/1" ]
+ignore_directives = ["tabs"]
+ignore_messages = ["ERROR/3", "INFO/1"]
 
 [[tool.uv.index]]
 name = "nunchaku-wheels"
