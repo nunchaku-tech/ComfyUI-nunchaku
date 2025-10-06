@@ -1,4 +1,4 @@
-name: Update CDN Versions File
+name: Update CDN Version File
 on:
   # Triggers automatically every day at 5:00 AM UTC.
   schedule:
@@ -12,23 +12,19 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Set up Python 3.11
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
       - name: Install script dependencies
         run: pip install packaging
       - name: Generate the versions.json file
         run: python scripts/update_versions.py
       - name: Upload file to Nunchaku CDN
-        #
-        # NOTE: The following command is a placeholder.
-        # The actual upload command and secrets must be provided by the CDN administrator.
-        # The `CDN_UPLOAD_TOKEN` secret must be configured in the repository settings.
-        #
         run: |
-          echo "Uploading nunchaku_versions.json to the CDN..."
-          curl --fail -X POST \
-            -H "Authorization: Bearer ${{ secrets.CDN_UPLOAD_TOKEN }}" \
-            -F "file=@nunchaku_versions.json" \
-            https://nunchaku.tech/api/upload-cdn # <-- THIS URL IS A PLACEHOLDER
+          echo "${{ secrets.DO_SSH_KEY }}" > ./id_rsa
+          chmod 600 id_rsa
+          rsync -avz nunchaku_versions.json ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }}:/var/www/cdn/
+          rm id_rsa
+        env:
+          RSYNC_RSH: "ssh -o StrictHostKeyChecking=no -i id_rsa"
