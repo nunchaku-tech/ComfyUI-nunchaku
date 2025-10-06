@@ -21,6 +21,7 @@ dtype_str = "fp16" if torch_dtype == torch.float16 else "bf16"
 @pytest_asyncio.fixture(scope="module", autouse=False)
 async def inputs(tmp_path_factory):
     config = Configuration()
+    base_dir = config.base_directory = str(tmp_path_factory.mktemp("nunchaku_input"))
     input_path = config.input_directory = str(tmp_path_factory.mktemp("nunchaku_input"))
     prepare_inputs(input_path)
     yield config

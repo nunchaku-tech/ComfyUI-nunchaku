@@ -107,6 +107,6 @@ def prepare_inputs(inputs_dir: str):
                 src_path = Path(src_path)
 
                 try:
-                    src_path.symlink_to(dst_path)
+                    os.symlink(src_path, dst_path)
                 except Exception:
                     shutil.copyfile(src_path, dst_path)
