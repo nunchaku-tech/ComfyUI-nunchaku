@@ -37,12 +37,12 @@ optional-dependencies.pulid = [
   "opencv-python",
   "timm",
 ]
-optional-dependencies.torch25 = ["nunchaku==1.0.1+torch2.5", "torch>=2.5,<2.6"]
-optional-dependencies.torch26 = ["nunchaku==1.0.1+torch2.6", "torch>=2.6,<2.7"]
-optional-dependencies.torch27 = ["nunchaku==1.0.1+torch2.7", "torch>=2.7,<2.8"]
-optional-dependencies.torch28 = ["nunchaku==1.0.1+torch2.8", "torch>=2.8,<2.9"]
-optional-dependencies.torch29 = ["nunchaku==1.0.1+torch2.9", "torch>=2.9,<2.10"]
-optional-dependencies.torch210 = ["nunchaku==1.0.1+torch2.10", "torch>=2.10,<3"]
+optional-dependencies.torch25 = ["nunchaku==1.0.1+torch2.5; sys_platform != 'darwin'", "torch>=2.5,<2.6"]
+optional-dependencies.torch26 = ["nunchaku==1.0.1+torch2.6; sys_platform != 'darwin'", "torch>=2.6,<2.7"]
+optional-dependencies.torch27 = ["nunchaku==1.0.1+torch2.7; sys_platform != 'darwin'", "torch>=2.7,<2.8"]
+optional-dependencies.torch28 = ["nunchaku==1.0.1+torch2.8; sys_platform != 'darwin'", "torch>=2.8,<2.9"]
+# when working with pre-release torch, we don't know what the version string will be, so let's omit it
+optional-dependencies.torchpre = ["nunchaku==1.0.1+torch2.10; sys_platform != 'darwin'"]
 optional-dependencies.dev = [
   "pytest",
   "torchmetrics",
@@ -107,6 +107,18 @@ ignore = ["D000", "D001"]
 ignore_directives = ["tabs"]
 ignore_messages = ["ERROR/3", "INFO/1"]
 
+[tool.uv]
+conflicts = [
+  [
+    { extra = "torch25" },
+    { extra = "torch26" },
+    { extra = "torch27" },
+    { extra = "torch28" },
+    { extra = "torchpre" },
+    { extra = "compile" },
+  ],
+]
+
 [[tool.uv.index]]
 name = "nunchaku-wheels"
 url = "https://raw.githubusercontent.com/AppMana/comfyui-nunchaku/refs/heads/main/pypi/nunchaku_index.html"
@@ -114,3 +126,19 @@ format = "flat"
 
 [tool.uv.sources]
 nunchaku = { index = "nunchaku-wheels" }
+
+[[tool.uv.dependency-metadata]]
+name = "nunchaku"
+version = "1.0.1"
+requires-dist = [
+  "accelerate>=1.9",
+  "diffusers>=0.35.1",
+  "einops",
+  "huggingface-hub>=0.34",
+  "peft>=0.17",
+  "protobuf",
+  "sentencepiece",
+  "torchvision>=0.20",
+  # 4.53 shouldn't be used due to OpenTelemetry problems
+  "transformers>=4.54,<4.57",
+]
