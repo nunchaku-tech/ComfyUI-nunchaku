@@ -46,7 +46,6 @@ optional-dependencies.torchpre = ["nunchaku==1.0.1+torch2.10; sys_platform != 'd
 optional-dependencies.dev = [
   "pytest",
   "torchmetrics",
-  "controlnet_aux",
   "image_gen_aux@git+https://github.com/asomoza/image_gen_aux.git",
   "pyyaml",
   "pytest-rerunfailures",
