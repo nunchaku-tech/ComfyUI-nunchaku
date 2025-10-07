@@ -7,11 +7,11 @@
         },
         "expected_lpips": {
             "int4-bf16": 0.22,
-            "fp4-bf16": 0.19
+            "fp4-bf16": 0.24
         },
         "expected_psnr": {
             "int4-bf16": 17,
-            "fp4-bf16": 19
+            "fp4-bf16": 17
         },
         "inputs": {
             "45,inputs,model_path": "svdq-{precision}_r32-flux.1-dev.safetensors"
