@@ -89,6 +89,8 @@ set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%N
 echo torch==%TORCH_VERSION%+%CUDA_PIP_INDEX%
 echo torchaudio==%TORCHAUDIO_VERSION%+%CUDA_PIP_INDEX%
 echo torchvision==%TORCHVISION_VERSION%+%CUDA_PIP_INDEX%
+echo opencv-python
+echo insightface
 echo nunchaku @ %NUNCHAKU_URL%
 ) > assets\override.txt
 echo nunchaku >> assets\ComfyUI\requirements.txt
