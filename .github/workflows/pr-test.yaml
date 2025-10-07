@@ -38,7 +38,7 @@ jobs:
     if: |
       (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
       (github.event_name == 'workflow_dispatch')
-    env:
+    env: {}
       # todo: you probably want to set HF_HOME instead
       # COMFYUI_MODELS_ROOT: "/home/nunchaku/comfyui_models"
     steps:
@@ -54,20 +54,20 @@ jobs:
           which python
           echo "Setting up Python with uv"
           uv venv --python=3.13
-      - name: Install ComfyUI & Nunchaku
+      - name: Install ComfyUI
         run: |
           uv pip install --torch-backend=auto "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git@f205eb704eed49d5696012849351724fd25c2a7d"
-          
+      - name: Install Nunchaku
+        run: |
           # until we have metadata pep, this is just what we have to do
-          torch_version=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
-          
-          uv pip install --torch-backend=auto ".[${torch_version},pulid,dev]"
-          
-          # finally, install controlnet aux
+          TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
+          uv pip install --torch-backend=auto ".[${TORCH_VERSION},pulid,dev]"
+      - name: Install comfyui_controlnet_aux
+        run: |
           uv pip install "comfyui_controlnet_aux@git+https://github.com/AppMana/comfyui_controlnet_aux.git"
       - name: Run tests
         run: |
-          uv run pytest tests -x -vv --reruns 2 --reruns-delay 0
+          uv run pytest tests/ -x -vv
       - name: Clean up
         if: always()
         run: |
