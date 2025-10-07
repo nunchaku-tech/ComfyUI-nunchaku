@@ -56,7 +56,7 @@ jobs:
         run: |
           which python
           echo "Setting up Python with uv"
-          uv venv --python=3.13
+          uv venv --python=3.12
       - name: Install ComfyUI
         run: |
           uv pip install --torch-backend=auto "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git@f205eb704eed49d5696012849351724fd25c2a7d"

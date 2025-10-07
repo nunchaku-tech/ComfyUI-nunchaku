@@ -52,7 +52,8 @@ optional-dependencies.dev = [
   "pytest-rerunfailures",
   "pytest-asyncio==1.2.0",
   "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git",
-  "comfyui_controlnet_aux@https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git",
+  # version < 3.13 required due to mediapipe
+  "comfyui_controlnet_aux@git+https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git ;python_version < '3.13'",
 ]
 urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 entry-points."comfyui.custom_nodes".nunchaku_comfyui = "nunchaku_comfyui"
