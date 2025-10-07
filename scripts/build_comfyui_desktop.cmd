@@ -69,6 +69,7 @@ REM Note: this step needs admin permission
 echo Installing yarn...
 npm install -g yarn
 corepack enable
+corepack prepare yarn@4.5.0 --activate
 yarn use %YARN_VERSION%
 
 REM 7. Install node modules and rebuild electron
