@@ -44,41 +44,35 @@ echo Installing uv package...
 %PYTHON_EXE% -m pip install --upgrade pip
 %PYTHON_EXE% -m pip install uv
 
-REM 3. Install NVM for Windows (if not already installed)
-echo Installing NVM for Windows...
-winget install -e --id CoreyButler.NVMforWindows --accept-source-agreements --accept-package-agreements -h
-if %errorlevel% neq 0 (
-    echo Failed to install NVM
-    exit /b 1
-)
-
-REM 4. Install Node.js 20 via NVM
+REM 3. Install Node.js 20 via NVM
 echo Installing Node.js %NODE_VERSION% with NVM...
 cd %NVM_HOME%
 nvm install %NODE_VERSION%
 nvm use %NODE_VERSION%
 
-REM 5. Clone ComfyUI desktop repo
+REM 4. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
 cd %WORK_DIR%
 git clone https://github.com/kungtalon/desktop.git
 cd desktop
 
-REM 6. Install Yarn using npm
+REM 5. Install Yarn using npm
 REM Note: this step needs admin permission
 echo Installing yarn...
 npm install -g yarn
+echo corepack enable
 corepack enable
+echo corepack prepare yarn@4.5.0 --activate
 corepack prepare yarn@4.5.0 --activate
 @REM yarn use %YARN_VERSION%
 
-REM 7. Install node modules and rebuild electron
+REM 6. Install node modules and rebuild electron
 echo Rebuilding native modules...
 yarn install
 npx --yes electron-rebuild
 yarn make:assets
 
-REM 8. Overwrite override.txt with torch 2.7 + custom nunchaku wheel
+REM 7. Overwrite override.txt with torch 2.7 + custom nunchaku wheel
 echo Writing override.txt...
 
 git clone https://github.com/nunchaku-tech/ComfyUI-nunchaku.git assets/ComfyUI/custom_nodes/ComfyUI-nunchaku
@@ -95,7 +89,7 @@ echo nunchaku @ %NUNCHAKU_URL%
 ) > assets\override.txt
 echo nunchaku >> assets\ComfyUI\requirements.txt
 
-REM 9. Build compiled requirements with uv
+REM 8. Build compiled requirements with uv
 echo Rebuilding requirements (windows_nvidia.compiled)...
 assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt assets\ComfyUI\custom_nodes\ComfyUI-Manager\requirements.txt ^
 --emit-index-annotation --emit-index-url --index-strategy unsafe-best-match ^
@@ -104,7 +98,7 @@ assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt assets\ComfyUI\
 --index-url https://pypi.org/simple ^
 --extra-index-url https://download.pytorch.org/whl/%CUDA_PIP_INDEX%
 
-REM 10. Build for NVIDIA users on Windows
+REM 9. Build for NVIDIA users on Windows
 echo Building ComfyUI for NVIDIA...
 yarn make:nvidia
 
