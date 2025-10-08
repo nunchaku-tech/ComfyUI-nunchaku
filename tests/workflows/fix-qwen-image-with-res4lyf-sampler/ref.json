@@ -1,0 +1,615 @@
+{
+    "id": "91f6bbe2-ed41-4fd6-bac7-71d5b5864ecb",
+    "revision": 0,
+    "last_node_id": 73,
+    "last_link_id": 138,
+    "nodes": [
+        {
+            "id": 7,
+            "type": "CLIPTextEncode",
+            "pos": [
+                413,
+                389
+            ],
+            "size": [
+                425.27801513671875,
+                180.6060791015625
+            ],
+            "flags": {},
+            "order": 8,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "clip",
+                    "type": "CLIP",
+                    "link": 75
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "CONDITIONING",
+                    "type": "CONDITIONING",
+                    "slot_index": 0,
+                    "links": [
+                        131
+                    ]
+                }
+            ],
+            "title": "CLIP Text Encode (Negative Prompt)",
+            "properties": {
+                "Node name for S&R": "CLIPTextEncode"
+            },
+            "widgets_values": [
+                " "
+            ],
+            "color": "#322",
+            "bgcolor": "#533"
+        },
+        {
+            "id": 68,
+            "type": "Note",
+            "pos": [
+                419.86859130859375,
+                -75.3620834350586
+            ],
+            "size": [
+                261.87744140625,
+                102.99000549316406
+            ],
+            "flags": {},
+            "order": 0,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [],
+            "properties": {},
+            "widgets_values": [
+                "Increase the shift if you get too many blury/dark/bad images. Decrease if you want to try increasing detail."
+            ],
+            "color": "#432",
+            "bgcolor": "#653"
+        },
+        {
+            "id": 66,
+            "type": "ModelSamplingAuraFlow",
+            "pos": [
+                418.2298278808594,
+                68.82577514648438
+            ],
+            "size": [
+                270,
+                58
+            ],
+            "flags": {},
+            "order": 9,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "model",
+                    "type": "MODEL",
+                    "link": 137
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "MODEL",
+                    "type": "MODEL",
+                    "links": [
+                        129
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "ModelSamplingAuraFlow"
+            },
+            "widgets_values": [
+                3.25
+            ]
+        },
+        {
+            "id": 6,
+            "type": "CLIPTextEncode",
+            "pos": [
+                415,
+                186
+            ],
+            "size": [
+                422.84503173828125,
+                164.31304931640625
+            ],
+            "flags": {},
+            "order": 7,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "clip",
+                    "type": "CLIP",
+                    "link": 74
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "CONDITIONING",
+                    "type": "CONDITIONING",
+                    "slot_index": 0,
+                    "links": [
+                        130
+                    ]
+                }
+            ],
+            "title": "CLIP Text Encode (Positive Prompt)",
+            "properties": {
+                "Node name for S&R": "CLIPTextEncode"
+            },
+            "widgets_values": [
+                "Interior Modern Luxury Paris Penthouse Suite with a full view of Paris, Sunny, Detailed, Photorealistic, Hasselblad H6D400c, 400mm, 4K"
+            ],
+            "color": "#232",
+            "bgcolor": "#353"
+        },
+        {
+            "id": 58,
+            "type": "EmptySD3LatentImage",
+            "pos": [
+                410.6574401855469,
+                620.5468139648438
+            ],
+            "size": [
+                270,
+                106
+            ],
+            "flags": {},
+            "order": 1,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "LATENT",
+                    "type": "LATENT",
+                    "links": [
+                        132
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "EmptySD3LatentImage"
+            },
+            "widgets_values": [
+                1280,
+                768,
+                1
+            ]
+        },
+        {
+            "id": 69,
+            "type": "ClownsharKSampler_Beta",
+            "pos": [
+                953.6699829101562,
+                -80.30362701416016
+            ],
+            "size": [
+                270,
+                418
+            ],
+            "flags": {},
+            "order": 10,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "model",
+                    "shape": 7,
+                    "type": "MODEL",
+                    "link": 129
+                },
+                {
+                    "name": "positive",
+                    "shape": 7,
+                    "type": "CONDITIONING",
+                    "link": 130
+                },
+                {
+                    "name": "negative",
+                    "shape": 7,
+                    "type": "CONDITIONING",
+                    "link": 131
+                },
+                {
+                    "name": "latent_image",
+                    "shape": 7,
+                    "type": "LATENT",
+                    "link": 132
+                },
+                {
+                    "name": "sigmas",
+                    "shape": 7,
+                    "type": "SIGMAS",
+                    "link": null
+                },
+                {
+                    "name": "guides",
+                    "shape": 7,
+                    "type": "GUIDES",
+                    "link": null
+                },
+                {
+                    "name": "options",
+                    "shape": 7,
+                    "type": "OPTIONS",
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output",
+                    "type": "LATENT",
+                    "links": [
+                        133
+                    ]
+                },
+                {
+                    "name": "denoised",
+                    "type": "LATENT",
+                    "links": null
+                },
+                {
+                    "name": "options",
+                    "type": "OPTIONS",
+                    "links": null
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "ClownsharKSampler_Beta"
+            },
+            "widgets_values": [
+                0.18,
+                "multistep/abnorsett_3m",
+                "bong_tangent",
+                13,
+                13,
+                1,
+                1.12,
+                12345,
+                "fixed",
+                "standard",
+                true
+            ]
+        },
+        {
+            "id": 67,
+            "type": "Note",
+            "pos": [
+                903.4214477539062,
+                491.84674072265625
+            ],
+            "size": [
+                307.4002380371094,
+                127.38092803955078
+            ],
+            "flags": {},
+            "order": 2,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [],
+            "properties": {},
+            "widgets_values": [
+                "Set cfg to 1.0 for a speed boost at the cost of consistency. Samplers like res_multistep work pretty well at cfg 1.0\n\nThe official number of steps is 50 but I think that's too much. Even just 10 steps seems to work."
+            ],
+            "color": "#432",
+            "bgcolor": "#653"
+        },
+        {
+            "id": 37,
+            "type": "UNETLoader",
+            "pos": [
+                -294.6212463378906,
+                -79.3402328491211
+            ],
+            "size": [
+                346.7470703125,
+                82
+            ],
+            "flags": {},
+            "order": 3,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "MODEL",
+                    "type": "MODEL",
+                    "slot_index": 0,
+                    "links": [
+                        136
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "UNETLoader"
+            },
+            "widgets_values": [
+                "qwen_image_fp8_e4m3fn.safetensors",
+                "default"
+            ],
+            "color": "#223",
+            "bgcolor": "#335"
+        },
+        {
+            "id": 72,
+            "type": "LoraLoaderModelOnly",
+            "pos": [
+                98.31600952148438,
+                -83.95618438720703
+            ],
+            "size": [
+                270,
+                82
+            ],
+            "flags": {},
+            "order": 6,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "model",
+                    "type": "MODEL",
+                    "link": 136
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "MODEL",
+                    "type": "MODEL",
+                    "links": [
+                        137
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "LoraLoaderModelOnly"
+            },
+            "widgets_values": [
+                "Qwen-Image-Lightning-8steps-V1.1-bf16.safetensors",
+                1
+            ]
+        },
+        {
+            "id": 38,
+            "type": "CLIPLoader",
+            "pos": [
+                -20.901010513305664,
+                187.58753967285156
+            ],
+            "size": [
+                380,
+                106
+            ],
+            "flags": {},
+            "order": 4,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "CLIP",
+                    "type": "CLIP",
+                    "slot_index": 0,
+                    "links": [
+                        74,
+                        75
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "CLIPLoader"
+            },
+            "widgets_values": [
+                "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+                "qwen_image",
+                "default"
+            ],
+            "color": "#223",
+            "bgcolor": "#335"
+        },
+        {
+            "id": 39,
+            "type": "VAELoader",
+            "pos": [
+                -14.569482803344727,
+                349.3407287597656
+            ],
+            "size": [
+                330,
+                60
+            ],
+            "flags": {},
+            "order": 5,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "VAE",
+                    "type": "VAE",
+                    "slot_index": 0,
+                    "links": [
+                        76
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "VAELoader"
+            },
+            "widgets_values": [
+                "qwen_image_vae.safetensors"
+            ],
+            "color": "#223",
+            "bgcolor": "#335"
+        },
+        {
+            "id": 8,
+            "type": "VAEDecode",
+            "pos": [
+                1248.0191650390625,
+                153.01808166503906
+            ],
+            "size": [
+                210,
+                46
+            ],
+            "flags": {},
+            "order": 11,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "samples",
+                    "type": "LATENT",
+                    "link": 133
+                },
+                {
+                    "name": "vae",
+                    "type": "VAE",
+                    "link": 76
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "IMAGE",
+                    "type": "IMAGE",
+                    "slot_index": 0,
+                    "links": [
+                        138
+                    ]
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "VAEDecode"
+            },
+            "widgets_values": []
+        },
+        {
+            "id": 73,
+            "type": "SaveImage",
+            "pos": [
+                1549.0628662109375,
+                203.83042907714844
+            ],
+            "size": [
+                270,
+                270
+            ],
+            "flags": {},
+            "order": 12,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "images",
+                    "type": "IMAGE",
+                    "link": 138
+                }
+            ],
+            "outputs": [],
+            "properties": {},
+            "widgets_values": [
+                "ComfyUI"
+            ]
+        }
+    ],
+    "links": [
+        [
+            74,
+            38,
+            0,
+            6,
+            0,
+            "CLIP"
+        ],
+        [
+            75,
+            38,
+            0,
+            7,
+            0,
+            "CLIP"
+        ],
+        [
+            76,
+            39,
+            0,
+            8,
+            1,
+            "VAE"
+        ],
+        [
+            129,
+            66,
+            0,
+            69,
+            0,
+            "MODEL"
+        ],
+        [
+            130,
+            6,
+            0,
+            69,
+            1,
+            "CONDITIONING"
+        ],
+        [
+            131,
+            7,
+            0,
+            69,
+            2,
+            "CONDITIONING"
+        ],
+        [
+            132,
+            58,
+            0,
+            69,
+            3,
+            "LATENT"
+        ],
+        [
+            133,
+            69,
+            0,
+            8,
+            0,
+            "LATENT"
+        ],
+        [
+            136,
+            37,
+            0,
+            72,
+            0,
+            "MODEL"
+        ],
+        [
+            137,
+            72,
+            0,
+            66,
+            0,
+            "MODEL"
+        ],
+        [
+            138,
+            8,
+            0,
+            73,
+            0,
+            "IMAGE"
+        ]
+    ],
+    "groups": [],
+    "config": {},
+    "extra": {
+        "ds": {
+            "scale": 1.015255979947713,
+            "offset": [
+                693.6397636146643,
+                272.01953190701875
+            ]
+        },
+        "frontendVersion": "1.26.13"
+    },
+    "version": 0.4
+}

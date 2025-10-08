@@ -1,0 +1,147 @@
+{
+    "1": {
+        "inputs": {
+            "model_name": "svdq-int4_r128-qwen-image-lightningv1.1-8steps.safetensors",
+            "cpu_offload": "enable",
+            "num_blocks_on_gpu": 1,
+            "use_pin_memory": "disable"
+        },
+        "class_type": "NunchakuQwenImageDiTLoader",
+        "_meta": {
+            "title": "Nunchaku Qwen-Image DiT Loader"
+        }
+    },
+    "2": {
+        "inputs": {
+            "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+            "type": "qwen_image",
+            "device": "default"
+        },
+        "class_type": "CLIPLoader",
+        "_meta": {
+            "title": "加载CLIP"
+        }
+    },
+    "3": {
+        "inputs": {
+            "vae_name": "qwen_image_vae.safetensors"
+        },
+        "class_type": "VAELoader",
+        "_meta": {
+            "title": "加载VAE"
+        }
+    },
+    "4": {
+        "inputs": {
+            "text": "Interior Modern Luxury Paris Penthouse Suite with a full view of Paris, Sunny, Detailed, Photorealistic, Hasselblad H6D400c, 400mm, 4K",
+            "clip": [
+                "2",
+                0
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "CLIP文本编码"
+        }
+    },
+    "5": {
+        "inputs": {
+            "text": "",
+            "clip": [
+                "2",
+                0
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "CLIP文本编码"
+        }
+    },
+    "6": {
+        "inputs": {
+            "shift": 3.25,
+            "model": [
+                "1",
+                0
+            ]
+        },
+        "class_type": "ModelSamplingAuraFlow",
+        "_meta": {
+            "title": "采样算法（AuraFlow）"
+        }
+    },
+    "7": {
+        "inputs": {
+            "eta": 0.18,
+            "sampler_name": "multistep/abnorsett_3m",
+            "scheduler": "bong_tangent",
+            "steps": 13,
+            "steps_to_run": 13,
+            "denoise": 1,
+            "cfg": 1.12,
+            "seed": 12345,
+            "sampler_mode": "standard",
+            "bongmath": true,
+            "model": [
+                "6",
+                0
+            ],
+            "positive": [
+                "4",
+                0
+            ],
+            "negative": [
+                "5",
+                0
+            ],
+            "latent_image": [
+                "8",
+                0
+            ]
+        },
+        "class_type": "ClownsharKSampler_Beta",
+        "_meta": {
+            "title": "ClownsharKSampler"
+        }
+    },
+    "8": {
+        "inputs": {
+            "width": 1280,
+            "height": 768,
+            "batch_size": 1
+        },
+        "class_type": "EmptySD3LatentImage",
+        "_meta": {
+            "title": "空Latent图像（SD3）"
+        }
+    },
+    "9": {
+        "inputs": {
+            "samples": [
+                "7",
+                0
+            ],
+            "vae": [
+                "3",
+                0
+            ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+            "title": "VAE解码"
+        }
+    },
+    "11": {
+        "inputs": {
+            "filename_prefix": "ComfyUI",
+            "images": [
+                "9",
+                0
+            ]
+        },
+        "class_type": "SaveImage",
+        "_meta": {
+            "title": "保存图像"
+        }
+    }
+}
