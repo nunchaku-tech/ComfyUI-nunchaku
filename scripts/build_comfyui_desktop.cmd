@@ -59,18 +59,18 @@ cd desktop
 REM 5. Install Yarn using npm
 REM Note: this step needs admin permission
 echo Installing yarn...
-npm install -g yarn
+call npm install -g yarn
 echo corepack enable
-corepack enable
+call corepack enable
 echo corepack prepare yarn@4.5.0 --activate
-corepack prepare yarn@4.5.0 --activate
+call corepack prepare yarn@4.5.0 --activate
 @REM yarn use %YARN_VERSION%
 
 REM 6. Install node modules and rebuild electron
 echo Rebuilding native modules...
-yarn install
-npx --yes electron-rebuild
-yarn make:assets
+call yarn install
+call npx --yes electron-rebuild
+call yarn make:assets
 
 REM 7. Overwrite override.txt with torch 2.7 + custom nunchaku wheel
 echo Writing override.txt...
@@ -100,7 +100,7 @@ assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt assets\ComfyUI\
 
 REM 9. Build for NVIDIA users on Windows
 echo Building ComfyUI for NVIDIA...
-yarn make:nvidia
+call yarn make:nvidia
 
 echo ========================================
 echo ✅ Build process completed successfully!
