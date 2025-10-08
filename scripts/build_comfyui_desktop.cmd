@@ -70,7 +70,7 @@ echo Installing yarn...
 npm install -g yarn
 corepack enable
 corepack prepare yarn@4.5.0 --activate
-yarn use %YARN_VERSION%
+@REM yarn use %YARN_VERSION%
 
 REM 7. Install node modules and rebuild electron
 echo Rebuilding native modules...
@@ -108,8 +108,8 @@ REM 10. Build for NVIDIA users on Windows
 echo Building ComfyUI for NVIDIA...
 yarn make:nvidia
 
-echo ==========================================
+echo ========================================
 echo ✅ Build process completed successfully!
-echo ==========================================
+echo ========================================
 
 endlocal
