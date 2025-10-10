@@ -214,4 +214,18 @@ class NunchakuQwenImageDiTLoader:
                 cpu_offload_enabled, num_blocks_on_gpu=num_blocks_on_gpu, use_pin_memory=use_pin_memory == "enable"
             )
 
+        # Wrap transformer in ComfyQwenImageWrapper for LoRA support (Flux-style)
+        from ...wrappers.qwenimage import ComfyQwenImageWrapper
+        from ...models.qwenimage import NunchakuQwenImageTransformer2DModel
+        
+        if isinstance(model.model.diffusion_model, NunchakuQwenImageTransformer2DModel):
+            # Only wrap if not already wrapped
+            if not isinstance(model.model.diffusion_model, ComfyQwenImageWrapper):
+                wrapper = ComfyQwenImageWrapper(
+                    model=model.model.diffusion_model,
+                    config=model.model.model_config.unet_config
+                )
+                model.model.diffusion_model = wrapper
+                logger.debug("Wrapped transformer in ComfyQwenImageWrapper for LoRA support")
+
         return (model,)
