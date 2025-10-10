@@ -21,7 +21,7 @@ Join our user groups on [**Discord**](https://discord.gg/Wk6PnwX9Sm) and [**WeCh
 
 ## News
 
-- **[2025-09-24]** 🔥 Released **4-bit 4/8-step Qwen-Image-Edit-2509 lightning** models at [Hugging Face](https://huggingface.co/nunchaku-tech/nunchaku-qwen-image-2509)! Try them out with this [workflow](./example_workflows/nunchaku-qwen-image-edit-2509-lightning.json)!
+- **[2025-09-24]** 🔥 Released **4-bit 4/8-step Qwen-Image-Edit-2509 lightning** models at [Hugging Face](https://huggingface.co/nunchaku-tech/nunchaku-qwen-image-edit-2509)! Try them out with this [workflow](./example_workflows/nunchaku-qwen-image-edit-2509-lightning.json)!
 - **[2025-09-24]** 🔥 Released **4-bit Qwen-Image-Edit-2509**! Models are available on [Hugging Face](https://huggingface.co/nunchaku-tech/nunchaku-qwen-image-2509). Try them out with this [workflow](./example_workflows/nunchaku-qwen-image-edit-2509.json)!
 - **[2025-09-09]** 🔥 Released **4-bit Qwen-Image-Edit** together with the [4/8-step Lightning](https://huggingface.co/lightx2v/Qwen-Image-Lightning) variants! Models are available on [Hugging Face](https://huggingface.co/nunchaku-tech/nunchaku-qwen-image). Try them out with this [workflow](./example_workflows/nunchaku-qwen-image-edit.json)!
 - **[2025-09-04]** 🚀 Official release of **Nunchaku v1.0.0**! Qwen-Image now supports **asynchronous offloading**, cutting Transformer VRAM usage to as little as **3 GiB** with no performance loss. You can also try our pre-quantized [4/8-step Qwen-Image-Lightning](https://huggingface.co/lightx2v/Qwen-Image-Lightning) models on [Hugging Face](https://huggingface.co/nunchaku-tech/nunchaku-qwen-image) or [ModelScope](https://modelscope.cn/models/nunchaku-tech/nunchaku-qwen-image).
