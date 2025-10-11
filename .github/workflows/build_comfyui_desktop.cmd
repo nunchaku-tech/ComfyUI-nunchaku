@@ -57,10 +57,17 @@ if exist %PYTHON_EXE% (
 )
 
 
-REM 2. Install uv package
+REM 2. Install uv and NVM for Windows
 echo Installing uv package...
 %PYTHON_EXE% -m pip install --upgrade pip
 %PYTHON_EXE% -m pip install uv
+
+echo Installing NVM for Windows...
+winget install -e --id CoreyButler.NVMforWindows --accept-source-agreements --accept-package-agreements -h
+if %errorlevel% neq 0 (
+    echo Failed to install NVM
+    exit /b 1
+)
 
 REM 3. Install Node.js 20 via NVM
 echo Installing Node.js %NODE_VERSION% with NVM...
