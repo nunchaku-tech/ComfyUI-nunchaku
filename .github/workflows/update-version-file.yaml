@@ -1,12 +1,12 @@
 name: Update CDN Version File
 on:
-  # Triggers automatically every day at 5:00 AM UTC.
+  # Only run on schedule or manual dispatch for the main repo
   schedule:
     - cron: '0 5 * * *'
-  # Allows manual triggering from the GitHub Actions UI for testing or forcing an update.
   workflow_dispatch:
 jobs:
-  build-and-upload:
+  update-version-file:
+    if: github.repository == 'nunchaku-tech/ComfyUI-nunchaku'
     name: Build and Upload Versions File
     runs-on: ubuntu-latest
     steps:
