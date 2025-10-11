@@ -20,7 +20,6 @@ jobs:
           echo "version=$VERSION" >> $env:GITHUB_OUTPUT
           echo "Extracted ComfyUI-nunchaku version: $VERSION"
         shell: pwsh
-
       - name: Get latest nunchaku release version
         id: get_nunchaku_version
         run: |
