@@ -18,7 +18,16 @@ jobs:
         run: |
           $VERSION = (Get-Content pyproject.toml | Select-String '^version = "(.+)"').Matches.Groups[1].Value
           echo "version=$VERSION" >> $env:GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
+          echo "Extracted ComfyUI-nunchaku version: $VERSION"
+        shell: pwsh
+
+      - name: Get latest nunchaku release version
+        id: get_nunchaku_version
+        run: |
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/nunchaku-tech/nunchaku/releases/latest" -Headers @{ "User-Agent" = "GitHub Actions" }
+          $NUNCHAKU_VERSION = $response.tag_name -replace '^v', ''
+          echo "nunchaku_version=$NUNCHAKU_VERSION" >> $env:GITHUB_OUTPUT
+          echo "Latest nunchaku release: $NUNCHAKU_VERSION"
         shell: pwsh
       - name: Run build script
         run: |
@@ -26,7 +35,7 @@ jobs:
           ComfyUI-nunchaku\.github\workflows\build_comfyui_desktop.cmd
         shell: cmd
         env:
-          NUNCHAKU_VERSION: ${{ steps.get_version.outputs.version }}
+          NUNCHAKU_VERSION: ${{ steps.get_nunchaku_version.outputs.nunchaku_version }}
           TORCH_VERSION: ${{ matrix.pytorch_version }}
       - name: List build output
         run: |
