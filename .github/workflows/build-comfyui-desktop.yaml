@@ -20,34 +20,23 @@ jobs:
           echo "version=$VERSION" >> $env:GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
         shell: pwsh
-      - name: Create build directory
-        run: |
-          $BUILD_DIR = "${{ github.workspace }}\build-pytorch-${{ matrix.pytorch_version }}"
-          New-Item -ItemType Directory -Force -Path $BUILD_DIR
-          echo "BUILD_DIR=$BUILD_DIR" >> $env:GITHUB_ENV
-          echo "Created build directory: $BUILD_DIR"
-        shell: pwsh
-      - name: Copy build script to build directory
-        run: |
-          Copy-Item "${{ github.workspace }}\scripts\build_comfyui_desktop.cmd" "$env:BUILD_DIR\"
-        shell: pwsh
       - name: Run build script
         run: |
-          cd $env:BUILD_DIR
-          .\build_comfyui_desktop.cmd
+          cd ..
+          ComfyUI-nunchaku\.github\workflows\build_comfyui_desktop.cmd
         shell: cmd
         env:
           NUNCHAKU_VERSION: ${{ steps.get_version.outputs.version }}
           TORCH_VERSION: ${{ matrix.pytorch_version }}
       - name: List build output
         run: |
-          Get-ChildItem -Path "$env:BUILD_DIR\desktop\dist\Comfy-*-win.zip" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+          Get-ChildItem -Path "..\desktop\dist" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
         shell: pwsh
         if: always()
       - name: Find build artifacts
         id: find_artifacts
         run: |
-          $ARTIFACT_PATH = Get-ChildItem -Path "$env:BUILD_DIR\desktop\dist\Comfy-*-win.zip" | Select-Object -First 1 -ExpandProperty FullName
+          $ARTIFACT_PATH = Get-ChildItem -Path "..\desktop\dist\Comfy-*-win.zip" | Select-Object -First 1 -ExpandProperty FullName
           echo "artifact_path=$ARTIFACT_PATH" >> $env:GITHUB_OUTPUT
           echo "Found artifact: $ARTIFACT_PATH"
         shell: pwsh
@@ -59,14 +48,11 @@ jobs:
           path: ${{ steps.find_artifacts.outputs.artifact_path }}
           retention-days: 7
         if: success()
-      - name: Upload to Release
+      - name: Upload Artifact to Existing Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           files: ${{ steps.find_artifacts.outputs.artifact_path }}
-          generate_release_notes: true
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: success()
