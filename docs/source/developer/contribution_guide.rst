@@ -20,49 +20,23 @@ follow these steps for a smooth and efficient contribution process.
 
          git clone https://github.com/<your_username>/ComfyUI-nunchaku.git
 
-2. Install Nunchaku
-
-   Follow the steps in :doc:`Installation <../get_started/installation>` to install Nunchaku.
-
-3. Set Up ComfyUI Test Environment
+2. Set Up ComfyUI Test Environment
 
    After installing Nunchaku, set up the test environment:
 
-   a. Create an empty directory structure and link your tests:
+   a. Install `uv <https://docs.astral.sh/uv/getting-started/installation/>`__
+
+   b. Install test dependencies. The proper ``nunchaku`` binary will be selected based on your installed ``torch``.
 
       .. code-block:: shell
 
-         mkdir -p ComfyUI-nunchaku-test/custom_nodes
-         cd ComfyUI-nunchaku-test
-         mkdir -p models  # Or: ln -s /path/to/existing/comfyui/models models
-         ln -s /path/to/ComfyUI-nunchaku/tests tests
-         cd custom_nodes
-         ln -s /path/to/ComfyUI-nunchaku
-         cd ..
+         cd ComfyUI-nunchaku
+         uv venv
+         uv pip install --torch-backend=auto "comfyui@https://github.com/hiddenswitch/ComfyUI.git"
 
-   b. Install test dependencies:
-
-      .. code-block:: shell
-
-         pip install -r tests/requirements.txt
-
-   c. Install required custom nodes (with specific commits):
-
-      .. code-block:: shell
-
-         cd custom_nodes
-         git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
-         cd comfyui_controlnet_aux && git checkout cc6b232 && cd ..
-         git clone https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy.git
-         cd ComfyUI-InpaintEasy && pip install -r requirements.txt && git checkout d631a03 && cd ../..
-
-   d. Download test models and data:
-
-      .. code-block:: shell
-
-         python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
-         mkdir -p input
-         python custom_nodes/ComfyUI-nunchaku/scripts/download_test_data.py
+         TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
+         uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},pulid,dev]"
+         uv pip install "comfyui_controlnet_aux@git+https://github.com/AppMana/comfyui_controlnet_aux.git"
 
 🧹 Code Formatting with Pre-Commit
 ----------------------------------
@@ -91,14 +65,14 @@ Running Tests
 
 .. code-block:: shell
 
-   cd ComfyUI-nunchaku-test
-   HF_TOKEN=$YOUR_HF_TOKEN pytest nunchaku_tests/test_workflows.py -x -vv --reruns 2 --reruns-delay 0
+   cd ComfyUI-nunchaku
+   HF_TOKEN=$YOUR_HF_TOKEN uv run pytest -v tests/ -x -vv
 
 To run only your newly added test, use the ``-k`` flag with your workflow folder name:
 
 .. code-block:: shell
 
-   pytest nunchaku_tests/test_workflows.py -x -vv -k "nunchaku-flux.1-schnell"
+   HF_TOKEN=$YOUR_HF_TOKEN uv run pytest -v tests/ -x -vv -k "nunchaku-flux.1-schnell"
 
 .. note::
 

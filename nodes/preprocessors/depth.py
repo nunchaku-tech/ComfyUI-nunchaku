@@ -7,7 +7,7 @@ It is now deprecated and will be removed in October 2025.
 import logging
 import os
 
-import folder_paths
+from ..utils import folder_paths
 import numpy as np
 import torch
 

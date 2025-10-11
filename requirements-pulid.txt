@@ -1,0 +1,5 @@
+insightface
+opencv-python
+facexlib
+onnxruntime
+timm

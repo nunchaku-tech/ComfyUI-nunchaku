@@ -66,6 +66,49 @@ Manual Installation
       cd custom_nodes
       git clone https://github.com/mit-han-lab/ComfyUI-nunchaku nunchaku_nodes
 
+ComfyUI LTS Installation
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+`ComfyUI LTS <https://github.com/hiddenswitch/ComfyUI>`_ is a version of ComfyUI that is installable with modern Python packaging tools like `uv <https://github.com/astral-sh/uv>`_. This is a recommended installation method.
+
+These instructions are adapted from the `ComfyUI LTS README <https://github.com/hiddenswitch/ComfyUI#installing>`_. Please refer to it for more detailed instructions, especially for Windows.
+
+1.  Install ``uv``, a fast Python package installer.
+
+2.  Create a directory for your ComfyUI workspace and create a virtual environment inside it.
+
+    .. code-block:: shell
+
+       mkdir ComfyUI_Workspace
+       cd ComfyUI_Workspace
+       uv venv
+
+3.  Install ComfyUI LTS. This will automatically detect and install the correct PyTorch version for your hardware.
+
+    .. code-block:: shell
+
+       uv pip install --torch-backend=auto "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git"
+
+4.  Install Nunchaku.
+
+    You are using a specific version of PyTorch. To get the right dependencies, specify it as an extra when installing Nunchaku. For example, for PyTorch 2.8:
+
+    .. code-block:: shell
+
+       uv pip install "nunchaku[torch28]@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
+
+    To include ``pulid`` support, specify ``nunchaku[pulid]``. For example, when using ``torch==2.8.0+cu128``:
+
+    .. code-block:: shell
+
+       uv pip install "nunchaku[torch28,pulid]@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
+
+To run ComfyUI, execute the following from your workspace directory:
+
+.. code-block:: shell
+
+   uv run comfyui
+
 Step 2: Install the Nunchaku Backend
 ------------------------------------
 
