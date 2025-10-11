@@ -72,7 +72,7 @@ class ComfyQwenImageWrapper(nn.Module):
         Safely move the model to the specified device.
         Required by NunchakuModelPatcher for device management.
         """
-        if hasattr(self.model, 'to_safely'):
+        if hasattr(self.model, "to_safely"):
             return self.model.to_safely(device)
         else:
             return self.model.to(device)
@@ -172,10 +172,12 @@ class ComfyQwenImageWrapper(nn.Module):
             timestep_float = timestep
 
         model = self.model
-        # 使用类名比较，避免模块导入路径导致的类型检查失败
         if model is None:
             raise ValueError("Wrapped model is None!")
-        if not (type(model).__name__ == "NunchakuQwenImageTransformer2DModel" or isinstance(model, NunchakuQwenImageTransformer2DModel)):
+        if not (
+            type(model).__name__ == "NunchakuQwenImageTransformer2DModel"
+            or isinstance(model, NunchakuQwenImageTransformer2DModel)
+        ):
             raise TypeError(f"Expected NunchakuQwenImageTransformer2DModel, got {type(model).__name__}")
 
         # Check if x is already processed or needs processing
@@ -184,28 +186,22 @@ class ComfyQwenImageWrapper(nn.Module):
             # x is (batch, channels, 1, height, width) - squeeze the middle dimension
             input_is_5d = True
             x = x.squeeze(2)  # Now (batch, channels, height, width)
-        
+
         # Keep x in 4D format and let model's _forward handle process_img
-        # We only need to know the shape for unpatchify later
-        if x.ndim == 4:
-            bs, c, h_orig, w_orig = x.shape
-            patch_size = self.config.get("patch_size", 2)
-            h_len = (h_orig + (patch_size // 2)) // patch_size
-            w_len = (w_orig + (patch_size // 2)) // patch_size
-        else:
+        if x.ndim != 4:
             raise ValueError(f"Unexpected input shape: {x.shape}, expected 4D tensor")
 
         # load and compose LoRA
         if self.loras != model.comfy_lora_meta_list:
             from nunchaku.lora.qwenimage import is_nunchaku_format
-            
+
             lora_to_be_composed = []
             nunchaku_lora_count = 0
-            
+
             for _ in range(max(0, len(model.comfy_lora_meta_list) - len(self.loras))):
                 model.comfy_lora_meta_list.pop()
                 model.comfy_lora_sd_list.pop()
-            
+
             for i in range(len(self.loras)):
                 meta = self.loras[i]
                 if i >= len(model.comfy_lora_meta_list):
@@ -217,27 +213,29 @@ class ComfyQwenImageWrapper(nn.Module):
                         sd = load_state_dict_in_safetensors(meta[0])
                         model.comfy_lora_sd_list[i] = sd
                     model.comfy_lora_meta_list[i] = meta
-                
+
                 # Check if this LoRA is already in Nunchaku format
                 sd_to_compose = model.comfy_lora_sd_list[i]
                 if is_nunchaku_format(sd_to_compose):
                     nunchaku_lora_count += 1
                     # Convert back to Diffusers format for composition
                     from nunchaku.lora.qwenimage import to_diffusers
+
                     sd_to_compose = to_diffusers(sd_to_compose)
                     # Update the cache with Diffusers version
                     model.comfy_lora_sd_list[i] = sd_to_compose
-                
+
                 lora_to_be_composed.append(({k: v for k, v in sd_to_compose.items()}, meta[1]))
-            
+
             # Now all LoRAs are in Diffusers format, can safely compose
             composed_lora = compose_lora(lora_to_be_composed)
 
             if len(composed_lora) == 0:
                 # CRITICAL: Manually restore original proj_down/proj_up weights
                 import torch.nn as nn
+
                 from nunchaku.models.linear import SVDQW4A4Linear
-                
+
                 restored_count = 0
                 for name, module in model.named_modules():
                     if isinstance(module, SVDQW4A4Linear):
@@ -246,40 +244,42 @@ class ComfyQwenImageWrapper(nn.Module):
                         if proj_down_key in model._quantized_part_sd:
                             original_proj_down = model._quantized_part_sd[proj_down_key]
                             module.proj_down = nn.Parameter(
-                                original_proj_down.clone().to(device=module.proj_down.device, dtype=module.proj_down.dtype),
-                                requires_grad=False
+                                original_proj_down.clone().to(
+                                    device=module.proj_down.device, dtype=module.proj_down.dtype
+                                ),
+                                requires_grad=False,
                             )
                             restored_count += 1
                         if proj_up_key in model._quantized_part_sd:
                             original_proj_up = model._quantized_part_sd[proj_up_key]
                             module.proj_up = nn.Parameter(
                                 original_proj_up.clone().to(device=module.proj_up.device, dtype=module.proj_up.dtype),
-                                requires_grad=False
+                                requires_grad=False,
                             )
                             restored_count += 1
                         if proj_down_key in model._quantized_part_sd:
                             original_rank = model._quantized_part_sd[proj_down_key].shape[1]
                             module.rank = original_rank
-                            if not hasattr(module, 'original_rank'):
+                            if not hasattr(module, "original_rank"):
                                 module.original_rank = original_rank
                         module.lora_strength = 0.0
-                
+
                 model.reset_lora()
             else:
                 # Pass number of LoRAs to help detect composed LoRAs
                 model.update_lora_params(composed_lora, num_loras=len(self.loras))
-                
+
                 # CRITICAL: For composed LoRAs, strength is already baked by compose_lora
                 # Setting lora_strength to a uniform value will destroy the individual strength differences
                 # SOLUTION: Calculate average strength or use 1.0 as neutral value
                 from nunchaku.models.linear import SVDQW4A4Linear
-                
+
                 # Calculate weighted average strength for composed LoRAs
                 if len(self.loras) > 1:
                     avg_strength = sum(s for _, s in self.loras) / len(self.loras)
                 else:
                     avg_strength = 1.0
-                
+
                 for block in model.transformer_blocks:
                     for module in block.modules():
                         if isinstance(module, SVDQW4A4Linear):
@@ -287,10 +287,8 @@ class ComfyQwenImageWrapper(nn.Module):
 
         controlnet_block_samples = None if control is None else [y.to(x.dtype) for y in control["input"]]
 
-        # Filter out unsupported keys from transformer_options for nunchaku library
-        # nunchaku's attention processor doesn't accept 'wrappers' and other ComfyUI-specific keys
-        # For now, we pass None to avoid any compatibility issues
-        attention_kwargs = None
+        # Note: nunchaku's attention processor doesn't accept 'wrappers' and other ComfyUI-specific keys
+        # We handle this by not passing transformer_options to the underlying model
 
         if getattr(model, "residual_diff_threshold_multi", 0) != 0 or getattr(model, "_is_cached", False):
             # A more robust caching strategy

@@ -9,7 +9,7 @@ import os
 
 import folder_paths
 
-from nunchaku.lora.qwenimage import to_diffusers, compose_lora
+# from nunchaku.lora.qwenimage import compose_lora, to_diffusers  # Not needed here
 
 # from ...wrappers.qwenimage import ComfyQwenImageWrapper  # Not needed - working directly with transformer
 
@@ -119,14 +119,15 @@ class NunchakuQwenImageLoraLoader:
             return (model,)  # If the strength is too small, return the original model
 
         model_wrapper = model.model.diffusion_model
-        
+
         # Check if this is a ComfyQwenImageWrapper
         from ...wrappers.qwenimage import ComfyQwenImageWrapper
+
         if not isinstance(model_wrapper, ComfyQwenImageWrapper):
-            logger.error(f"❌ Model type mismatch!")
-            logger.error(f"   Expected: ComfyQwenImageWrapper (Nunchaku Qwen Image model)")
+            logger.error("❌ Model type mismatch!")
+            logger.error("   Expected: ComfyQwenImageWrapper (Nunchaku Qwen Image model)")
             logger.error(f"   Got: {type(model_wrapper).__name__}")
-            logger.error(f"   Please make sure you're using 'Nunchaku Qwen Image DiT Loader' to load the model.")
+            logger.error("   Please make sure you're using 'Nunchaku Qwen Image DiT Loader' to load the model.")
             raise TypeError(
                 f"This LoRA loader only works with Nunchaku Qwen Image models. "
                 f"Got {type(model_wrapper).__name__} instead. "
@@ -134,18 +135,18 @@ class NunchakuQwenImageLoraLoader:
             )
 
         transformer = model_wrapper.model
-        
+
         # Flux-style deepcopy: temporarily remove transformer to avoid copying it
         model_wrapper.model = None
         ret_model = copy.deepcopy(model)  # copy everything except the model
         ret_model_wrapper = ret_model.model.diffusion_model
-        
+
         if not isinstance(ret_model_wrapper, ComfyQwenImageWrapper):
             raise TypeError(f"Model wrapper type changed after deepcopy: {type(ret_model_wrapper).__name__}")
 
         model_wrapper.model = transformer
         ret_model_wrapper.model = transformer  # Share the same transformer
-        
+
         lora_path = folder_paths.get_full_path_or_raise("loras", lora_name)
         ret_model_wrapper.loras.append((lora_path, lora_strength))
 
@@ -277,14 +278,15 @@ class NunchakuQwenImageLoraStack:
             return (model,)
 
         model_wrapper = model.model.diffusion_model
-        
+
         # Check if this is a ComfyQwenImageWrapper
         from ...wrappers.qwenimage import ComfyQwenImageWrapper
+
         if not isinstance(model_wrapper, ComfyQwenImageWrapper):
-            logger.error(f"❌ Model type mismatch!")
-            logger.error(f"   Expected: ComfyQwenImageWrapper (Nunchaku Qwen Image model)")
+            logger.error("❌ Model type mismatch!")
+            logger.error("   Expected: ComfyQwenImageWrapper (Nunchaku Qwen Image model)")
             logger.error(f"   Got: {type(model_wrapper).__name__}")
-            logger.error(f"   Please make sure you're using 'Nunchaku Qwen Image DiT Loader' to load the model.")
+            logger.error("   Please make sure you're using 'Nunchaku Qwen Image DiT Loader' to load the model.")
             raise TypeError(
                 f"This LoRA loader only works with Nunchaku Qwen Image models. "
                 f"Got {type(model_wrapper).__name__} instead. "
@@ -292,12 +294,12 @@ class NunchakuQwenImageLoraStack:
             )
 
         transformer = model_wrapper.model
-        
+
         # Flux-style deepcopy: temporarily remove transformer to avoid copying it
         model_wrapper.model = None
         ret_model = copy.deepcopy(model)  # copy everything except the model
         ret_model_wrapper = ret_model.model.diffusion_model
-        
+
         if not isinstance(ret_model_wrapper, ComfyQwenImageWrapper):
             raise TypeError(f"Model wrapper type changed after deepcopy: {type(ret_model_wrapper).__name__}")
 
@@ -311,7 +313,7 @@ class NunchakuQwenImageLoraStack:
         for lora_name, lora_strength in loras_to_apply:
             lora_path = folder_paths.get_full_path_or_raise("loras", lora_name)
             ret_model_wrapper.loras.append((lora_path, lora_strength))
-            
+
             logger.debug(f"LoRA added to stack: {lora_name} (strength={lora_strength})")
 
         logger.info(f"Total LoRAs in stack: {len(ret_model_wrapper.loras)}")
