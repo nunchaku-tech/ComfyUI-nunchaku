@@ -53,7 +53,7 @@ nvm use %NODE_VERSION%
 REM 4. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
 cd %WORK_DIR%
-git clone https://github.com/kungtalon/desktop.git
+git clone https://github.com/nunchaku-tech/desktop.git
 cd desktop
 
 REM 5. Install Yarn using npm
