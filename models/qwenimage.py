@@ -1020,6 +1020,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         ref_latents=None,
         transformer_options={},
         control=None,
+        controlnet_block_samples=None,
         **kwargs,
     ):
         """
@@ -1053,6 +1054,13 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         device = x.device
         if self.offload:
             self.offload_manager.set_device(device)
+
+        # CRITICAL: Handle both control dict and controlnet_block_samples list
+        # Wrapper now passes complete control dict (with weight/scale)
+        # But for backward compatibility, also support old controlnet_block_samples list
+        if control is None and controlnet_block_samples is not None:
+            # Old format: list of tensors → convert to dict
+            control = {"input": controlnet_block_samples}
 
         # LoRA composition logic with caching (Flux-style)
         # Note: self is always the transformer (not the container)
@@ -1227,6 +1235,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                     if control is not None
                     else (transformer_options.get("control", None) if isinstance(transformer_options, dict) else None)
                 )
+
                 if isinstance(_control, dict):
                     control_i = _control.get("input")
                     try:
@@ -1236,6 +1245,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                 else:
                     control_i = None
                     _scale = 1.0
+
                 if control_i is not None and i < len(control_i):
                     add = control_i[i]
                     if add is not None:
@@ -1244,9 +1254,16 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                             or getattr(add, "dtype", None) != hidden_states.dtype
                         ):
                             add = add.to(device=hidden_states.device, dtype=hidden_states.dtype, non_blocking=True)
-                        t = min(hidden_states.shape[1], add.shape[1])
-                        if t > 0:
-                            hidden_states[:, :t].add_(add[:, :t], alpha=_scale)
+
+                        # Check if shapes match exactly (following official nunchaku implementation)
+                        if hidden_states.shape == add.shape:
+                            # Shapes match - simple addition (like official implementation)
+                            hidden_states = hidden_states + add * _scale
+                        else:
+                            # Shapes don't match - use safe slicing
+                            t = min(hidden_states.shape[1], add.shape[1])
+                            if t > 0:
+                                hidden_states[:, :t] = hidden_states[:, :t] + add[:, :t] * _scale
 
             if self.offload:
                 self.offload_manager.step(compute_stream)

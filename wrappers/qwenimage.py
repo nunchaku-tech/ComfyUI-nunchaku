@@ -285,8 +285,6 @@ class ComfyQwenImageWrapper(nn.Module):
                         if isinstance(module, SVDQW4A4Linear):
                             module.lora_strength = avg_strength
 
-        controlnet_block_samples = None if control is None else [y.to(x.dtype) for y in control["input"]]
-
         # Note: nunchaku's attention processor doesn't accept 'wrappers' and other ComfyUI-specific keys
         # We handle this by not passing transformer_options to the underlying model
 
@@ -314,7 +312,7 @@ class ComfyQwenImageWrapper(nn.Module):
                         timestep=timestep,
                         ref_latents=kwargs.get("ref_latents"),
                         guidance=guidance if self.config.get("guidance_embed", False) else None,
-                        controlnet_block_samples=controlnet_block_samples,
+                        control=control, 
                         transformer_options=transformer_options,
                     )
                 else:
@@ -326,7 +324,7 @@ class ComfyQwenImageWrapper(nn.Module):
                         timestep=timestep,
                         ref_latents=kwargs.get("ref_latents"),
                         guidance=guidance if self.config.get("guidance_embed", False) else None,
-                        controlnet_block_samples=controlnet_block_samples,
+                        control=control,  
                         transformer_options=transformer_options,
                         **self.forward_kwargs,
                     )
@@ -341,7 +339,7 @@ class ComfyQwenImageWrapper(nn.Module):
                     timestep=timestep,
                     ref_latents=kwargs.get("ref_latents"),
                     guidance=guidance if self.config.get("guidance_embed", False) else None,
-                    controlnet_block_samples=controlnet_block_samples,
+                    control=control, 
                     transformer_options=transformer_options,
                 )
             else:
@@ -353,7 +351,7 @@ class ComfyQwenImageWrapper(nn.Module):
                     timestep=timestep,
                     ref_latents=kwargs.get("ref_latents"),
                     guidance=guidance if self.config.get("guidance_embed", False) else None,
-                    controlnet_block_samples=controlnet_block_samples,
+                    control=control, 
                     transformer_options=transformer_options,
                     **self.forward_kwargs,
                 )
