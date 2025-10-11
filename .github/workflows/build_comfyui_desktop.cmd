@@ -58,7 +58,7 @@ call yarn make:assets
 REM 5. Overwrite override.txt with torch version + custom nunchaku wheel
 echo Writing override.txt...
 
-mklink /D assets\ComfyUI\custom_nodes\ComfyUI-nunchaku ..\ComfyUI-nunchaku
+xcopy /E /I /Y ..\ComfyUI-nunchaku assets\ComfyUI\custom_nodes\ComfyUI-nunchaku
 
 set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
 
