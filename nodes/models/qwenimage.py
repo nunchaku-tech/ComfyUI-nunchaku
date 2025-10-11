@@ -62,14 +62,20 @@ def load_diffusion_model_state_dict(
     load_device = model_management.get_torch_device()
     check_hardware_compatibility(quantization_config, load_device)
 
+    offload_device = model_management.unet_offload_device()
     model_config = NunchakuQwenImage(
-        {"image_model": "qwen_image", "scale_shift": 0, "rank": rank, "precision": precision}
+        {
+            "image_model": "qwen_image",
+            "scale_shift": 0,
+            "rank": rank,
+            "precision": precision,
+            "transformer_offload_device": offload_device if model_options.get("cpu_offload_enabled", False) else None,
+        }
     )
     model_config.optimizations["fp8"] = False
 
     new_sd = sd
 
-    offload_device = model_management.unet_offload_device()
     unet_weight_dtype = list(model_config.supported_inference_dtypes)
     if model_config.scaled_fp8 is not None:
         weight_dtype = None
@@ -89,7 +95,7 @@ def load_diffusion_model_state_dict(
     if model_options.get("fp8_optimizations", False):
         model_config.optimizations["fp8"] = True
 
-    model = model_config.get_model(new_sd, "")
+    model = model_config.get_model(new_sd, "", load_device)
     model = model.to(offload_device)
     model.load_model_weights(new_sd, "")
     return NunchakuModelPatcher(model, load_device=load_device, offload_device=offload_device)
@@ -191,7 +197,6 @@ class NunchakuQwenImageDiTLoader:
         """
         model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
-        model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
         if cpu_offload == "auto":
             if get_gpu_memory() < 15:  # 15GB threshold
@@ -207,6 +212,10 @@ class NunchakuQwenImageDiTLoader:
             assert cpu_offload == "disable", "Invalid CPU offload option"
             cpu_offload_enabled = False
             logger.info("Disabling CPU offload")
+
+        model = load_diffusion_model_state_dict(
+            sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}
+        )
 
         if cpu_offload_enabled:
             assert use_pin_memory in ["enable", "disable"], "Invalid use_pin_memory option"

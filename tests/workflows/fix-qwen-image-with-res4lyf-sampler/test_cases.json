@@ -1,0 +1,20 @@
+[
+    {
+        "ref_image_url": "https://i.meee.com.tw/nrMrouc.png",
+        "expected_clip_iqa": {
+            "int4-bf16": 0.7,
+            "fp4-bf16": 0.7
+        },
+        "expected_lpips": {
+            "int4-bf16": 0.4,
+            "fp4-bf16": 0.4
+        },
+        "expected_psnr": {
+            "int4-bf16": 10,
+            "fp4-bf16": 10
+        },
+        "inputs": {
+            "1,inputs,cpu_offload": "enable"
+        }
+    }
+]
