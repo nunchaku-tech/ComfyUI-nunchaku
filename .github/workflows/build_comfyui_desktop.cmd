@@ -37,8 +37,6 @@ set NVM_HOME=%LocalAppData%\nvm
 
 set PYTHON_VERSION_STR=%PYTHON_VERSION:.=%
 
-set WORK_DIR=%cd%
-
 REM Assume Python 3.12 installs here. This is the default location for winget installations.
 REM Adjust if your installation path is different.
 set PYTHON_EXE="%LocalAppData%\Programs\Python\Python%PYTHON_VERSION_STR%\python.exe"
@@ -63,13 +61,11 @@ echo Installing uv package...
 
 REM 3. Install Node.js 20 via NVM
 echo Installing Node.js %NODE_VERSION% with NVM...
-cd %NVM_HOME%
 nvm install %NODE_VERSION%
 nvm use %NODE_VERSION%
 
 REM 4. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
-cd %WORK_DIR%
 git clone https://github.com/nunchaku-tech/desktop.git
 cd desktop
 
@@ -92,7 +88,7 @@ call yarn make:assets
 REM 7. Overwrite override.txt with torch 2.7 + custom nunchaku wheel
 echo Writing override.txt...
 
-git clone https://github.com/nunchaku-tech/ComfyUI-nunchaku.git assets/ComfyUI/custom_nodes/ComfyUI-nunchaku
+mklink /D assets\ComfyUI\custom_nodes\ComfyUI-nunchaku ..\ComfyUI-nunchaku
 
 set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
 
