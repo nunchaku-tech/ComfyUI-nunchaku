@@ -32,70 +32,30 @@ if "%TORCH_VERSION%"=="2.7" (
     set TORCHVISION_VERSION=0.22
 )
 
-REM path to node version manager. Change it if you installed it somewhere else.
-echo %LocalAppData%
-set NVM_HOME=%LocalAppData%\nvm
-echo %NVM_HOME%
-
 set PYTHON_VERSION_STR=%PYTHON_VERSION:.=%
 
-REM Assume Python 3.12 installs here. This is the default location for winget installations.
-REM Adjust if your installation path is different.
-set PYTHON_EXE="%LocalAppData%\Programs\Python\Python%PYTHON_VERSION_STR%\python.exe"
-echo %PYTHON_EXE%
-
-REM 1. Install Python 3.12 silently with winget, skip if PYTHON_EXE already exists
-if exist %PYTHON_EXE% (
-    echo Python %PYTHON_VERSION% is already installed. Skip downloading..
-) else (
-    echo Installing Python %PYTHON_VERSION%...
-    winget install -e --id Python.Python.%PYTHON_VERSION% --accept-source-agreements --accept-package-agreements -h
-    if %errorlevel% neq 0 (
-        echo Failed to install Python %PYTHON_VERSION%
-        exit /b 1
-    )
-)
-
-
-REM 2. Install uv and NVM for Windows
+REM 1. Install uv package
 echo Installing uv package...
-%PYTHON_EXE% -m pip install --upgrade pip
-%PYTHON_EXE% -m pip install uv
+python -m pip install --upgrade pip
+python -m pip install uv
 
-echo Installing NVM for Windows...
-winget install -e --id CoreyButler.NVMforWindows --accept-source-agreements --accept-package-agreements -h
-if %errorlevel% neq 0 (
-    echo Failed to install NVM
-    exit /b 1
-)
-
-REM 3. Install Node.js 20 via NVM
-echo Installing Node.js %NODE_VERSION% with NVM...
-nvm install %NODE_VERSION%
-nvm use %NODE_VERSION%
-
-REM 4. Clone ComfyUI desktop repo
+REM 2. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
 git clone https://github.com/nunchaku-tech/desktop.git
 cd desktop
 
-REM 5. Install Yarn using npm
-REM Note: this step needs admin permission
+REM 3. Install Yarn using corepack
 echo Installing yarn...
-call npm install -g yarn
-echo corepack enable
 call corepack enable
-echo corepack prepare yarn@4.5.0 --activate
-call corepack prepare yarn@4.5.0 --activate
-@REM yarn use %YARN_VERSION%
+call corepack prepare yarn@%YARN_VERSION% --activate
 
-REM 6. Install node modules and rebuild electron
+REM 4. Install node modules and rebuild electron
 echo Rebuilding native modules...
 call yarn install
 call npx --yes electron-rebuild
 call yarn make:assets
 
-REM 7. Overwrite override.txt with torch 2.7 + custom nunchaku wheel
+REM 5. Overwrite override.txt with torch version + custom nunchaku wheel
 echo Writing override.txt...
 
 mklink /D assets\ComfyUI\custom_nodes\ComfyUI-nunchaku ..\ComfyUI-nunchaku
@@ -110,7 +70,7 @@ echo nunchaku @ %NUNCHAKU_URL%
 ) > assets\override.txt
 echo nunchaku >> assets\ComfyUI\requirements.txt
 
-REM 8. Build compiled requirements with uv
+REM 6. Build compiled requirements with uv
 echo Rebuilding requirements (windows_nvidia.compiled)...
 assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt ^
 assets\ComfyUI\custom_nodes\ComfyUI-Manager\requirements.txt ^
@@ -121,7 +81,7 @@ assets\ComfyUI\custom_nodes\ComfyUI-nunchaku\requirements.txt ^
 --index-url https://pypi.org/simple ^
 --extra-index-url https://download.pytorch.org/whl/%CUDA_PIP_INDEX%
 
-REM 9. Build for NVIDIA users on Windows
+REM 7. Build for NVIDIA users on Windows
 echo Building ComfyUI for NVIDIA...
 call yarn make:nvidia
 
