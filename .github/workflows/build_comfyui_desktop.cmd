@@ -5,15 +5,32 @@ REM ==============================
 REM  ComfyUI Desktop Build Script
 REM ==============================
 
+REM Use environment variables if set, otherwise use defaults
+if not defined TORCH_VERSION set TORCH_VERSION=2.7
+if not defined NUNCHAKU_VERSION set NUNCHAKU_VERSION=1.0.0
+
+echo Using TORCH_VERSION=%TORCH_VERSION%
+echo Using NUNCHAKU_VERSION=%NUNCHAKU_VERSION%
+
+REM Set version-specific defaults
 set PYTHON_VERSION=3.12
-set TORCH_VERSION=2.7
 REM Node.js version must be complete version string instead of 20 or 20.19
 set NODE_VERSION=20.18.0
 set YARN_VERSION=4.5.0
-set NUNCHAKU_VERSION=1.0.0
-set TORCHAUDIO_VERSION=2.7
-set TORCHVISION_VERSION=0.22
 set CUDA_PIP_INDEX=cu128
+
+REM Set torchaudio and torchvision versions based on TORCH_VERSION
+if "%TORCH_VERSION%"=="2.7" (
+    set TORCHAUDIO_VERSION=2.7
+    set TORCHVISION_VERSION=0.22
+) else if "%TORCH_VERSION%"=="2.8" (
+    set TORCHAUDIO_VERSION=2.8
+    set TORCHVISION_VERSION=0.23
+) else (
+    echo Warning: Unknown TORCH_VERSION=%TORCH_VERSION%, using default versions
+    set TORCHAUDIO_VERSION=%TORCH_VERSION%
+    set TORCHVISION_VERSION=0.22
+)
 
 REM path to node version manager. Change it if you installed it somewhere else.
 set NVM_HOME=%LocalAppData%\nvm
