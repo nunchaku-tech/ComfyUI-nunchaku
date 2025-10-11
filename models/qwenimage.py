@@ -951,12 +951,14 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         from comfy.ldm.common_dit import pad_to_patch_size
         from einops import rearrange, repeat
 
-        bs, c, h, w = x.shape
+        bs, c, h_orig, w_orig = x.shape
         x = pad_to_patch_size(x, (self.patch_size, self.patch_size))
 
+        # CRITICAL: Calculate h_len and w_len AFTER padding, using padded dimensions
+        _, _, h_padded, w_padded = x.shape
         img = rearrange(x, "b c (h ph) (w pw) -> b (h w) (c ph pw)", ph=self.patch_size, pw=self.patch_size)
-        h_len = (h + (self.patch_size // 2)) // self.patch_size
-        w_len = (w + (self.patch_size // 2)) // self.patch_size
+        h_len = h_padded // self.patch_size
+        w_len = w_padded // self.patch_size
 
         h_offset = (h_offset + (self.patch_size // 2)) // self.patch_size
         w_offset = (w_offset + (self.patch_size // 2)) // self.patch_size
@@ -970,8 +972,9 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
             w_offset, w_len - 1 + w_offset, steps=w_len, device=x.device, dtype=x.dtype
         ).unsqueeze(0)
 
-        # Return orig_shape as (batch, channels, height, width) for unpatchify
-        return img, repeat(img_ids, "h w c -> b (h w) c", b=bs), (bs, c, h, w)
+        # Return orig_shape as tuple: (bs, c, h_padded, w_padded, h_orig, w_orig)
+        # h_padded/w_padded for unpatchify reshape, h_orig/w_orig for final cropping
+        return img, repeat(img_ids, "h w c -> b (h w) c", b=bs), (bs, c, h_padded, w_padded, h_orig, w_orig)
 
     def forward(
         self,
@@ -1271,11 +1274,16 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         hidden_states = self.norm_out(hidden_states, temb)
         hidden_states = self.proj_out(hidden_states)
 
-        hidden_states = hidden_states[:, :num_embeds].view(
-            orig_shape[0], orig_shape[-2] // 2, orig_shape[-1] // 2, orig_shape[1], 2, 2
-        )
+        # Unpack orig_shape: (bs, c, h_padded, w_padded, h_orig, w_orig)
+        bs, c, h_padded, w_padded, h_orig, w_orig = orig_shape
+
+        # Unpatchify using padded dimensions
+        hidden_states = hidden_states[:, :num_embeds].view(bs, h_padded // 2, w_padded // 2, c, 2, 2)
         hidden_states = hidden_states.permute(0, 3, 1, 4, 2, 5)
-        return hidden_states.reshape(orig_shape)[:, :, : x.shape[-2], : x.shape[-1]]
+        hidden_states = hidden_states.reshape(bs, c, h_padded, w_padded)
+
+        # Crop to original (pre-padding) dimensions
+        return hidden_states[:, :, :h_orig, :w_orig]
 
     def update_lora_params(self, lora_dict: dict, num_loras: int = 1):
         """

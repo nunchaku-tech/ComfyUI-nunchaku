@@ -312,7 +312,7 @@ class ComfyQwenImageWrapper(nn.Module):
                         timestep=timestep,
                         ref_latents=kwargs.get("ref_latents"),
                         guidance=guidance if self.config.get("guidance_embed", False) else None,
-                        control=control, 
+                        control=control,
                         transformer_options=transformer_options,
                     )
                 else:
@@ -324,7 +324,7 @@ class ComfyQwenImageWrapper(nn.Module):
                         timestep=timestep,
                         ref_latents=kwargs.get("ref_latents"),
                         guidance=guidance if self.config.get("guidance_embed", False) else None,
-                        control=control,  
+                        control=control,
                         transformer_options=transformer_options,
                         **self.forward_kwargs,
                     )
@@ -339,7 +339,7 @@ class ComfyQwenImageWrapper(nn.Module):
                     timestep=timestep,
                     ref_latents=kwargs.get("ref_latents"),
                     guidance=guidance if self.config.get("guidance_embed", False) else None,
-                    control=control, 
+                    control=control,
                     transformer_options=transformer_options,
                 )
             else:
@@ -351,7 +351,7 @@ class ComfyQwenImageWrapper(nn.Module):
                     timestep=timestep,
                     ref_latents=kwargs.get("ref_latents"),
                     guidance=guidance if self.config.get("guidance_embed", False) else None,
-                    control=control, 
+                    control=control,
                     transformer_options=transformer_options,
                     **self.forward_kwargs,
                 )
