@@ -12,7 +12,7 @@ if not defined NUNCHAKU_VERSION set NUNCHAKU_VERSION=1.0.0
 echo Using TORCH_VERSION=%TORCH_VERSION%
 echo Using NUNCHAKU_VERSION=%NUNCHAKU_VERSION%
 
-REM Set version-specific defaults
+REM Set version-specific defaults, which is the desktop Python version
 set PYTHON_VERSION=3.12
 REM Node.js version must be complete version string instead of 20 or 20.19
 set NODE_VERSION=20.18.0

@@ -42,6 +42,10 @@ jobs:
       - name: Run build script
         run: |
           cd ..
+          where python
+          python --version
+          where node
+          node --version
           rm -rf desktop
           ComfyUI-nunchaku\.github\workflows\build_comfyui_desktop.cmd
         shell: cmd
