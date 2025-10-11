@@ -60,14 +60,14 @@ jobs:
           path: ${{ steps.find_artifacts.outputs.artifact_path }}
           retention-days: 7
         if: success()
-    # - name: Upload Artifact to Existing Release
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     tag_name: v${{ steps.get_version.outputs.version }}
-    #     files: ${{ steps.find_artifacts.outputs.artifact_path }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   if: success()
+        # - name: Upload Artifact to Existing Release
+        #   uses: softprops/action-gh-release@v1
+        #   with:
+        #     tag_name: v${{ steps.get_version.outputs.version }}
+        #     files: ${{ steps.find_artifacts.outputs.artifact_path }}
+        #   env:
+        #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   if: success()
       - name: Clean up
         run: |
           cd ..
