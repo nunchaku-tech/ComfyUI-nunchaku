@@ -83,15 +83,15 @@ set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%N
 echo torch==%TORCH_VERSION%+%CUDA_PIP_INDEX%
 echo torchaudio==%TORCHAUDIO_VERSION%+%CUDA_PIP_INDEX%
 echo torchvision==%TORCHVISION_VERSION%+%CUDA_PIP_INDEX%
-echo opencv-python
-echo insightface
 echo nunchaku @ %NUNCHAKU_URL%
 ) > assets\override.txt
 echo nunchaku >> assets\ComfyUI\requirements.txt
 
 REM 8. Build compiled requirements with uv
 echo Rebuilding requirements (windows_nvidia.compiled)...
-assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt assets\ComfyUI\custom_nodes\ComfyUI-Manager\requirements.txt ^
+assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt ^
+assets\ComfyUI\custom_nodes\ComfyUI-Manager\requirements.txt ^
+assets\ComfyUI\custom_nodes\ComfyUI-nunchaku\requirements.txt ^
 --emit-index-annotation --emit-index-url --index-strategy unsafe-best-match ^
 -o assets\requirements\windows_nvidia.compiled ^
 --override assets\override.txt ^
