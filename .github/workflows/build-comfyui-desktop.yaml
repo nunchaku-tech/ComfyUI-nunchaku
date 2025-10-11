@@ -4,56 +4,69 @@ on:
 permissions:
   contents: write
 jobs:
-  get-version:
-    name: Get Version from pyproject.toml
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Extract version
-        id: get_version
-        run: |
-          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
   build-windows:
-    name: Build ComfyUI Desktop - ${{ matrix.target }}
+    name: Build ComfyUI Desktop - PyTorch ${{ matrix.pytorch_version }}
     runs-on: windows-latest
-    needs: get-version
     strategy:
       matrix:
-        target: [nvidia, amd, cpu]
-      fail-fast: false
+        pytorch_version: ['2.7']
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Extract version from pyproject.toml
+        id: get_version
+        run: |
+          $VERSION = (Get-Content pyproject.toml | Select-String '^version = "(.+)"').Matches.Groups[1].Value
+          echo "version=$VERSION" >> $env:GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+        shell: pwsh
+      - name: Create build directory
+        run: |
+          $BUILD_DIR = "${{ github.workspace }}\build-pytorch-${{ matrix.pytorch_version }}"
+          New-Item -ItemType Directory -Force -Path $BUILD_DIR
+          echo "BUILD_DIR=$BUILD_DIR" >> $env:GITHUB_ENV
+          echo "Created build directory: $BUILD_DIR"
+        shell: pwsh
+      - name: Copy build script to build directory
+        run: |
+          Copy-Item "${{ github.workspace }}\scripts\build_comfyui_desktop.cmd" "$env:BUILD_DIR\"
+        shell: pwsh
       - name: Run build script
         run: |
-          cd ${{ github.workspace }}
-          .\github\workflows\build_comfyui_desktop.cmd
+          cd $env:BUILD_DIR
+          .\build_comfyui_desktop.cmd
         shell: cmd
         env:
-          NUNCHAKU_VERSION: ${{ needs.get-version.outputs.version }}
-          BUILD_TARGET: ${{ matrix.target }}
+          NUNCHAKU_VERSION: ${{ steps.get_version.outputs.version }}
+          TORCH_VERSION: ${{ matrix.pytorch_version }}
       - name: List build output
         run: |
-          Get-ChildItem -Path desktop\out -Recurse | Format-Table Name, Length, LastWriteTime
+          Get-ChildItem -Path "$env:BUILD_DIR\desktop\dist\Comfy-*-win.zip" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
         shell: pwsh
         if: always()
+      - name: Find build artifacts
+        id: find_artifacts
+        run: |
+          $ARTIFACT_PATH = Get-ChildItem -Path "$env:BUILD_DIR\desktop\dist\Comfy-*-win.zip" | Select-Object -First 1 -ExpandProperty FullName
+          echo "artifact_path=$ARTIFACT_PATH" >> $env:GITHUB_OUTPUT
+          echo "Found artifact: $ARTIFACT_PATH"
+        shell: pwsh
+        if: success()
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: comfyui-desktop-windows-${{ matrix.target }}
-          path: desktop/out/make/**/*
+          name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
+          path: ${{ steps.find_artifacts.outputs.artifact_path }}
           retention-days: 7
         if: success()
-      - name: Create Release (on tag push)
+      - name: Upload to Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: desktop/out/make/**/*
+          tag_name: v${{ steps.get_version.outputs.version }}
+          files: ${{ steps.find_artifacts.outputs.artifact_path }}
           generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success()
