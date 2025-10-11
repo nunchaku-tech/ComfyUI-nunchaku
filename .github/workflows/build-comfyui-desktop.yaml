@@ -1,0 +1,83 @@
+name: Build ComfyUI Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      nunchaku_version:
+        description: 'Nunchaku version (e.g. 1.0.0)'
+        required: false
+        default: '1.0.0'
+  push:
+    branches:
+      - main
+      - chore/comfyui-desktop-build
+    paths:
+      - 'scripts/build_comfyui_desktop.cmd'
+      - '.github/workflows/build-comfyui-desktop.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build ComfyUI Desktop for Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up NVM directory
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:LOCALAPPDATA\nvm"
+        shell: pwsh
+
+      - name: Install NVM for Windows
+        run: |
+          $nvmVersion = "1.1.12"
+          $nvmUrl = "https://github.com/coreybutler/nvm-windows/releases/download/$nvmVersion/nvm-setup.exe"
+          $installerPath = "$env:TEMP\nvm-setup.exe"
+
+          Write-Host "Downloading NVM for Windows..."
+          Invoke-WebRequest -Uri $nvmUrl -OutFile $installerPath
+
+          Write-Host "Installing NVM..."
+          Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
+
+          # Add NVM to PATH for current session
+          $env:NVM_HOME = "$env:LOCALAPPDATA\nvm"
+          $env:PATH = "$env:NVM_HOME;$env:PATH"
+
+          Write-Host "NVM installation completed"
+        shell: pwsh
+
+      - name: Run build script
+        run: |
+          cd ${{ github.workspace }}
+          .\scripts\build_comfyui_desktop.cmd
+        shell: cmd
+        env:
+          NUNCHAKU_VERSION: ${{ github.event.inputs.nunchaku_version || '1.0.0' }}
+
+      - name: List build output
+        run: |
+          Get-ChildItem -Path desktop\out -Recurse | Format-Table Name, Length, LastWriteTime
+        shell: pwsh
+        if: always()
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: comfyui-desktop-windows-nvidia
+          path: desktop/out/make/**/*
+          retention-days: 7
+        if: success()
+
+      - name: Create Release (on tag push)
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: desktop/out/make/**/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
