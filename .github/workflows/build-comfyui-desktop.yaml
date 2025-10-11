@@ -34,6 +34,7 @@ jobs:
       - name: Run build script
         run: |
           cd ..
+          rm -rf desktop
           ComfyUI-nunchaku\.github\workflows\build_comfyui_desktop.cmd
         shell: cmd
         env:
@@ -67,3 +68,9 @@ jobs:
     #   env:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     #   if: success()
+      - name: Clean up
+        run: |
+          cd ..
+          rm -rf desktop
+        shell: pwsh
+        if: always()

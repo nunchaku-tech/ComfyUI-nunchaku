@@ -33,13 +33,16 @@ if "%TORCH_VERSION%"=="2.7" (
 )
 
 REM path to node version manager. Change it if you installed it somewhere else.
+echo %LocalAppData%
 set NVM_HOME=%LocalAppData%\nvm
+echo %NVM_HOME%
 
 set PYTHON_VERSION_STR=%PYTHON_VERSION:.=%
 
 REM Assume Python 3.12 installs here. This is the default location for winget installations.
 REM Adjust if your installation path is different.
 set PYTHON_EXE="%LocalAppData%\Programs\Python\Python%PYTHON_VERSION_STR%\python.exe"
+echo %PYTHON_EXE%
 
 REM 1. Install Python 3.12 silently with winget, skip if PYTHON_EXE already exists
 if exist %PYTHON_EXE% (
