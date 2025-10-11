@@ -84,5 +84,5 @@ jobs:
         run: |
           cd ..
           rm -rf desktop
-        shell: pwsh
+        shell: cmd
         if: always()
