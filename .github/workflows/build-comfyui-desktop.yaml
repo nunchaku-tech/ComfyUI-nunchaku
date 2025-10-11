@@ -32,7 +32,7 @@ jobs:
       - name: Run build script
         run: |
           cd ${{ github.workspace }}
-          .\scripts\build_comfyui_desktop.cmd
+          .\github\workflows\build_comfyui_desktop.cmd
         shell: cmd
         env:
           NUNCHAKU_VERSION: ${{ needs.get-version.outputs.version }}
