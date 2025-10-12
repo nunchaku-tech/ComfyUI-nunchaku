@@ -58,11 +58,14 @@ jobs:
           Get-ChildItem -Path "..\desktop\dist" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
         shell: pwsh
         if: always()
-      - name: Copy artifacts to workspace
+      - name: Copy and rename artifacts
         run: |
           dir ..\desktop\dist
           mkdir artifacts
-          move ..\desktop\dist\*.zip artifacts\
+          for %%f in (..\desktop\dist\*.zip) do (
+            echo Renaming %%~nxf to ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-desktop-torch${{ matrix.pytorch_version }}-win.zip
+            move "%%f" "artifacts\ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-desktop-torch${{ matrix.pytorch_version }}-win.zip"
+          )
           dir artifacts
         shell: cmd
         if: success()
@@ -73,14 +76,14 @@ jobs:
           path: artifacts/*.zip
           retention-days: 7
         if: success()
-        # - name: Upload Artifact to Existing Release
-        #   uses: softprops/action-gh-release@v1
-        #   with:
-        #     tag_name: v${{ steps.get_version.outputs.version }}
-        #     files: ${{ steps.find_artifacts.outputs.artifact_path }}
-        #   env:
-        #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #   if: success()
+      # - name: Upload Artifact to Existing Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: v${{ steps.get_version.outputs.version }}
+      #     files: artifacts/*.zip
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   if: success()
       - name: Clean up
         run: |
           cd ..
