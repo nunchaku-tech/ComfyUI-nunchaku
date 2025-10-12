@@ -1,6 +1,9 @@
 import logging
 import os
+from pathlib import Path
 
+import torch
+import yaml
 from packaging.version import InvalidVersion, Version
 
 # vanilla and LTS compatibility snippet
@@ -12,133 +15,24 @@ try:
     from comfy.model_downloader import add_known_models
     from comfy.model_downloader_types import HuggingFile
 
+    capability = torch.cuda.get_device_capability(0 if torch.cuda.is_available() else None)
+    sm = f"{capability[0]}{capability[1]}"
+    precision = "fp4" if sm == "120" else "int4"
+
     # add known models
-    NUNCHAKU_SVDQ_MODELS = [
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-fp4_r128-qwen-image-lightningv1.0-4steps.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-fp4_r128-qwen-image-lightningv1.1-8steps.safetensors",
-        ),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-fp4_r128-qwen-image.safetensors"),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-fp4_r32-qwen-image-lightningv1.0-4steps.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-fp4_r32-qwen-image-lightningv1.1-8steps.safetensors",
-        ),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-fp4_r32-qwen-image.safetensors"),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-int4_r128-qwen-image-lightningv1.0-4steps.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-int4_r128-qwen-image-lightningv1.1-8steps.safetensors",
-        ),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-int4_r128-qwen-image.safetensors"),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-int4_r32-qwen-image-lightningv1.0-4steps.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image",
-            filename="svdq-int4_r32-qwen-image-lightningv1.1-8steps.safetensors",
-        ),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-qwen-image", filename="svdq-int4_r32-qwen-image.safetensors"),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-dev", filename="svdq-fp4_r32-flux.1-dev.safetensors"),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-flux.1-dev", filename="svdq-int4_r32-flux.1-dev.safetensors"),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-kontext-dev", filename="svdq-fp4_r32-flux.1-kontext-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-kontext-dev", filename="svdq-int4_r32-flux.1-kontext-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-fill-dev", filename="svdq-fp4_r32-flux.1-fill-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-fill-dev", filename="svdq-int4_r32-flux.1-fill-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-krea-dev", filename="svdq-fp4_r32-flux.1-krea-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-krea-dev", filename="svdq-int4_r32-flux.1-krea-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-depth-dev", filename="svdq-fp4_r32-flux.1-depth-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-depth-dev", filename="svdq-int4_r32-flux.1-depth-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-schnell", filename="svdq-fp4_r32-flux.1-schnell.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-schnell", filename="svdq-int4_r32-flux.1-schnell.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-canny-dev", filename="svdq-fp4_r32-flux.1-canny-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-canny-dev", filename="svdq-int4_r32-flux.1-canny-dev.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-shuttle-jaguar", filename="svdq-fp4_r32-shuttle-jaguar.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-shuttle-jaguar", filename="svdq-int4_r32-shuttle-jaguar.safetensors"
-        ),
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-sana", filename="svdq-int4_r32-sana1.6b.safetensors"),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-dev-colossus",
-            filename="svdq-fp4_r32-flux.1-dev-colossusv12.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-dev-colossus",
-            filename="svdq-int4_r32-flux.1-dev-colossusv12.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-flux.1-schnell-pix2pix-turbo", filename="svdq-int4-sketch.safetensors"
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
-            filename="svdq-int4_r32-qwen-image-edit.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
-            filename="svdq-fp4_r32-qwen-image-edit.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
-            filename="svdq-int4_r128-qwen-image-edit.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit",
-            filename="svdq-fp4_r128-qwen-image-edit.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
-            filename="svdq-int4_r32-qwen-image-edit-2509.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
-            filename="svdq-fp4_r32-qwen-image-edit-2509.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
-            filename="svdq-int4_r128-qwen-image-edit-2509.safetensors",
-        ),
-        HuggingFile(
-            repo_id="nunchaku-tech/nunchaku-qwen-image-edit-2509",
-            filename="svdq-fp4_r128-qwen-image-edit-2509.safetensors",
-        ),
-    ]
+
+    models_yaml_path = Path(__file__).parent.parent / "test_data" / "models.yaml"
+    with open(models_yaml_path, "r") as f:
+        nunchaku_models_yaml = yaml.safe_load(f)
+
+    NUNCHAKU_SVDQ_MODELS = []
+    for model in nunchaku_models_yaml["models"]:
+        filename = model["filename"]
+        if not filename.startswith("svdq-"):
+            continue
+        if "{precision}" in filename:
+            filename = filename.format(precision=precision)
+        NUNCHAKU_SVDQ_MODELS.append(HuggingFile(repo_id=model["repo_id"], filename=filename))
 
     NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS = [
         HuggingFile(repo_id="nunchaku-tech/nunchaku-t5", filename="awq-int4-flux.1-t5xxl.safetensors"),
