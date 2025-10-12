@@ -20,7 +20,7 @@ Node Version Manager (NVM)
 NVM for Windows is **required** to manage Node.js versions. The build script expects NVM to be installed at ``%LocalAppData%\nvm``.
 
 Installing NVM for Windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Option 1: Using winget (Recommended)**
 
@@ -77,8 +77,11 @@ The ``scripts/build_comfyui_desktop.cmd`` script automates the entire build proc
 8. Compiling Python requirements with CUDA support
 9. Building the application for NVIDIA GPUs
 
+Usage and Configuration
+=======================
+
 Script Configuration
-====================
+--------------------
 
 The script uses the following default versions (configurable at the top of the script):
 
@@ -91,8 +94,7 @@ The script uses the following default versions (configurable at the top of the s
    set NUNCHAKU_VERSION=1.0.0
    set CUDA_PIP_INDEX=cu128
 
-Path Configuration
-------------------
+Path Configuration:
 
 - **Python Path**: The script assumes Python installs to ``%LocalAppData%\Programs\Python\Python312\python.exe``
 - **NVM Path**: The script expects NVM to already be installed at ``%LocalAppData%\nvm`` (default NVM installation path)
@@ -103,8 +105,8 @@ If your installation paths differ, modify the ``PYTHON_EXE`` and ``NVM_HOME`` va
 .. important::
    Make sure NVM is installed and available in your PATH before running the build script. See the System Requirements section above for installation instructions.
 
-Usage
-=====
+Running the Build
+-----------------
 
 1. Open Windows Command Prompt (CMD) as **Administrator**
 
@@ -126,16 +128,14 @@ Usage
 4. Wait for the build to complete. The entire process may take 30 minutes to 1 hour, depending on network speed and machine performance.
 
 Build Output
-============
+------------
 
 Upon successful completion, the script will:
 
 - Create a fully configured ComfyUI Desktop environment
 - Generate NVIDIA-optimized builds with CUDA support
 - Include Nunchaku acceleration support
-- Produce ready-to-use application binaries
-
-Build artifacts are typically located in the ``desktop/out`` directory.
+- Produce the ready-to-use application package at ``desktop\dist\Comfy-*-win.zip``
 
 Troubleshooting
 ===============
@@ -161,7 +161,7 @@ Common Issues
 
 4. **Python installation fails**
 
-   Manually install Python 3.12 from `python.org <https://www.python.org/>`_ or Microsoft Store.
+   Manually install Python 3.12 from `python.org <https://www.python.org/>`__ or Microsoft Store.
    You can also try using Anaconda or Miniconda.
 
 5. **NVM not found error**
@@ -179,39 +179,4 @@ Common Issues
    - Configuring mirror sources (e.g., Tsinghua, Alibaba Cloud mirrors)
    - Using a VPN or proxy
 
-Maintenance Notes
-=================
-
-Version Updates
----------------
-
-When updating dependency versions, modify the version variables at the top of the script:
-
-.. code-block:: batch
-
-   set PYTHON_VERSION=3.12
-   set TORCH_VERSION=2.7
-   set NODE_VERSION=20.18.0
-   set YARN_VERSION=4.5.0
-   set NUNCHAKU_VERSION=1.0.0
-
-Customizing CUDA Version
--------------------------
-
-To use a different CUDA version, modify the ``CUDA_PIP_INDEX`` variable:
-
-.. code-block:: batch
-
-   REM For CUDA 11.8
-   set CUDA_PIP_INDEX=cu118
-
-   REM For CUDA 12.1
-   set CUDA_PIP_INDEX=cu121
-
-References
-==========
-
-- `ComfyUI Desktop Official Repository <https://github.com/Comfy-Org/desktop>`_
-- `Node Version Manager for Windows <https://github.com/coreybutler/nvm-windows>`_
-- `Python Official Website <https://www.python.org/>`_
-- `Visual Studio Downloads <https://visualstudio.microsoft.com/>`_
+Additional resources: `ComfyUI Desktop <https://github.com/Comfy-Org/desktop>`__, `NVM for Windows <https://github.com/coreybutler/nvm-windows>`__, `Python <https://www.python.org/>`__, `Visual Studio <https://visualstudio.microsoft.com/>`__

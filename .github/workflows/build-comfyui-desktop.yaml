@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
-          path: ..\desktop\dist\Comfy-*-win.zip
+          path: ${{ steps.find_artifacts.outputs.artifact_path }}
           retention-days: 7
         if: success()
         # - name: Upload Artifact to Existing Release
