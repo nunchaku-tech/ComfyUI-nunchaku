@@ -18,6 +18,7 @@ from nunchaku.caching.diffusers_adapters.flux import apply_cache_on_transformer
 
 from ...wrappers.flux import ComfyFluxWrapper
 from ..utils import get_filename_list, get_full_path_or_raise
+from nunchaku.utils import is_turing
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -79,10 +80,19 @@ class NunchakuFluxDiTLoader:
         """
         safetensor_files = get_filename_list("diffusion_models")
 
-        # this should really be in validation
-        ngpus = 8
-        attention_options = ["nunchaku-fp16", "flash-attention2"]
-        dtype_options = ["bfloat16", "float16"]
+        ngpus = torch.cuda.device_count()
+
+        all_turing = True
+        for i in range(torch.cuda.device_count()):
+            if not is_turing(f"cuda:{i}"):
+                all_turing = False
+
+        if all_turing:
+            attention_options = ["nunchaku-fp16"]  # turing GPUs do not support flashattn2
+            dtype_options = ["float16"]
+        else:
+            attention_options = ["nunchaku-fp16", "flash-attention2"]
+            dtype_options = ["bfloat16", "float16"]
 
         return {
             "required": {
@@ -107,9 +117,11 @@ class NunchakuFluxDiTLoader:
                     attention_options,
                     {
                         "default": attention_options[0],
-                        "tooltip": "Attention implementation. "
-                        "`nunchaku-fp16` use FP16 attention, offering ~1.2× speedup. "
-                        "Note that 20-series GPUs can only use `nunchaku-fp16`.",
+                        "tooltip": (
+                            "Attention implementation. The default implementation is `flash-attention2`. "
+                            "`nunchaku-fp16` use FP16 attention, offering ~1.2× speedup. "
+                            "Note that 20-series GPUs can only use `nunchaku-fp16`."
+                        ),
                     },
                 ),
                 "cpu_offload": (
