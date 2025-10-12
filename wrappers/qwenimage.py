@@ -356,6 +356,10 @@ class ComfyQwenImageWrapper(nn.Module):
                     **self.forward_kwargs,
                 )
 
+        # Model returns a tuple (output,), unpack it
+        if isinstance(out, tuple):
+            out = out[0]
+
         # Model already returns unpatchified output (4D)
         # out = out[:, :img_tokens]
         # out = rearrange(
