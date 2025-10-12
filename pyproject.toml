@@ -1,10 +1,10 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 
-requires = ["setuptools>=61", "wheel"]
+requires = [ "setuptools>=61", "wheel" ]
 
 [project]
-name = "comfyui-nunchaku"
+name = "ComfyUI-nunchaku"
 version = "1.0.2dev1"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
 license = { file = "LICENCE.txt" }
@@ -23,12 +23,22 @@ dependencies = [
   "huggingface-hub>=0.34",
   "peft>=0.17",
   "protobuf",
+  "pyyaml",
   "sentencepiece",
   "tomli",
-  "pyyaml",
 ]
 
-optional-dependencies.compile = ["nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git"]
+optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git" ]
+optional-dependencies.dev = [
+  "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git",
+  # version < 3.13 required due to mediapipe
+  "comfyui-controlnet-aux @ git+https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git; python_version < '3.13'",
+  "image-gen-aux @ git+https://github.com/asomoza/image_gen_aux.git",
+  "pytest",
+  "pytest-asyncio==1.2",
+  "pytest-rerunfailures",
+  "torchmetrics",
+]
 optional-dependencies.pulid = [
   "facexlib",
   "insightface",
@@ -38,22 +48,12 @@ optional-dependencies.pulid = [
   "opencv-python",
   "timm",
 ]
-optional-dependencies.torch25 = ["nunchaku==1.0.1+torch2.5; sys_platform != 'darwin'", "torch>=2.5,<2.6"]
-optional-dependencies.torch26 = ["nunchaku==1.0.1+torch2.6; sys_platform != 'darwin'", "torch>=2.6,<2.7"]
-optional-dependencies.torch27 = ["nunchaku==1.0.1+torch2.7; sys_platform != 'darwin'", "torch>=2.7,<2.8"]
-optional-dependencies.torch28 = ["nunchaku==1.0.1+torch2.8; sys_platform != 'darwin'", "torch>=2.8,<2.9"]
+optional-dependencies.torch25 = [ "nunchaku==1.0.1+torch2.5; sys_platform!='darwin'", "torch>=2.5,<2.6" ]
+optional-dependencies.torch26 = [ "nunchaku==1.0.1+torch2.6; sys_platform!='darwin'", "torch>=2.6,<2.7" ]
+optional-dependencies.torch27 = [ "nunchaku==1.0.1+torch2.7; sys_platform!='darwin'", "torch>=2.7,<2.8" ]
+optional-dependencies.torch28 = [ "nunchaku==1.0.1+torch2.8; sys_platform!='darwin'", "torch>=2.8,<2.9" ]
 # when working with pre-release torch, we don't know what the version string will be, so let's omit it
-optional-dependencies.torchpre = ["nunchaku==1.0.1+torch2.10; sys_platform != 'darwin'"]
-optional-dependencies.dev = [
-  "pytest",
-  "torchmetrics",
-  "image_gen_aux@git+https://github.com/asomoza/image_gen_aux.git",
-  "pytest-rerunfailures",
-  "pytest-asyncio==1.2.0",
-  "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git",
-  # version < 3.13 required due to mediapipe
-  "comfyui_controlnet_aux@git+https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git ;python_version < '3.13'",
-]
+optional-dependencies.torchpre = [ "nunchaku==1.0.1+torch2.10; sys_platform!='darwin'" ]
 urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 entry-points."comfyui.custom_nodes".nunchaku_comfyui = "nunchaku_comfyui"
 
@@ -74,23 +74,23 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-"nunchaku_comfyui" = ["example_workflows/*.json"]
-"nunchaku_comfyui.nodes.models" = ["nodes/models/configs/*.json"]
+"nunchaku_comfyui" = [ "example_workflows/*.json" ]
+"nunchaku_comfyui.nodes.models" = [ "nodes/models/configs/*.json" ]
 
 [tool.black]
 line-length = 120
-target-version = ['py311']
+target-version = [ 'py311' ]
 
 [tool.ruff]
 line-length = 120
 
-per-file-ignores."tests/scripts/*.py" = ["E402"]
-per-file-ignores."tests/legacy_scripts/*.py" = ["E402"]
-per-file-ignores."__init__.py" = ["E402"]
+per-file-ignores."tests/scripts/*.py" = [ "E402" ]
+per-file-ignores."tests/legacy_scripts/*.py" = [ "E402" ]
+per-file-ignores."__init__.py" = [ "E402" ]
 
 [tool.isort]
 profile = "black"
-known_first_party = ["nunchaku"]
+known_first_party = [ "nunchaku" ]
 line_length = 120
 
 [tool.comfy]
@@ -100,12 +100,12 @@ Icon = "https://raw.githubusercontent.com/nunchaku-tech/nunchaku/96615bd93a1f0d2
 
 [tool.doc8]
 max-line-length = 120
-ignore-path = ["docs/_build"]
-ignore = ["D000", "D001"]
+ignore-path = [ "docs/_build" ]
+ignore = [ "D000", "D001" ]
 
 [tool.rstcheck]
-ignore_directives = ["tabs"]
-ignore_messages = ["ERROR/3", "INFO/1"]
+ignore_directives = [ "tabs" ]
+ignore_messages = [ "ERROR/3", "INFO/1" ]
 
 [tool.uv]
 conflicts = [
