@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        pytorch_version: ['2.7']
+        pytorch_version: ['2.7', '2.8']
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
-          path: ${{ steps.find_artifacts.outputs.artifact_path }}
+          path: ..\desktop\dist\Comfy-*-win.zip
           retention-days: 7
         if: success()
         # - name: Upload Artifact to Existing Release
