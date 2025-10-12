@@ -82,4 +82,4 @@ def get_plugin_version() -> str:
             project_version = data["project"]["version"]
             return project_version
     except Exception:
-        return "1.0.1"
+        return "1.0.2dev1"
