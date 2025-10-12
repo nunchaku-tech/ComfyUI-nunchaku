@@ -60,14 +60,11 @@ jobs:
         if: always()
       - name: Copy artifacts to workspace
         run: |
-          New-Item -ItemType Directory -Force -Path "artifacts"
-          Get-ChildItem -Path "..\desktop\dist\Comfy-*-win.zip" | ForEach-Object {
-            Write-Host "Copying $($_.FullName) to artifacts\"
-            Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
-          }
-          Write-Host "Contents of artifacts folder:"
-          Get-ChildItem -Path "artifacts"
-        shell: pwsh
+          dir ..\desktop\dist
+          mkdir artifacts
+          move ..\desktop\dist\*.zip artifacts\
+          dir artifacts
+        shell: cmd
         if: success()
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
