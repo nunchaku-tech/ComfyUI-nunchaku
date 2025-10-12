@@ -17,7 +17,7 @@ from torch import nn
 
 from nunchaku import NunchakuT5EncoderModel
 
-from ..utils import get_filename_list, get_full_path_or_raise, folder_paths
+from ..utils import folder_paths, get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()

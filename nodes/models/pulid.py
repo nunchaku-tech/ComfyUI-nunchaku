@@ -21,7 +21,7 @@ from nunchaku.models.pulid.pulid_forward import pulid_forward
 from nunchaku.pipeline.pipeline_flux_pulid import PuLIDPipeline
 
 from ...wrappers.flux import ComfyFluxWrapper
-from ..utils import get_filename_list, get_full_path_or_raise, folder_paths
+from ..utils import folder_paths, get_filename_list, get_full_path_or_raise
 from .utils import set_extra_config_model_path
 
 # Get log level from environment variable (default to INFO)

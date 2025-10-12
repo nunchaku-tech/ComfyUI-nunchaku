@@ -11,7 +11,7 @@ from comfy.client.embedded_comfy_client import Comfy
 from nunchaku.utils import get_precision, is_turing
 
 from .case import Case, cases, ids
-from .utils import compute_metrics, prepare_models, set_nested_value, prepare_inputs
+from .utils import compute_metrics, prepare_inputs, prepare_models, set_nested_value
 
 precision = get_precision()
 torch_dtype = torch.float16 if is_turing() else torch.bfloat16

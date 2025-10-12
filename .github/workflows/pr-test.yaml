@@ -40,8 +40,8 @@ jobs:
       (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
       (github.event_name == 'workflow_dispatch')
     env: {}
-      # todo: you probably want to set HF_HOME instead
-      # COMFYUI_MODELS_ROOT: "/home/nunchaku/comfyui_models"
+    # todo: you probably want to set HF_HOME instead
+    # COMFYUI_MODELS_ROOT: "/home/nunchaku/comfyui_models"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
