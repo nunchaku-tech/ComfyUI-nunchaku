@@ -931,10 +931,13 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         Overrides the base class method to handle 4D tensors (batch, channels, height, width)
         instead of 5D tensors required by ComfyUI's base implementation.
 
+        Supports both Qwen Image (T2I) and Qwen Image Edit (I2I) models.
+
         Parameters
         ----------
         x : torch.Tensor
-            Input image tensor of shape (batch, channels, height, width).
+            Input image tensor of shape (batch, channels, height, width) or
+            (batch, channels, 1, height, width) for Image Edit models.
         index : int, optional
             Index for image ID encoding.
         h_offset : int, optional
@@ -953,6 +956,11 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         """
         from comfy.ldm.common_dit import pad_to_patch_size
         from einops import rearrange, repeat
+
+        # Handle 5D input for Image Edit models (batch, channels, 1, height, width)
+        # This happens when processing ref_latents in Qwen Image Edit
+        if x.ndim == 5:
+            x = x.squeeze(2)  # Remove middle dimension -> (batch, channels, height, width)
 
         bs, c, h_orig, w_orig = x.shape
         x = pad_to_patch_size(x, (self.patch_size, self.patch_size))
