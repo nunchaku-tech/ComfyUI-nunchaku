@@ -8,6 +8,7 @@ jobs:
     name: Build ComfyUI Desktop - PyTorch ${{ matrix.pytorch_version }}
     runs-on: windows-latest
     strategy:
+      max-parallel: 1
       matrix:
         pytorch_version: ['2.7', '2.8']
     steps:
