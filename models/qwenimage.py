@@ -4,6 +4,11 @@ This module implements the Nunchaku Qwen-Image model and related components.
 .. note::
 
     Inherits and modifies from https://github.com/comfyanonymous/ComfyUI/blob/v0.3.51/comfy/ldm/qwen_image/model.py
+
+.. warning::
+
+    There is a sage-attention dispatch bug that may cause black images until the upstream issue is fixed.
+    See: https://github.com/comfyanonymous/ComfyUI/issues/9773
 """
 
 import gc
@@ -11,8 +16,6 @@ from typing import Optional, Tuple
 
 import torch
 from comfy.ldm.flux.layers import EmbedND
-
-# todo: there is a sage-attention dispatch bug, users will see black images until https://github.com/comfyanonymous/ComfyUI/issues/9773 is fixed
 from comfy.ldm.modules.attention import optimized_attention_masked
 from comfy.ldm.qwen_image.model import (
     GELU,
