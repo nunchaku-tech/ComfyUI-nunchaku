@@ -955,7 +955,6 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         from einops import rearrange, repeat
 
         bs, c, h_orig, w_orig = x.shape
-        bs, c, h_orig, w_orig = x.shape
         x = pad_to_patch_size(x, (self.patch_size, self.patch_size))
 
         # CRITICAL: The key insight is that rearrange() creates patches for the ENTIRE padded tensor
