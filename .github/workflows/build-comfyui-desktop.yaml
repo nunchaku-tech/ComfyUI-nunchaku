@@ -58,19 +58,17 @@ jobs:
           Get-ChildItem -Path "..\desktop\dist" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
         shell: pwsh
         if: always()
-      - name: Find build artifacts
-        id: find_artifacts
+      - name: Copy artifacts to workspace
         run: |
-          $ARTIFACT_PATH = Get-ChildItem -Path "..\desktop\dist\Comfy-*-win.zip" | Select-Object -First 1 -ExpandProperty FullName
-          echo "artifact_path=$ARTIFACT_PATH" >> $env:GITHUB_OUTPUT
-          echo "Found artifact: $ARTIFACT_PATH"
+          New-Item -ItemType Directory -Force -Path "artifacts"
+          Copy-Item -Path "..\desktop\dist\Comfy-*-win.zip" -Destination "artifacts\" -Force
         shell: pwsh
         if: success()
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
-          path: ${{ steps.find_artifacts.outputs.artifact_path }}
+          path: artifacts/
           retention-days: 7
         if: success()
         # - name: Upload Artifact to Existing Release
