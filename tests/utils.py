@@ -2,7 +2,6 @@ import logging
 import os
 import shutil
 import tempfile
-from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -91,7 +90,7 @@ def prepare_inputs(inputs_dir: str):
 
     repo_id = "nunchaku-tech/test-data"
 
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory():
         for item in data["inputs"]:
             for file in item["files"]:
                 dst_path = inputs_dir / file
