@@ -21,7 +21,7 @@ try:
 
     # add known models
 
-    models_yaml_path = Path(__file__).parent.parent / "test_data" / "models.yaml"
+    models_yaml_path = Path(__file__).parent / "test_data" / "models.yaml"
     with open(models_yaml_path, "r") as f:
         nunchaku_models_yaml = yaml.safe_load(f)
 
