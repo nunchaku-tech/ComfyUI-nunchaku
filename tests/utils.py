@@ -1,17 +1,15 @@
 import logging
 import os
-import shutil
-import tempfile
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import requests
 import torch
 import yaml
 from comfy.model_downloader import add_known_models
 from comfy.model_downloader_types import HuggingFile
 from diffusers.utils import load_image
-from huggingface_hub import hf_hub_download
 from PIL import Image
 from torchmetrics.image import LearnedPerceptualImagePatchSimilarity, PeakSignalNoiseRatio
 from torchmetrics.multimodal import CLIPImageQualityAssessment
@@ -78,34 +76,27 @@ def set_nested_value(d: dict, key: str, value: Any):
     d[keys[-1]] = value
 
 
-def prepare_inputs(inputs_dir: str):
+def prepare_inputs(inputs_dir: os.PathLike[str]):
     """Downloads test input files from inputs.yaml to the specified directory."""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    inputs_yaml_path = os.path.join(current_dir, "..", "test_data", "inputs.yaml")
+    current_dir = Path(__file__).parent
+    inputs_yaml_path = current_dir.parent / "test_data" / "inputs.yaml"
     with open(inputs_yaml_path, "r") as f:
         data = yaml.safe_load(f)
 
-    inputs_dir = Path(inputs_dir)
+    if not isinstance(inputs_dir, str):
+        inputs_dir = Path(inputs_dir)
     inputs_dir.mkdir(parents=True, exist_ok=True)
 
-    repo_id = "nunchaku-tech/test-data"
-
-    with tempfile.TemporaryDirectory():
-        for item in data["inputs"]:
-            for file in item["files"]:
-                dst_path = inputs_dir / file
-
-                if dst_path.exists(follow_symlinks=True):
-                    continue
-
-                src_path = hf_hub_download(
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    filename=f"inputs/{file}",
-                )
-                src_path = Path(src_path)
-
-                try:
-                    os.symlink(src_path, dst_path)
-                except Exception:
-                    shutil.copyfile(src_path, dst_path)
+    for item in data.get("inputs", []):
+        base_url = item["base_url"]
+        for file in item["files"]:
+            dst_path = inputs_dir / file
+            if dst_path.exists():
+                continue
+            url = base_url.format(filename=file)
+            print(f"Downloading {file} from {url}...")
+            response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+            with open(dst_path, "wb") as f_out:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f_out.write(chunk)
