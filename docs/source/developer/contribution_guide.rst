@@ -33,9 +33,8 @@ follow these steps for a smooth and efficient contribution process.
       .. code-block:: shell
 
          cd ComfyUI-nunchaku
-         uv venv
+         uv venv  # Create a new virtual environment if you don't already have one
          uv pip install --torch-backend=auto "comfyui@https://github.com/hiddenswitch/ComfyUI.git"
-
          TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
          uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},pulid,dev]"
          uv pip install "comfyui_controlnet_aux@git+https://github.com/AppMana/comfyui_controlnet_aux.git"
