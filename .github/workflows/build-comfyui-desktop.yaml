@@ -61,14 +61,19 @@ jobs:
       - name: Copy artifacts to workspace
         run: |
           New-Item -ItemType Directory -Force -Path "artifacts"
-          Copy-Item -Path "..\desktop\dist\Comfy-*-win.zip" -Destination "artifacts\" -Force
+          Get-ChildItem -Path "..\desktop\dist\Comfy-*-win.zip" | ForEach-Object {
+            Write-Host "Copying $($_.FullName) to artifacts\"
+            Copy-Item -Path $_.FullName -Destination "artifacts\" -Force
+          }
+          Write-Host "Contents of artifacts folder:"
+          Get-ChildItem -Path "artifacts"
         shell: pwsh
         if: success()
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
-          path: artifacts/
+          path: artifacts/*.zip
           retention-days: 7
         if: success()
         # - name: Upload Artifact to Existing Release
