@@ -1,5 +1,5 @@
-Building ComfyUI Desktop EXE
-============================
+Building ComfyUI Desktop
+========================
 
 This document describes how to build the ComfyUI Desktop executable (EXE) on Windows systems.
 
