@@ -63,8 +63,8 @@ jobs:
           dir ..\desktop\dist
           mkdir artifacts
           for %%f in (..\desktop\dist\*.zip) do (
-            echo Renaming %%~nxf to ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-desktop-torch${{ matrix.pytorch_version }}-win.zip
-            move "%%f" "artifacts\ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-desktop-torch${{ matrix.pytorch_version }}-win.zip"
+            echo Renaming %%~nxf to ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip
+            move "%%f" "artifacts\ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip"
           )
           dir artifacts
         shell: cmd
