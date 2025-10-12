@@ -26,7 +26,9 @@ follow these steps for a smooth and efficient contribution process.
 
    a. Install `uv <https://docs.astral.sh/uv/getting-started/installation/>`__
 
-   b. Install test dependencies. The proper ``nunchaku`` binary will be selected based on your installed ``torch``.
+   b. Install test dependencies. The proper ``nunchaku`` binary will be selected based on your installed ``torch`` by default, or you can build `nunchaku` from source as an editable install.
+
+   **Option 1: Install published wheels (recommended for typical testing):**
 
       .. code-block:: shell
 
@@ -37,6 +39,10 @@ follow these steps for a smooth and efficient contribution process.
          TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
          uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},pulid,dev]"
          uv pip install "comfyui_controlnet_aux@git+https://github.com/AppMana/comfyui_controlnet_aux.git"
+
+   **Option 2: Build and install Nunchaku from source (for development):**
+
+      See :ref:`nunchaku:build-from-source` for detailed instructions on building and installing ``nunchaku`` from source for local development.
 
 🧹 Code Formatting with Pre-Commit
 ----------------------------------

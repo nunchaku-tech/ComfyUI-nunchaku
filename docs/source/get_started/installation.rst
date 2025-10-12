@@ -80,7 +80,7 @@ These instructions are adapted from the `ComfyUI LTS README <https://github.com/
        pip install uv
 
     Alternatively, if you prefer to install it system-wide or want the latest version, see the instructions at the `uv GitHub repository <https://github.com/astral-sh/uv#installation>`__.
-    
+
     For example, with Homebrew on macOS:
 
     .. code-block:: shell
@@ -88,7 +88,7 @@ These instructions are adapted from the `ComfyUI LTS README <https://github.com/
        brew install uv
 
     Or to install the pre-built binary (recommended for speed):
-    
+
     .. code-block:: shell
 
        curl -LsSf https://astral.sh/uv/install.sh | sh
