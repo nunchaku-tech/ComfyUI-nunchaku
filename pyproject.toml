@@ -32,7 +32,7 @@ optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-te
 optional-dependencies.dev = [
   "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git",
   # version < 3.13 required due to mediapipe
-  "comfyui-controlnet-aux @ git+https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git; python_version < '3.13'",
+  "comfyui-controlnet-aux @ git+https://github.com/AppMana/appmana-comfyui-nodes-controlnet-aux.git ; python_version < '3.13'",
   "image-gen-aux @ git+https://github.com/asomoza/image_gen_aux.git",
   "pytest",
   "pytest-asyncio==1.2",
