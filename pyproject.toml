@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 requires = [ "setuptools>=61", "wheel" ]
 
 [project]
-name = "comfyui_nunchaku"
+name = "comfyui-nunchaku"
 version = "1.0.2dev1"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
 license = { file = "LICENCE.txt" }
@@ -28,14 +28,32 @@ dependencies = [
   "tomli",
 ]
 
+optional-dependencies.ci = [
+  "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git@22575de",
+  "facexlib",
+  "image-gen-aux @ git+https://github.com/asomoza/image_gen_aux.gite08ae3d",
+  "insightface",
+  "onnxruntime",
+  "opencv-python",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-rerunfailures",
+  "timm",
+  "torchmetrics",
+]
 optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git" ]
 optional-dependencies.dev = [
   "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git",
+  "facexlib",
   "image-gen-aux @ git+https://github.com/asomoza/image_gen_aux.git",
+  "insightface",
+  "onnxruntime",
+  "opencv-python",
   "pre-commit",
   "pytest",
-  "pytest-asyncio==1.2",
+  "pytest-asyncio",
   "pytest-rerunfailures",
+  "timm",
   "torchmetrics",
 ]
 optional-dependencies.docs = [
@@ -54,13 +72,6 @@ optional-dependencies.docs = [
   "sphinxawesome-theme",
   "sphinxcontrib-mermaid",
   "sphinxext-rediraffe",
-]
-optional-dependencies.pulid = [
-  "facexlib",
-  "insightface",
-  "onnxruntime",
-  "opencv-python",
-  "timm",
 ]
 optional-dependencies.torch25 = [ "nunchaku==1.0.1+torch2.5; sys_platform!='darwin'", "torch>=2.5,<2.6" ]
 optional-dependencies.torch26 = [ "nunchaku==1.0.1+torch2.6; sys_platform!='darwin'", "torch>=2.6,<2.7" ]
