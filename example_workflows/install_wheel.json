@@ -63,8 +63,8 @@
         "Node name for S&R": "NunchakuWheelInstaller"
       },
       "widgets_values": [
+        "latest",
         "none",
-        "1.0.1.dev20250912",
         "install"
       ]
     },
@@ -86,7 +86,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "This workflow automatically installs the appropriate Nunchaku wheels from [**GitHub Releases**](https://github.com/nunchaku-tech/nunchaku/releases), [**Hugging Face**](https://huggingface.co/nunchaku-tech/nunchaku), or [**ModelScope**](https://modelscope.cn/models/nunchaku-tech/nunchaku).  \nAfter installation, please **restart ComfyUI**.\n\n- Selecting **latest** updates the version list and installs the newest release.  \n- If the automatic update does not work, you can manually download the version list from [here](https://nunchaku.tech/cdn/nunchaku_versions.json) and place it in `custom_nodes/ComfyUI-nunchaku`.\n\n**Note:** If both `version` and `dev_version` are specified, the development version takes priority."
+        "This node installs the appropriate Nunchaku wheels from [**GitHub Releases**](https://github.com/nunchaku-tech/nunchaku/releases), [**Hugging Face**](https://huggingface.co/nunchaku-tech/nunchaku), or [**ModelScope**](https://modelscope.cn/models/nunchaku-tech/nunchaku).\n\n**How to Use:**\n1.  **First Use:** Set the `mode` to **`update node`** and run the workflow. This will download the list of available versions.\n2.  **Refresh UI:** Press the **'r' key** on your keyboard to refresh the web UI. The version dropdowns will now be populated.\n3.  **Install:** Select your desired version, set the `mode` back to **`install`**, and run the workflow again.\n\nYou **must restart ComfyUI completely** after a successful installation.\n\n- **Troubleshooting:** If the update fails, you can manually download the version list from [here](https://nunchaku.tech/cdn/nunchaku_versions.json) and place the file named `nunchaku_versions.json` in the `custom_nodes/ComfyUI-nunchaku` directory.\n- **Note:** If `dev_version` is available and selected, it takes priority over the official `version`."
       ],
       "color": "#432",
       "bgcolor": "#653"
