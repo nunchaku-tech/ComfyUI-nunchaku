@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 requires = [ "setuptools>=61", "wheel" ]
 
 [project]
-name = "comfyui-nunchaku"
+name = "comfyui_nunchaku"
 version = "1.0.2dev1"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
 license = { file = "LICENCE.txt" }
@@ -53,27 +53,27 @@ optional-dependencies.torch28 = [ "nunchaku==1.0.1+torch2.8; sys_platform!='darw
 # when working with pre-release torch, we don't know what the version string will be, so let's omit it
 optional-dependencies.torchpre = [ "nunchaku==1.0.1+torch2.10; sys_platform!='darwin'" ]
 urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
-entry-points."comfyui.custom_nodes".nunchaku_comfyui = "nunchaku_comfyui"
+entry-points."comfyui.custom_nodes".comfyui_nunchaku = "comfyui_nunchaku"
 
 [tool.setuptools]
 package-dir = { "nunchaku_comfyui" = "." }
 packages = [
-  "nunchaku_comfyui",
-  "nunchaku_comfyui.mixins",
-  "nunchaku_comfyui.model_base",
-  "nunchaku_comfyui.model_configs",
-  "nunchaku_comfyui.models",
-  "nunchaku_comfyui.nodes",
-  "nunchaku_comfyui.nodes.lora",
-  "nunchaku_comfyui.nodes.models",
-  "nunchaku_comfyui.nodes.preprocessors",
-  "nunchaku_comfyui.nodes.tools",
-  "nunchaku_comfyui.wrappers",
+  "comfyui_nunchaku",
+  "comfyui_nunchaku.mixins",
+  "comfyui_nunchaku.model_base",
+  "comfyui_nunchaku.model_configs",
+  "comfyui_nunchaku.models",
+  "comfyui_nunchaku.nodes",
+  "comfyui_nunchaku.nodes.lora",
+  "comfyui_nunchaku.nodes.models",
+  "comfyui_nunchaku.nodes.preprocessors",
+  "comfyui_nunchaku.nodes.tools",
+  "comfyui_nunchaku.wrappers",
 ]
 
 [tool.setuptools.package-data]
-"nunchaku_comfyui" = [ "example_workflows/*.json" ]
-"nunchaku_comfyui.nodes.models" = [ "nodes/models/configs/*.json" ]
+"comfyui_nunchaku" = [ "example_workflows/*.json" ]
+"comfyui_nunchaku.nodes.models" = [ "nodes/models/configs/*.json" ]
 
 [tool.black]
 line-length = 120
