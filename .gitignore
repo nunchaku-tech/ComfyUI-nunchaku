@@ -210,3 +210,4 @@ cython_debug/
 *.ncu-rep
 nunchaku_versions.json
 *.lock
+workspace/

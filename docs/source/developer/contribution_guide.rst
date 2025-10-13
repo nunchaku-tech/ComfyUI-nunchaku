@@ -69,13 +69,13 @@ Running Tests
 .. code-block:: shell
 
    cd ComfyUI-nunchaku
-   HF_TOKEN=$YOUR_HF_TOKEN uv run pytest -v tests/ -x -vv
+   HF_TOKEN=$YOUR_HF_TOKEN pytest -v tests/ -x -vv
 
 To run only your newly added test, use the ``-k`` flag with your workflow folder name:
 
 .. code-block:: shell
 
-   HF_TOKEN=$YOUR_HF_TOKEN uv run pytest -v tests/ -x -vv -k "nunchaku-flux.1-schnell"
+   HF_TOKEN=$YOUR_HF_TOKEN pytest -v tests/ -x -vv -k "nunchaku-flux.1-schnell"
 
 .. note::
 
