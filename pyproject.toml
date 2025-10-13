@@ -32,17 +32,33 @@ optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-te
 optional-dependencies.dev = [
   "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git",
   "image-gen-aux @ git+https://github.com/asomoza/image_gen_aux.git",
+  "pre-commit",
   "pytest",
   "pytest-asyncio==1.2",
   "pytest-rerunfailures",
   "torchmetrics",
 ]
+optional-dependencies.docs = [
+  "breathe",
+  "furo",
+  "graphviz",
+  "ipykernel",
+  "jupyter",
+  "myst-parser",
+  "nbsphinx",
+  "sphinx",
+  "sphinx-book-theme",
+  "sphinx-copybutton",
+  "sphinx-rtd-theme",
+  "sphinx-tabs",
+  "sphinxawesome-theme",
+  "sphinxcontrib-mermaid",
+  "sphinxext-rediraffe",
+]
 optional-dependencies.pulid = [
   "facexlib",
   "insightface",
   "onnxruntime",
-  # todo: this should almost always be the headless version
-  # the ecosystem really needs an alternative to cv2, the way they have packaged things is chaos
   "opencv-python",
   "timm",
 ]
@@ -56,7 +72,7 @@ urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
 entry-points."comfyui.custom_nodes".comfyui_nunchaku = "comfyui_nunchaku"
 
 [tool.setuptools]
-package-dir = { "nunchaku_comfyui" = "." }
+package-dir = { "comfyui_nunchaku" = "." }
 packages = [
   "comfyui_nunchaku",
   "comfyui_nunchaku.mixins",
