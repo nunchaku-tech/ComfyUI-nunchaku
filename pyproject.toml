@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 requires = [ "setuptools>=61", "wheel" ]
 
 [project]
-name = "ComfyUI-nunchaku"
+name = "comfyui-nunchaku"
 version = "1.0.2dev1"
 description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
 license = { file = "LICENCE.txt" }
