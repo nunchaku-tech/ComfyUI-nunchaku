@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,8 @@ from nunchaku.utils import get_precision, is_turing
 
 from .case import Case, cases, ids
 from .utils import compute_metrics, prepare_inputs, prepare_models, set_nested_value
+
+logger = logging.getLogger(__name__)
 
 precision = get_precision()
 torch_dtype = torch.float16 if is_turing() else torch.bfloat16
@@ -45,7 +48,7 @@ async def test(case: Case, client: Comfy):
     outputs = await client.queue_prompt(prompt)
     save_image_node_id = next(key for key in prompt if prompt[key].class_type == "SaveImage")
     path = outputs[save_image_node_id]["images"][0]["abs_path"]
-    print(path)
+    logger.info("Generated image path: %s", path)
 
     clip_iqa, lpips, psnr = compute_metrics(path, case.ref_image_url)
 

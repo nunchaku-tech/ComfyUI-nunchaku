@@ -43,6 +43,7 @@ optional-dependencies.ci = [
 ]
 optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git" ]
 optional-dependencies.dev = [
+  "black",
   "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git",
   "facexlib",
   "image-gen-aux @ git+https://github.com/asomoza/image_gen_aux.git",

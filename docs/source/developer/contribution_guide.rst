@@ -34,9 +34,8 @@ follow these steps for a smooth and efficient contribution process.
 
          cd ComfyUI-nunchaku
          uv venv  # Create a new virtual environment if you don't already have one
-         uv pip install --torch-backend=auto "comfyui@https://github.com/hiddenswitch/ComfyUI.git"
          TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
-         uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},pulid,dev]"
+         uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},dev]"
 
       **Option 2: Build and install Nunchaku from source (for development):**
 
