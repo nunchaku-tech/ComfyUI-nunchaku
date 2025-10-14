@@ -9,37 +9,54 @@ follow these steps for a smooth and efficient contribution process.
 🚀 Setting Up Test Environment
 ------------------------------
 
-1. Fork and Clone the Repository
+**1. Fork and Clone the Repository**
 
-   .. note::
+New contributors should fork the repository to their GitHub account and clone locally:
 
-      As a new contributor, you won't have write access to the repository.
-      Please fork the repository to your own GitHub account, then clone your fork locally:
+.. code-block:: shell
 
-      .. code-block:: shell
+   git clone https://github.com/<your_username>/ComfyUI-nunchaku.git
 
-         git clone https://github.com/<your_username>/ComfyUI-nunchaku.git
+**2. Install Dependencies**
 
-2. Set Up ComfyUI Test Environment
+Install the ``uv`` package manager and project dependencies:
 
-   After installing Nunchaku, set up the test environment:
+.. code-block:: shell
 
-   a. Install `uv <https://docs.astral.sh/uv/getting-started/installation/>`__
+   cd ComfyUI-nunchaku
+   pip install uv
+   uv venv # Create a new virtual environment if you don't already have one
 
-   b. Install test dependencies. The proper ``nunchaku`` binary will be selected based on your installed ``torch`` by default, or you can build `nunchaku` from source as an editable install.
+Choose an installation method based on your development needs:
 
-      **Option 1: Install published wheels (recommended for typical testing):**
+**Option A: Fresh Installation with Published Wheels**
 
-      .. code-block:: shell
+.. code-block:: shell
 
-         cd ComfyUI-nunchaku
-         uv venv  # Create a new virtual environment if you don't already have one
-         TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
-         uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},dev]"
+   TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
+   uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},dev]"
 
-      **Option 2: Build and install Nunchaku from source (for development):**
+**Option B: Build from Source (For Development)**
 
-      See :ref:`Build from Source <nunchaku:build-from-source>` for detailed instructions on building and installing ``nunchaku`` from source for local development.
+See :ref:`Build from Source <nunchaku:build-from-source>` for building ``nunchaku`` from source. Then install the environment:
+
+.. code-block:: shell
+
+   uv pip install --torch-backend=auto -e ".[dev]"
+
+**3. Create Test Workspace**
+
+Set up an isolated testing workspace outside the repository:
+
+.. code-block:: shell
+
+   cd ..
+   mkdir -p test-workspace && cd test-workspace
+   ln -s ../ComfyUI-nunchaku/tests tests
+   ln -s ../ComfyUI-nunchaku/test_data test_data
+   python ../ComfyUI-nunchaku/scripts/setup_custom_nodes.py
+
+This creates a clean environment with symlinks to test files and installs required ComfyUI custom nodes.
 
 🧹 Code Formatting with Pre-Commit
 ----------------------------------
@@ -48,7 +65,7 @@ We enforce code style using `pre-commit <https://pre-commit.com/>`__ hooks. Plea
 
 .. code-block:: shell
 
-   pip install pre-commit
+   uv pip install pre-commit
    pre-commit install
    pre-commit run --all-files
 
@@ -68,7 +85,7 @@ Running Tests
 
 .. code-block:: shell
 
-   cd ComfyUI-nunchaku
+   cd test-workspace
    HF_TOKEN=$YOUR_HF_TOKEN pytest -v tests/ -x -vv
 
 To run only your newly added test, use the ``-k`` flag with your workflow folder name:
@@ -159,6 +176,24 @@ To add a test case:
    - Register the URLs in `test_data/inputs.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/inputs.yaml>`__
    - If new models are required, update `scripts/download_models.py <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/scripts/download_models.py>`__ and `test_data/models.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/models.yaml>`__
 
-5. **Install Additional Nodes (if needed)**
+5. **Register Additional Custom Nodes (if needed)**
 
-   If your test requires additional custom nodes, modify `.github/workflows/pr-test.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/.github/workflows/pr-test.yaml>`__ to install the required nodes and their dependencies in the CI environment.
+   If your test requires additional ComfyUI custom nodes, register them in `test_data/custom_nodes.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/custom_nodes.yaml>`__:
+
+   .. code-block:: yaml
+
+      - name: ComfyUI-CustomNode
+        url: https://github.com/username/ComfyUI-CustomNode
+        branch: abcdefg # commit hash or branch name
+
+   The ``scripts/setup_custom_nodes.py`` script automatically processes this configuration to:
+
+   - Clone custom node repositories into the test workspace
+   - Install Python dependencies from each node's ``requirements.txt`` (if present)
+   - Set up the ComfyUI environment with all required nodes
+
+   **Dependency Management:**
+
+   By default, dependencies are installed from the custom node's ``requirements.txt``. To override this, create a file at ``test_data/dependencies/{node_name}.txt`` with your custom requirements. This is useful when the default requirements conflict with the test environment or need version pinning.
+
+   This script runs automatically during test workspace setup (Step 3).
