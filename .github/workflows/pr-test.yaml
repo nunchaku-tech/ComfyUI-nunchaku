@@ -39,9 +39,8 @@ jobs:
     if: |
       (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
       (github.event_name == 'workflow_dispatch')
-    env: {}
-    # todo: you probably want to set HF_HOME instead
-    # COMFYUI_MODELS_ROOT: "/home/nunchaku/comfyui_models"
+    env:
+      COMFYUI_MODELS_ROOT: "/home/nunchaku/comfyui_models"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,28 +49,62 @@ jobs:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
       - name: Show current commit
         run: git log -1 --oneline
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Set up Python
         run: |
           which python
-          echo "Setting up Python with uv"
-          uv venv --python=3.12
-      - name: Install ComfyUI
-        run: |
-          uv pip install --torch-backend=auto "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git@f205eb704eed49d5696012849351724fd25c2a7d"
+          echo "Setting up Python with Conda"
+          conda create -n test_env python=3.13 -y
       - name: Install Nunchaku
         run: |
-          # until we have metadata pep, this is just what we have to do
-          TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
-          uv pip install --torch-backend=auto ".[${TORCH_VERSION},pulid,dev]"
-      - name: Install comfyui_controlnet_aux
+          source $(conda info --base)/etc/profile.d/conda.sh
+          conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
+          which python
+          conda install -c conda-forge gxx=11 gcc=11 libsndfile -y
+          rm -rf nunchaku
+          git clone --recurse-submodules https://github.com/nunchaku-tech/nunchaku.git
+          cd nunchaku
+          pip install uv
+          uv pip install torch==2.8 torchvision==0.23 --index-url https://download.pytorch.org/whl/cu128
+          uv pip install -e ".[ci]"
+      - name: Setup ComfyUI-Nunchaku
         run: |
-          uv pip install "comfyui_controlnet_aux@git+https://github.com/AppMana/comfyui_controlnet_aux.git"
+          source $(conda info --base)/etc/profile.d/conda.sh
+          conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
+          which python
+          uv pip install --torch-backend=auto -e ".[ci]"
+          pwd
+          cd ..
+          rm -rf test-workspace
+          mkdir -p test-workspace
+          cd test-workspace
+          mkdir -p "${COMFYUI_MODELS_ROOT}"
+          ln -s "${COMFYUI_MODELS_ROOT}" models
+          ln -s ../ComfyUI-nunchaku/tests tests
+          ln -s ../ComfyUI-nunchaku/test_data test_data
+          mkdir -p custom_nodes
+          cd custom_nodes
+          ln -s ../../ComfyUI-nunchaku
+          git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
+          cd comfyui_controlnet_aux
+          git checkout cc6b232
+          cd ..
+          git clone https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy.git
+          cd ComfyUI-InpaintEasy
+          pip install -r requirements.txt
+          git checkout d631a03
+          cd ..
+          cd ..
+          python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
+          mkdir -p input
+          python custom_nodes/ComfyUI-nunchaku/scripts/download_inputs.py
       - name: Run tests
         run: |
-          uv run pytest tests/ -x -vv
-      - name: Clean up
+          source $(conda info --base)/etc/profile.d/conda.sh
+          conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
+          pwd
+          cd ../ComfyUI
+          pytest tests/test_workflows.py -x -vv --reruns 2 --reruns-delay 0
+      - name: clean up
         if: always()
         run: |
           cd ..
