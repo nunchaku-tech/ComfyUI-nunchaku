@@ -13,7 +13,6 @@ on:
       - 'licence.txt'
       - 'pyproject.toml'
       - 'requirements.txt'
-      - 'requirements-pulid.txt'
       - 'README.md'
   workflow_dispatch:
     inputs:
