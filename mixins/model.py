@@ -2,9 +2,11 @@
 This module provides a mixin class for Nunchaku models. It is intended to be inherited by nunchaku models.
 """
 
-from warnings import warn
+import logging
 
 import torch
+
+logger = logging.getLogger(__name__)
 
 
 class NunchakuModelMixin:
@@ -89,6 +91,6 @@ class NunchakuModelMixin:
             )
         if self.offload:
             if device_arg_or_kwarg_present:
-                warn("Skipping moving the model to GPU as offload is enabled", UserWarning)
+                logger.debug("Skipping moving the model as CPU offload is enabled")
                 return self
         return self.to(*args, **kwargs)

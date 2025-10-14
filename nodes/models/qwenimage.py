@@ -7,7 +7,6 @@ import logging
 import os
 
 import comfy.utils
-import folder_paths
 import torch
 from comfy import model_detection, model_management
 
@@ -15,6 +14,7 @@ from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_pre
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 from ...model_patcher import NunchakuModelPatcher
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -130,7 +130,7 @@ class NunchakuQwenImageDiTLoader:
         return {
             "required": {
                 "model_name": (
-                    folder_paths.get_filename_list("diffusion_models"),
+                    get_filename_list("diffusion_models"),
                     {"tooltip": "The Nunchaku Qwen-Image model."},
                 ),
                 "cpu_offload": (
@@ -195,7 +195,7 @@ class NunchakuQwenImageDiTLoader:
         tuple
             A tuple containing the loaded and patched model.
         """
-        model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
+        model_path = get_full_path_or_raise("diffusion_models", model_name)
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
 
         if cpu_offload == "auto":

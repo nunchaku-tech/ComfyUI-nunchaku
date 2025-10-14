@@ -1,0 +1,26 @@
+torch
+importlib_metadata
+huggingface_hub
+scipy
+opencv-python>=4.7.0.72
+filelock
+numpy
+Pillow
+einops
+torchvision
+pyyaml
+scikit-image
+python-dateutil
+# mediapipe
+# svglib
+fvcore
+yapf
+omegaconf
+ftfy
+addict
+yacs
+yapf
+trimesh[easy]
+albumentations
+scikit-learn
+matplotlib

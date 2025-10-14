@@ -1,6 +1,6 @@
 import os
 
-import folder_paths
+from ..utils import folder_paths
 
 
 def set_extra_config_model_path(extra_config_models_dir_key, models_dir_name: str):

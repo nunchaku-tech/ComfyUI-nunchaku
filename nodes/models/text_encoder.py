@@ -9,12 +9,15 @@ import types
 from typing import Callable
 
 import comfy
-import folder_paths
+import comfy.sd
+import comfy.sd1_clip
 import torch
 from comfy.text_encoders.flux import FluxClipModel
 from torch import nn
 
 from nunchaku import NunchakuT5EncoderModel
+
+from ..utils import folder_paths, get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -56,8 +59,8 @@ class NunchakuTextEncoderLoaderV2:
         return {
             "required": {
                 "model_type": (["flux.1"],),
-                "text_encoder1": (folder_paths.get_filename_list("text_encoders"),),
-                "text_encoder2": (folder_paths.get_filename_list("text_encoders"),),
+                "text_encoder1": (get_filename_list("text_encoders"),),
+                "text_encoder2": (get_filename_list("text_encoders"),),
                 "t5_min_length": (
                     "INT",
                     {
@@ -93,8 +96,8 @@ class NunchakuTextEncoderLoaderV2:
         tuple
             Tuple containing the loaded CLIP model.
         """
-        text_encoder_path1 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder1)
-        text_encoder_path2 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder2)
+        text_encoder_path1 = get_full_path_or_raise("text_encoders", text_encoder1)
+        text_encoder_path2 = get_full_path_or_raise("text_encoders", text_encoder2)
         if model_type == "flux.1":
             clip_type = comfy.sd.CLIPType.FLUX
         else:
@@ -449,8 +452,8 @@ class NunchakuTextEncoderLoader:
         return {
             "required": {
                 "model_type": (["flux"],),
-                "text_encoder1": (folder_paths.get_filename_list("text_encoders"),),
-                "text_encoder2": (folder_paths.get_filename_list("text_encoders"),),
+                "text_encoder1": (get_filename_list("text_encoders"),),
+                "text_encoder2": (get_filename_list("text_encoders"),),
                 "t5_min_length": (
                     "INT",
                     {
@@ -517,8 +520,8 @@ class NunchakuTextEncoderLoader:
             "Nunchaku Text Encoder Loader will be deprecated in v0.4. "
             "Please use the Nunchaku Text Encoder Loader V2 node instead."
         )
-        text_encoder_path1 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder1)
-        text_encoder_path2 = folder_paths.get_full_path_or_raise("text_encoders", text_encoder2)
+        text_encoder_path1 = get_full_path_or_raise("text_encoders", text_encoder1)
+        text_encoder_path2 = get_full_path_or_raise("text_encoders", text_encoder2)
         if model_type == "flux":
             clip_type = comfy.sd.CLIPType.FLUX
         else:

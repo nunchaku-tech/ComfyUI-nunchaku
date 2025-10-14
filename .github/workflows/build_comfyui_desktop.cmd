@@ -75,6 +75,7 @@ echo Rebuilding requirements (windows_nvidia.compiled)...
 assets\uv\win\uv.exe pip compile assets\ComfyUI\requirements.txt ^
 assets\ComfyUI\custom_nodes\ComfyUI-Manager\requirements.txt ^
 assets\ComfyUI\custom_nodes\ComfyUI-nunchaku\requirements.txt ^
+assets\ComfyUI\custom_nodes\ComfyUI-nunchaku\requirements_pulid.txt ^
 --emit-index-annotation --emit-index-url --index-strategy unsafe-best-match ^
 -o assets\requirements\windows_nvidia.compiled ^
 --override assets\override.txt ^

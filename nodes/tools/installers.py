@@ -1,6 +1,7 @@
 """
 This module provides an advanced utility node for installing the Nunchaku Python wheel.
 It operates with a 100% offline startup using a local cache file ('nunchaku_versions.json').
+The online update URL for the version file is: https://nunchaku.tech/cdn/nunchaku_versions.json
 The node features separate dropdowns for official and development versions. Selecting
 'latest' triggers an online update of the local version lists from a centralized
 CDN, ensuring a simple, reliable, and error-free user experience for everyone.
