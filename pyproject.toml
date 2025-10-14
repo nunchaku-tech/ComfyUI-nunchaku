@@ -20,11 +20,16 @@ classifiers = [
 dependencies = [
   "accelerate>=1.10",
   "diffusers>=0.35",
+  "facexlib",
   "huggingface-hub>=0.34",
+  "insightface",
+  "onnxruntime",
+  "opencv-python",
   "peft>=0.17",
   "protobuf",
   "pyyaml",
   "sentencepiece",
+  "timm",
   "tomli",
 ]
 
