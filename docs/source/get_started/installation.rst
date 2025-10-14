@@ -98,29 +98,17 @@ These instructions are adapted from the `ComfyUI LTS README <https://github.com/
 
     .. code-block:: shell
 
-       mkdir ComfyUI_Workspace
-       cd ComfyUI_Workspace
+       mkdir ComfyUI-Workspace
+       cd ComfyUI-Workspace
        uv venv
 
-3.  Install ComfyUI LTS. This will automatically detect and install the correct PyTorch version for your hardware.
-
-    .. code-block:: shell
-
-       uv pip install --torch-backend=auto "comfyui@git+https://github.com/hiddenswitch/ComfyUI.git"
-
-4.  Install Nunchaku.
+3.  Install Nunchaku.
 
     You are using a specific version of PyTorch. To get the right dependencies, specify it as an extra when installing Nunchaku. For example, for PyTorch 2.8:
 
     .. code-block:: shell
 
        uv pip install "nunchaku[torch28]@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
-
-    To include ``pulid`` support, specify ``nunchaku[pulid]``. For example, when using ``torch==2.8.0+cu128``:
-
-    .. code-block:: shell
-
-       uv pip install "nunchaku[torch28,pulid]@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
 
 To run ComfyUI, execute the following from your workspace directory:
 
