@@ -105,7 +105,7 @@ When contributing new features or bug fixes, you must register a new test in the
 
 To add a test case:
 
-1. **Create a Workflow Folder**
+**1. Create a Workflow Folder**
 
    Create a new folder in ``tests/workflows/`` with a descriptive name (e.g., ``nunchaku-flux.1-schnell``). This folder must contain four JSON files:
 
@@ -118,7 +118,7 @@ To add a test case:
 
       Both ``ref.json`` and ``workflow.json`` are for backup purposes, making it easier for future maintenance, development, testing, and debugging.
 
-2. **Create the API Workflow**
+**2. Create the API Workflow**
 
    In ComfyUI, after designing your workflow, export it using ``Export (API)`` and save it as ``api.json`` (see example below).
 
@@ -126,7 +126,7 @@ To add a test case:
       :alt: ComfyUI Export API Example
       :align: center
 
-3. **Configure Test Cases**
+**3. Configure Test Cases**
 
    Create ``test_cases.json`` to define test parameters. You can override variables in ``api.json`` using the ``inputs`` field. Here's an example:
 
@@ -168,7 +168,7 @@ To add a test case:
 
    Run your test locally first (see :ref:`running-tests`). Use the local results as reference values. If you can only test one precision type (int4 or fp4), you can use the same reference values for both.
 
-4. **Add Additional Test Data (if needed)**
+**4. Add Additional Test Data (if needed)**
 
    If your test requires additional input images or models:
 
@@ -176,7 +176,7 @@ To add a test case:
    - Register the URLs in `test_data/inputs.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/inputs.yaml>`__
    - If new models are required, update `scripts/download_models.py <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/scripts/download_models.py>`__ and `test_data/models.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/models.yaml>`__
 
-5. **Register Additional Custom Nodes (if needed)**
+**5. Register Additional Custom Nodes (if needed)**
 
    If your test requires additional ComfyUI custom nodes, register them in `test_data/custom_nodes.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/custom_nodes.yaml>`__:
 
