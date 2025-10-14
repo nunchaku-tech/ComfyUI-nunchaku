@@ -33,7 +33,8 @@ jobs:
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate nunchaku-docs || { echo "Failed to activate conda env"; exit 1; }
           which python
-          conda install -c conda-forge gxx=11 gcc=11
+          conda install -c conda-forge gxx=11 gcc=11 libsndfile -y
+          pip install uv
           echo "Installing dependencies"
           cd ..
           git clone https://github.com/nunchaku-tech/nunchaku.git
@@ -41,18 +42,13 @@ jobs:
           git log -1 --oneline
           git submodule init
           git submodule update
-          pip install -e ".[dev,docs]"
+          uv pip install -e ".[dev,docs]"
       - name: Install ComfyUI
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate nunchaku-docs || { echo "Failed to activate conda env"; exit 1; }
           which python
-          pwd
-          cd ..
-          ln -s ComfyUI-nunchaku comfyui_nunchaku
-          pip install comfy-cli
-          yes | comfy --here install --nvidia --skip-torch-or-directml --version 0.3.60
-          cd ComfyUI
+          uv pip install -e ".[dev,docs]"
       - name: Build docs
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
