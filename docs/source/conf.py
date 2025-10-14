@@ -7,11 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import re
-import sys
 import tomllib
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 project = "ComfyUI-nunchaku"
 copyright = "2025, Nunchaku Team"
