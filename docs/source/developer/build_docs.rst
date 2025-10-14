@@ -6,7 +6,11 @@ Follow this guide to build the ComfyUI-nunchaku documentation locally using Sphi
 Step 1: Set Up the Environment
 ------------------------------
 
-If you haven't installed Nunchaku yet, run the following command to install ``ComfyUI-nunchaku`` with pre-compiled nunchaku wheels:
+Install the required dependencies for building the documentation.
+
+**Option A: Fresh Installation**
+
+Install ``ComfyUI-nunchaku`` in editable mode with pre-compiled nunchaku wheels:
 
 .. code-block:: shell
 
@@ -15,7 +19,11 @@ If you haven't installed Nunchaku yet, run the following command to install ``Co
     TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
     uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},dev,docs]"
 
-If you already have ``nunchaku`` installed, run the following command to install the documentation dependencies:
+This command installs the ``uv`` package manager, detects your PyTorch version, and installs all development and documentation dependencies.
+
+**Option B: Existing Installation**
+
+If ``nunchaku`` is already installed, install only the documentation dependencies:
 
 .. code-block:: shell
 
