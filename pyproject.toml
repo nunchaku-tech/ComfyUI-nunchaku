@@ -170,6 +170,5 @@ requires-dist = [
   "protobuf",
   "sentencepiece",
   "torchvision>=0.20",
-  # 4.53 shouldn't be used due to OpenTelemetry problems
-  "transformers>=4.54,<4.57",
+  "transformers>=4.54",
 ]
