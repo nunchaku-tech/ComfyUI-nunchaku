@@ -83,7 +83,7 @@ def prepare_inputs(inputs_dir: os.PathLike[str]):
     with open(inputs_yaml_path, "r") as f:
         data = yaml.safe_load(f)
 
-    if not isinstance(inputs_dir, str):
+    if isinstance(inputs_dir, str):
         inputs_dir = Path(inputs_dir)
     inputs_dir.mkdir(parents=True, exist_ok=True)
 
