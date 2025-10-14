@@ -92,7 +92,7 @@ def main():
     # Define paths
     custom_nodes_yaml = project_root / "test_data" / "custom_nodes.yaml"
     dependencies_dir = project_root / "test_data" / "dependencies"
-    custom_nodes_dir = project_root / "custom_nodes"
+    custom_nodes_dir = Path("custom_nodes")
 
     # Verify required files exist
     if not custom_nodes_yaml.exists():
