@@ -29,6 +29,109 @@ from nunchaku.ops.fused import fused_gelu_mlp
 from ..mixins.model import NunchakuModelMixin
 
 
+class LoRAConfigContainer(nn.Module):
+    """
+    Lightweight container for LoRA configuration.
+
+    This class acts as a transparent proxy to the transformer,
+    storing only the LoRA configuration separately for each model copy.
+    All method calls and attribute access are forwarded to the transformer.
+
+    This design avoids the problems encountered with full wrapper implementations:
+    - No need to customize forward() for parameter name conversion
+    - No need to handle 5D/4D dimension mismatches
+    - No need to implement to_safely() and other ComfyUI methods
+    - No type checking failures
+
+    Inherits from nn.Module to satisfy PyTorch's module hierarchy requirements.
+
+    Attributes
+    ----------
+    _transformer : NunchakuQwenImageTransformer2DModel
+        The shared transformer instance (contains LoRA cache).
+    _lora_config_list : list
+        Independent LoRA configuration for this container.
+
+    Examples
+    --------
+    >>> transformer = NunchakuQwenImageTransformer2DModel(...)
+    >>> container = LoRAConfigContainer(transformer)
+    >>> container._lora_config_list.append(("path/to/lora.safetensors", 1.0))
+    >>> # All other attributes/methods transparently forwarded to transformer
+    >>> output = container(x, timestep, context, ...)  # Calls transformer's forward
+    """
+
+    def __init__(self, transformer):
+        """
+        Initialize the container with a transformer instance.
+
+        Parameters
+        ----------
+        transformer : NunchakuQwenImageTransformer2DModel
+            The transformer to wrap.
+        """
+        super().__init__()
+        # Use object.__setattr__ to bypass nn.Module's __setattr__ for private attributes
+        object.__setattr__(self, "_transformer", transformer)
+        object.__setattr__(self, "_lora_config_list", [])
+
+    def __getattr__(self, name):
+        """
+        Forward all attribute access to the transformer.
+
+        This makes the container transparent for all operations
+        except accessing _transformer and _lora_config_list.
+
+        Note: This is called AFTER checking self.__dict__ and self.__class__.__dict__,
+        so it won't interfere with nn.Module's internal attributes.
+        """
+        # Avoid recursion for _transformer
+        if name == "_transformer":
+            return object.__getattribute__(self, "_transformer")
+        return getattr(object.__getattribute__(self, "_transformer"), name)
+
+    def __setattr__(self, name, value):
+        """
+        Store private attributes in container, everything else in transformer.
+
+        Private attributes (starting with '_') are stored in the container itself.
+        All other attributes are forwarded to the transformer.
+        """
+        if name.startswith("_"):
+            object.__setattr__(self, name, value)
+        else:
+            setattr(object.__getattribute__(self, "_transformer"), name, value)
+
+    def forward(self, *args, **kwargs):
+        """
+        Forward pass - handles LoRA composition then delegates to transformer.
+
+        This is the entry point when ComfyUI calls the model.
+        We inject the LoRA config into the transformer before calling it.
+        """
+        # Temporarily inject LoRA config into transformer for this forward pass
+        transformer = object.__getattribute__(self, "_transformer")
+        lora_config_list = object.__getattribute__(self, "_lora_config_list")
+
+        # Save original config (if any)
+        original_config = getattr(transformer, "_lora_config_list", None)
+
+        # Inject our config
+        transformer._lora_config_list = lora_config_list
+
+        try:
+            # Call transformer's forward
+            result = transformer(*args, **kwargs)
+        finally:
+            # Restore original config
+            if original_config is not None:
+                transformer._lora_config_list = original_config
+            elif hasattr(transformer, "_lora_config_list"):
+                delattr(transformer, "_lora_config_list")
+
+        return result
+
+
 class NunchakuGELU(GELU):
     """
     GELU activation with a quantized linear projection.
@@ -148,6 +251,72 @@ class NunchakuFeedForward(FeedForward):
             for module in self.net:
                 hidden_states = module(hidden_states)
             return hidden_states
+
+    def update_lora_params(self, lora_dict: dict[str, torch.Tensor]):
+        """
+        Update LoRA parameters for the feed-forward network.
+        """
+
+        # Helper function to apply LoRA to a SVDQW4A4Linear layer
+        def apply_lora_to_linear(linear_layer, lora_dict, layer_prefix):
+            lora_down_key = None
+            lora_up_key = None
+
+            # Find lora_down and lora_up for this layer
+            for k in lora_dict.keys():
+                if layer_prefix in k:
+                    if "lora_down" in k:
+                        lora_down_key = k
+                    elif "lora_up" in k:
+                        lora_up_key = k
+
+            if lora_down_key is None or lora_up_key is None:
+                return False
+
+            lora_down_packed = lora_dict[lora_down_key]
+            lora_up_packed = lora_dict[lora_up_key]
+
+            # The LoRA weights are already merged with original low-rank branches in the converter
+            # Just directly apply them
+            device = linear_layer.proj_down.device
+            dtype = linear_layer.proj_down.dtype
+
+            # Directly replace parameters with merged weights
+            linear_layer.proj_down.data = lora_down_packed.to(device=device, dtype=dtype)
+            linear_layer.proj_up.data = lora_up_packed.to(device=device, dtype=dtype)
+            linear_layer.rank = lora_down_packed.shape[1]
+
+            return True
+
+        # Apply LoRA to each SVDQW4A4Linear layer in the network
+        for i, module in enumerate(self.net):
+            if isinstance(module, SVDQW4A4Linear):
+                apply_lora_to_linear(module, lora_dict, f"net.{i}")
+            elif (
+                isinstance(module, NunchakuGELU) and hasattr(module, "proj") and isinstance(module.proj, SVDQW4A4Linear)
+            ):
+                # For GELU with proj attribute
+                apply_lora_to_linear(module.proj, lora_dict, f"net.{i}.proj")
+
+    def restore_original_params(self):
+        """
+        Restore original parameters for all quantized linear layers in the feed-forward network.
+        """
+
+        def restore_linear_layer(linear_layer, layer_prefix):
+            if hasattr(linear_layer, "_original_proj_down"):
+                linear_layer.proj_down = linear_layer._original_proj_down
+                linear_layer.proj_up = linear_layer._original_proj_up
+                linear_layer.rank = linear_layer._original_rank
+
+        # Restore parameters for each SVDQW4A4Linear layer
+        for i, module in enumerate(self.net):
+            if isinstance(module, SVDQW4A4Linear):
+                restore_linear_layer(module, f"net.{i}")
+            elif (
+                isinstance(module, NunchakuGELU) and hasattr(module, "proj") and isinstance(module.proj, SVDQW4A4Linear)
+            ):
+                restore_linear_layer(module.proj, f"net.{i}.proj")
 
 
 class Attention(nn.Module):
@@ -319,6 +488,88 @@ class Attention(nn.Module):
         txt_attn_output = self.to_add_out(txt_attn_output)
 
         return img_attn_output, txt_attn_output
+
+    def update_lora_params(self, lora_dict: dict[str, torch.Tensor]):
+        """
+        Update LoRA parameters for the attention module.
+
+        This applies LoRA by concatenating LoRA projections with existing low-rank projections
+        in SVDQW4A4Linear layers.
+        """
+
+        # Helper function to apply LoRA to a SVDQW4A4Linear layer
+        def apply_lora_to_linear(linear_layer, lora_dict, layer_prefix):
+            lora_down_key = None
+            lora_up_key = None
+
+            # Find lora_down/lora_up (Nunchaku format) or lora_A/lora_B (Diffusers format)
+            for k in lora_dict.keys():
+                if layer_prefix in k:
+                    if "lora_down" in k or "lora_A" in k:
+                        lora_down_key = k
+                    elif "lora_up" in k or "lora_B" in k:
+                        lora_up_key = k
+
+            if lora_down_key is None or lora_up_key is None:
+                return False  # No LoRA for this layer
+
+            lora_down_packed = lora_dict[lora_down_key]
+            lora_up_packed = lora_dict[lora_up_key]
+
+            # The LoRA weights are already packed and merged in the converter
+            # Directly replace proj_down and proj_up (following official implementation)
+            # The LoRA weights are already merged with original low-rank branches in the converter
+            # Just directly apply them
+            device = linear_layer.proj_down.device
+            dtype = linear_layer.proj_down.dtype
+
+            # Directly replace parameters with merged weights
+            linear_layer.proj_down.data = lora_down_packed.to(device=device, dtype=dtype)
+            linear_layer.proj_up.data = lora_up_packed.to(device=device, dtype=dtype)
+            linear_layer.rank = lora_down_packed.shape[1]
+
+            return True
+
+        # Apply LoRA to each quantized linear layer
+        applied = False
+        if isinstance(self.to_qkv, SVDQW4A4Linear):
+            applied |= apply_lora_to_linear(self.to_qkv, lora_dict, "to_qkv")
+
+        if isinstance(self.add_qkv_proj, SVDQW4A4Linear):
+            applied |= apply_lora_to_linear(self.add_qkv_proj, lora_dict, "add_qkv_proj")
+
+        if isinstance(self.to_out[0], SVDQW4A4Linear):
+            applied |= apply_lora_to_linear(self.to_out[0], lora_dict, "to_out.0")
+
+        if isinstance(self.to_add_out, SVDQW4A4Linear):
+            applied |= apply_lora_to_linear(self.to_add_out, lora_dict, "to_add_out")
+
+        # Summary log disabled - will show overall count instead
+        return applied
+
+    def restore_original_params(self):
+        """
+        Restore original parameters for all quantized linear layers in the attention module.
+        """
+
+        def restore_linear_layer(linear_layer, layer_prefix):
+            if hasattr(linear_layer, "_original_proj_down"):
+                linear_layer.proj_down = linear_layer._original_proj_down
+                linear_layer.proj_up = linear_layer._original_proj_up
+                linear_layer.rank = linear_layer._original_rank
+
+        # Restore parameters for each quantized linear layer
+        if isinstance(self.to_qkv, SVDQW4A4Linear):
+            restore_linear_layer(self.to_qkv, "to_qkv")
+
+        if isinstance(self.add_qkv_proj, SVDQW4A4Linear):
+            restore_linear_layer(self.add_qkv_proj, "add_qkv_proj")
+
+        if isinstance(self.to_out[0], SVDQW4A4Linear):
+            restore_linear_layer(self.to_out[0], "to_out.0")
+
+        if isinstance(self.to_add_out, SVDQW4A4Linear):
+            restore_linear_layer(self.to_add_out, "to_add_out")
 
 
 class NunchakuQwenImageTransformerBlock(nn.Module):
@@ -502,6 +753,51 @@ class NunchakuQwenImageTransformerBlock(nn.Module):
 
         return encoder_hidden_states, hidden_states
 
+    def update_lora_params(self, lora_dict: dict):
+        """
+        Update LoRA parameters for the transformer block.
+
+        Directly applies LoRA to attention and MLP layers by calling their update methods.
+
+        Parameters
+        ----------
+        lora_dict : dict
+            Dictionary containing LoRA weights for this block in Nunchaku format (lora_down/lora_up).
+        """
+        # Apply LoRA to attention
+        if hasattr(self.attn, "update_lora_params"):
+            attn_lora = {k: v for k, v in lora_dict.items() if "attn" in k}
+            if attn_lora:
+                self.attn.update_lora_params(attn_lora)
+
+        # Apply LoRA to image stream MLP
+        if hasattr(self.img_mlp, "update_lora_params"):
+            img_mlp_lora = {k: v for k, v in lora_dict.items() if "img_mlp" in k}
+            if img_mlp_lora:
+                self.img_mlp.update_lora_params(img_mlp_lora)
+
+        # Apply LoRA to text stream MLP
+        if hasattr(self.txt_mlp, "update_lora_params"):
+            txt_mlp_lora = {k: v for k, v in lora_dict.items() if "txt_mlp" in k}
+            if txt_mlp_lora:
+                self.txt_mlp.update_lora_params(txt_mlp_lora)
+
+    def restore_original_params(self):
+        """
+        Restore original parameters for all components in this transformer block.
+        """
+        # Restore attention parameters
+        if hasattr(self.attn, "restore_original_params"):
+            self.attn.restore_original_params()
+
+        # Restore image MLP parameters
+        if hasattr(self.img_mlp, "restore_original_params"):
+            self.img_mlp.restore_original_params()
+
+        # Restore text MLP parameters
+        if hasattr(self.txt_mlp, "restore_original_params"):
+            self.txt_mlp.restore_original_params()
+
 
 class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransformer2DModel):
     """
@@ -563,6 +859,20 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         **kwargs,
     ):
         super(QwenImageTransformer2DModel, self).__init__()
+
+        # LoRA support attributes (similar to nunchaku library implementation)
+        self._unquantized_part_sd: dict[str, torch.Tensor] = {}
+        self._unquantized_part_loras: dict[str, torch.Tensor] = {}
+        self._quantized_part_sd: dict[str, torch.Tensor] = {}
+        self._quantized_part_vectors: dict[str, torch.Tensor] = {}
+
+        # ComfyUI LoRA related attributes
+        # Note: comfy_lora_meta_list and comfy_lora_sd_list are now initialized dynamically in _forward
+        # to support Flux-style caching. _lora_config_list is set by LoRA Loader nodes.
+
+        # VAE scale factor for img_shapes calculation (same as diffusers pipeline)
+        self.vae_scale_factor = 8  # Default for Qwen Image
+
         self.dtype = dtype
         self.patch_size = patch_size
         self.out_channels = out_channels or in_channels
@@ -614,6 +924,170 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         )
         self.gradient_checkpointing = False
 
+    def process_img(self, x, index=0, h_offset=0, w_offset=0):
+        """
+        Preprocess an input image tensor for the model.
+
+        Overrides the base class method to handle 4D tensors (batch, channels, height, width)
+        instead of 5D tensors required by ComfyUI's base implementation.
+
+        Supports both Qwen Image (T2I) and Qwen Image Edit (I2I) models.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image tensor of shape (batch, channels, height, width) or
+            (batch, channels, 1, height, width) for Image Edit models.
+        index : int, optional
+            Index for image ID encoding.
+        h_offset : int, optional
+            Height offset for patch IDs.
+        w_offset : int, optional
+            Width offset for patch IDs.
+
+        Returns
+        -------
+        img : torch.Tensor
+            Rearranged image tensor of shape (batch, num_patches, patch_dim).
+        img_ids : torch.Tensor
+            Image ID tensor of shape (batch, num_patches, 3).
+        orig_shape : tuple
+            Original shape (batch, channels, height, width) for unpatchify.
+        """
+        from comfy.ldm.common_dit import pad_to_patch_size
+        from einops import rearrange, repeat
+
+        # Handle 5D input for Image Edit models (batch, channels, 1, height, width)
+        # This happens when processing ref_latents in Qwen Image Edit
+        if x.ndim == 5:
+            x = x.squeeze(2)  # Remove middle dimension -> (batch, channels, height, width)
+
+        bs, c, h_orig, w_orig = x.shape
+        x = pad_to_patch_size(x, (self.patch_size, self.patch_size))
+
+        # CRITICAL: The key insight is that rearrange() creates patches for the ENTIRE padded tensor
+        # So img_ids must match the actual patch grid created by rearrange()
+        _, _, h_padded, w_padded = x.shape
+        img = rearrange(x, "b c (h ph) (w pw) -> b (h w) (c ph pw)", ph=self.patch_size, pw=self.patch_size)
+
+        # img.shape[1] is the actual number of patches created by rearrange()
+        actual_patches = img.shape[1]
+
+        # Calculate patch grid dimensions using original dimensions (consistent with diffusers)
+        # This matches the original QwenImageTransformer2DModel implementation
+        h_len = (h_orig + (self.patch_size // 2)) // self.patch_size
+        w_len = (w_orig + (self.patch_size // 2)) // self.patch_size
+
+        # Verify that our calculation matches the actual patches
+        assert (
+            h_len * w_len == actual_patches
+        ), f"Patch count mismatch: calculated={h_len * w_len}, actual={actual_patches}"
+
+        h_offset = (h_offset + (self.patch_size // 2)) // self.patch_size
+        w_offset = (w_offset + (self.patch_size // 2)) // self.patch_size
+
+        img_ids = torch.zeros((h_len, w_len, 3), device=x.device, dtype=x.dtype)
+        img_ids[:, :, 0] = img_ids[:, :, 1] + index
+
+        # EXPERIMENTAL: Center-aligned position IDs (like Diffusers pipeline)
+        # Instead of 0 to h_len-1, use -(h_len//2) to +(h_len//2)
+        # This should make objects appear centered in non-square aspect ratios
+        h_center = h_len // 2
+        w_center = w_len // 2
+        img_ids[:, :, 1] = img_ids[:, :, 1] + torch.linspace(
+            -h_center + h_offset, h_len - 1 - h_center + h_offset, steps=h_len, device=x.device, dtype=x.dtype
+        ).unsqueeze(1)
+        img_ids[:, :, 2] = img_ids[:, :, 2] + torch.linspace(
+            -w_center + w_offset, w_len - 1 - w_center + w_offset, steps=w_len, device=x.device, dtype=x.dtype
+        ).unsqueeze(0)
+
+        # Return orig_shape as tuple: (bs, c, h_padded, w_padded, h_orig, w_orig)
+        # h_padded/w_padded for unpatchify reshape, h_orig/w_orig for final cropping
+        return img, repeat(img_ids, "h w c -> b (h w) c", b=bs), (bs, c, h_padded, w_padded, h_orig, w_orig)
+
+    def _rope_position_embedding(self, ids: torch.Tensor) -> torch.Tensor:
+        """
+        RoPE-based position embedding using Nunchaku's implementation.
+        This should match the official Diffusers pipeline behavior.
+
+        Uses axes_dims_rope to allocate dimensions for each axis (index, h, w).
+        For example, axes_dims_rope=(16, 56, 56) means:
+        - index: 16 dims
+        - h_pos: 56 dims
+        - w_pos: 56 dims
+        Total: 128 dims = attention_head_dim
+        """
+        from nunchaku.models.embeddings import rope
+
+        # Extract position indices for each axis
+        # ids shape: (batch, seq_len, 3) where 3 = [index, h_pos, w_pos]
+        batch_size, seq_len, n_axes = ids.shape
+
+        # Apply RoPE for each axis with the correct dimension from axes_dims_rope
+        rope_embs = []
+        for i in range(n_axes):
+            pos = ids[:, :, i]  # Extract position for axis i
+            axis_dim = self.axes_dims_rope[i]  # Get dimension for this axis
+            rope_emb = rope(pos, axis_dim, self.rope_theta)
+            rope_embs.append(rope_emb)
+
+        # Concatenate along the dimension axis
+        image_rotary_emb = torch.cat(rope_embs, dim=-3)
+        # Apply the same transform as ComfyUI's pe_embedder: .squeeze(1).unsqueeze(2)
+        # Nunchaku rope outputs (batch, seq_len, dim, 1, 2)
+        # We need to add batch dimension first, then apply squeeze/unsqueeze
+        image_rotary_emb = image_rotary_emb.unsqueeze(0)  # (1, batch, seq_len, dim, 1, 2)
+        image_rotary_emb = image_rotary_emb.squeeze(1)  # (1, seq_len, dim, 1, 2)
+        image_rotary_emb = image_rotary_emb.unsqueeze(2)  # (1, seq_len, 1, dim, 1, 2)
+        return image_rotary_emb
+
+    def process_img_packed(self, x, index=0, h_offset=0, w_offset=0):
+        """
+        Process image input to get packed latents (same as diffusers pipeline).
+        This method is compatible with the official diffusers pipeline approach.
+        """
+        # Store orig_shape for later use in _forward
+        img, _, orig_shape = self.process_img(x, index, h_offset, w_offset)
+        self.last_orig_shape = orig_shape
+        return img
+
+    def forward(
+        self,
+        hidden_states=None,
+        encoder_hidden_states=None,
+        encoder_hidden_states_mask=None,
+        timestep=None,
+        x=None,
+        context=None,
+        attention_mask=None,
+        **kwargs,
+    ):
+        """
+        Forward pass adapter for ComfyUI compatibility.
+
+        This method handles parameter name conversion between ComfyUI's convention
+        (hidden_states, encoder_hidden_states) and the internal implementation
+        (x, context).
+
+        Parameters can be provided in either naming convention:
+        - ComfyUI style: hidden_states, encoder_hidden_states, encoder_hidden_states_mask, timestep
+        - Internal style: x, context, attention_mask, timesteps
+
+        This method delegates to _forward() with the correct parameter names.
+        """
+        # Convert parameter names from ComfyUI to internal format
+        if x is None and hidden_states is not None:
+            x = hidden_states
+        if context is None and encoder_hidden_states is not None:
+            context = encoder_hidden_states
+        if attention_mask is None and encoder_hidden_states_mask is not None:
+            attention_mask = encoder_hidden_states_mask
+        if "timesteps" not in kwargs and timestep is not None:
+            kwargs["timesteps"] = timestep
+
+        # Call internal _forward with correct parameter names
+        return self._forward(x=x, context=context, attention_mask=attention_mask, **kwargs)
+
     def _forward(
         self,
         x,
@@ -624,6 +1098,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         ref_latents=None,
         transformer_options={},
         control=None,
+        controlnet_block_samples=None,
         **kwargs,
     ):
         """
@@ -658,14 +1133,89 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         if self.offload:
             self.offload_manager.set_device(device)
 
-        timestep = timesteps
-        encoder_hidden_states = context
-        encoder_hidden_states_mask = attention_mask
+        # CRITICAL: Handle both control dict and controlnet_block_samples list
+        # Wrapper now passes complete control dict (with weight/scale)
+        # But for backward compatibility, also support old controlnet_block_samples list
+        if control is None and controlnet_block_samples is not None:
+            # Old format: list of tensors → convert to dict
+            control = {"input": controlnet_block_samples}
 
+        # LoRA composition logic with caching (Flux-style)
+        # Note: self is always the transformer (not the container)
+        # The container injects _lora_config_list into the transformer before calling forward
+
+        if hasattr(self, "_lora_config_list"):
+            # If config is empty, clear all LoRA parameters
+            if len(self._lora_config_list) == 0:
+                if hasattr(self, "comfy_lora_meta_list") and len(self.comfy_lora_meta_list) > 0:
+                    self.reset_lora()
+                    self.comfy_lora_meta_list = []
+                    self.comfy_lora_sd_list = []
+            # If config is not empty, execute sync logic
+            elif len(self._lora_config_list) > 0:
+                from nunchaku.lora.qwenimage import compose_lora
+                from nunchaku.utils import load_state_dict_in_safetensors
+
+                # Initialize cache lists if not present (on transformer, shared)
+                if not hasattr(self, "comfy_lora_meta_list"):
+                    self.comfy_lora_meta_list = []
+                if not hasattr(self, "comfy_lora_sd_list"):
+                    self.comfy_lora_sd_list = []
+
+                # Smart sync: compare config with applied state
+                if self._lora_config_list != self.comfy_lora_meta_list:
+                    # Remove excess cache entries if config list shortened
+                    for _ in range(max(0, len(self.comfy_lora_meta_list) - len(self._lora_config_list))):
+                        self.comfy_lora_meta_list.pop()
+                        self.comfy_lora_sd_list.pop()
+
+                    # Sync each LoRA
+                    lora_to_be_composed = []
+                    for i in range(len(self._lora_config_list)):
+                        meta = self._lora_config_list[i]  # (path, strength)
+
+                        # New LoRA: load and cache
+                        if i >= len(self.comfy_lora_meta_list):
+                            sd = load_state_dict_in_safetensors(meta[0])
+                            self.comfy_lora_meta_list.append(meta)
+                            self.comfy_lora_sd_list.append(sd)
+                        # LoRA config changed
+                        elif self.comfy_lora_meta_list[i] != meta:
+                            # Path changed: reload file
+                            if meta[0] != self.comfy_lora_meta_list[i][0]:
+                                sd = load_state_dict_in_safetensors(meta[0])
+                                self.comfy_lora_sd_list[i] = sd
+                            # Only strength changed: reuse cache
+                            self.comfy_lora_meta_list[i] = meta
+
+                        # Add to composition list (always recompose with current strength)
+                        lora_to_be_composed.append(({k: v for k, v in self.comfy_lora_sd_list[i].items()}, meta[1]))
+
+                    # Compose all LoRAs
+                    composed_lora = compose_lora(lora_to_be_composed)
+
+                    # Apply to model
+                    if len(composed_lora) == 0:
+                        self.reset_lora()
+                    else:
+                        self.update_lora_params(composed_lora)
+
+                        # Activate LoRA
+                        from nunchaku.models.linear import SVDQW4A4Linear
+
+                        for block in self.transformer_blocks:
+                            for module in block.modules():
+                                if isinstance(module, SVDQW4A4Linear):
+                                    module.lora_strength = 1.0
+
+        # CRITICAL: Use the EXACT original ComfyUI approach
+        # Process image input to get both hidden_states and img_ids
         hidden_states, img_ids, orig_shape = self.process_img(x)
+        self.last_orig_shape = orig_shape  # Set for later use in unpatchify
         num_embeds = hidden_states.shape[1]
 
         if ref_latents is not None:
+            # Handle reference latents (for Kontext, etc.) - use original method
             h = 0
             w = 0
             index = 0
@@ -690,79 +1240,101 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                 hidden_states = torch.cat([hidden_states, kontext], dim=1)
                 img_ids = torch.cat([img_ids, kontext_ids], dim=1)
 
+        # Extract dimensions from orig_shape for unpatchify
+        # orig_shape = (bs, c, h_padded, w_padded, h_orig, w_orig)
+        bs, c, h_padded, w_padded, h_orig, w_orig = self.last_orig_shape
+
+        # Prepare ControlNet parameters
+        if control is not None and controlnet_block_samples is not None:
+            # Merge control dict with controlnet_block_samples list
+            if isinstance(control, dict):
+                # Convert list format to dict format for internal processing
+                control_dict = {}
+                for i, block_sample in enumerate(controlnet_block_samples):
+                    control_dict[f"block_{i}"] = block_sample
+                control.update(control_dict)
+            controlnet_block_samples = control
+        elif control is not None:
+            controlnet_block_samples = control
+        elif controlnet_block_samples is not None:
+            pass  # Use as-is
+        else:
+            controlnet_block_samples = None
+
+        # Implement the official Nunchaku forward logic directly
+        # This matches the nunchaku/nunchaku/models/transformers/transformer_qwenimage.py implementation
+        device = hidden_states.device
+        if self.offload:
+            self.offload_manager.set_device(device)
+
+        hidden_states = self.img_in(hidden_states)
+
+        timesteps = timesteps.to(hidden_states.dtype)
+        encoder_hidden_states = self.txt_norm(context)
+        encoder_hidden_states = self.txt_in(encoder_hidden_states)
+
+        if guidance is not None:
+            guidance = guidance.to(hidden_states.dtype) * 1000
+
+        temb = (
+            self.time_text_embed(timesteps, hidden_states)
+            if guidance is None
+            else self.time_text_embed(timesteps, guidance, hidden_states)
+        )
+
+        # Calculate txt_start using the original ComfyUI method
         txt_start = round(
             max(
                 ((x.shape[-1] + (self.patch_size // 2)) // self.patch_size) // 2,
                 ((x.shape[-2] + (self.patch_size // 2)) // self.patch_size) // 2,
             )
         )
+
+        # Generate txt_ids exactly like original ComfyUI
         txt_ids = (
             torch.arange(txt_start, txt_start + context.shape[1], device=x.device)
             .reshape(1, -1, 1)
             .repeat(x.shape[0], 1, 3)
         )
+
+        # Combine txt_ids and img_ids exactly like original ComfyUI
         ids = torch.cat((txt_ids, img_ids), dim=1)
         image_rotary_emb = self.pe_embedder(ids).squeeze(1).unsqueeze(2).to(x.dtype)
         del ids, txt_ids, img_ids
 
-        hidden_states = self.img_in(hidden_states)
-        encoder_hidden_states = self.txt_norm(encoder_hidden_states)
-        encoder_hidden_states = self.txt_in(encoder_hidden_states)
-
-        if guidance is not None:
-            guidance = guidance * 1000
-
-        temb = (
-            self.time_text_embed(timestep, hidden_states)
-            if guidance is None
-            else self.time_text_embed(timestep, guidance, hidden_states)
-        )
-
-        patches_replace = transformer_options.get("patches_replace", {})
-        blocks_replace = patches_replace.get("dit", {})
-
-        # Setup compute stream for offloading
         compute_stream = torch.cuda.current_stream()
         if self.offload:
             self.offload_manager.initialize(compute_stream)
-
-        for i, block in enumerate(self.transformer_blocks):
+        for block_idx, block in enumerate(self.transformer_blocks):
             with torch.cuda.stream(compute_stream):
                 if self.offload:
-                    block = self.offload_manager.get_block(i)
-                if ("double_block", i) in blocks_replace:
+                    block = self.offload_manager.get_block(block_idx)
 
-                    def block_wrap(args):
-                        out = {}
-                        out["txt"], out["img"] = block(
-                            hidden_states=args["img"],
-                            encoder_hidden_states=args["txt"],
-                            encoder_hidden_states_mask=encoder_hidden_states_mask,
-                            temb=args["vec"],
-                            image_rotary_emb=args["pe"],
-                        )
-                        return out
-
-                    out = blocks_replace[("double_block", i)](
-                        {"img": hidden_states, "txt": encoder_hidden_states, "vec": temb, "pe": image_rotary_emb},
-                        {"original_block": block_wrap},
+                if torch.is_grad_enabled() and self.gradient_checkpointing:
+                    encoder_hidden_states, hidden_states = self._gradient_checkpointing_func(
+                        block,
+                        hidden_states,
+                        encoder_hidden_states,
+                        attention_mask,
+                        temb,
+                        image_rotary_emb,
                     )
-                    hidden_states = out["img"]
-                    encoder_hidden_states = out["txt"]
                 else:
                     encoder_hidden_states, hidden_states = block(
                         hidden_states=hidden_states,
                         encoder_hidden_states=encoder_hidden_states,
-                        encoder_hidden_states_mask=encoder_hidden_states_mask,
+                        encoder_hidden_states_mask=attention_mask,
                         temb=temb,
                         image_rotary_emb=image_rotary_emb,
                     )
-                # ControlNet helpers(device/dtype-safe residual adds)
+
+                # ControlNet helpers (device/dtype-safe residual adds)
                 _control = (
                     control
                     if control is not None
                     else (transformer_options.get("control", None) if isinstance(transformer_options, dict) else None)
                 )
+
                 if isinstance(_control, dict):
                     control_i = _control.get("input")
                     try:
@@ -772,17 +1344,24 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                 else:
                     control_i = None
                     _scale = 1.0
-                if control_i is not None and i < len(control_i):
-                    add = control_i[i]
+
+                if control_i is not None and block_idx < len(control_i):
+                    add = control_i[block_idx]
                     if add is not None:
                         if (
                             getattr(add, "device", None) != hidden_states.device
                             or getattr(add, "dtype", None) != hidden_states.dtype
                         ):
                             add = add.to(device=hidden_states.device, dtype=hidden_states.dtype, non_blocking=True)
-                        t = min(hidden_states.shape[1], add.shape[1])
-                        if t > 0:
-                            hidden_states[:, :t].add_(add[:, :t], alpha=_scale)
+                        # Check if shapes match exactly (following official nunchaku implementation)
+                        if hidden_states.shape == add.shape:
+                            # Shapes match - simple addition (like official implementation)
+                            hidden_states = hidden_states + add * _scale
+                        else:
+                            # Shapes don't match - use safe slicing
+                            t = min(hidden_states.shape[1], add.shape[1])
+                            if t > 0:
+                                hidden_states[:, :t] = hidden_states[:, :t] + add[:, :t] * _scale
 
             if self.offload:
                 self.offload_manager.step(compute_stream)
@@ -790,11 +1369,123 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         hidden_states = self.norm_out(hidden_states, temb)
         hidden_states = self.proj_out(hidden_states)
 
+        # Unpatchify: convert from (batch, num_patches, patch_dim) to (batch, channels, height, width)
+        bs, c, h_padded, w_padded, h_orig, w_orig = self.last_orig_shape
+        h_len = (h_orig + (self.patch_size // 2)) // self.patch_size
+        w_len = (w_orig + (self.patch_size // 2)) // self.patch_size
+        num_embeds = h_len * w_len
+
+        # Reshape to image: (batch, num_patches, patch_dim) -> (batch, channels, height, width)
         hidden_states = hidden_states[:, :num_embeds].view(
-            orig_shape[0], orig_shape[-2] // 2, orig_shape[-1] // 2, orig_shape[1], 2, 2
+            bs, h_len, w_len, self.out_channels, self.patch_size, self.patch_size
         )
         hidden_states = hidden_states.permute(0, 3, 1, 4, 2, 5)
-        return hidden_states.reshape(orig_shape)[:, :, :, : x.shape[-2], : x.shape[-1]]
+        # Use padded dimensions for reshape, then crop to original
+        output = hidden_states.reshape(bs, self.out_channels, h_padded, w_padded)[:, :, :h_orig, :w_orig]
+
+        torch.cuda.empty_cache()
+
+        return (output,)
+
+    def update_lora_params(self, lora_dict: dict, num_loras: int = 1):
+        """
+        Update LoRA parameters for the Qwen Image model.
+
+        This method applies LoRA weights to the model.
+        For ComfyUI-nunchaku, we use a simplified approach that directly applies
+        LoRA weights without the complex quantization handling.
+
+        Parameters
+        ----------
+        lora_dict : dict
+            Dictionary containing LoRA weights in Diffusers or Nunchaku format.
+        num_loras : int, optional
+            Number of LoRAs that were composed. If > 1, this is a composed LoRA.
+            Used to determine whether to merge with base model.
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        # Import necessary functions
+        from nunchaku.lora.qwenimage import is_nunchaku_format, to_nunchaku
+
+        # Convert to nunchaku format if needed
+        if not is_nunchaku_format(lora_dict):
+            logger.debug("Converting LoRA to Nunchaku format")
+
+            # Check if this is a composed LoRA
+            is_composed = num_loras > 1
+
+            # Always use skip_base_merge=False (Qwen Image requires base model low-rank branches)
+            if is_composed:
+                logger.debug(f"Detected composed LoRA ({num_loras} LoRAs)")
+            else:
+                logger.debug("Single LoRA detected")
+
+            lora_dict = to_nunchaku(lora_dict, base_sd=self._quantized_part_sd, skip_base_merge=False)
+            logger.debug(f"Converted LoRA to Nunchaku format: {len(lora_dict)} keys")
+        else:
+            logger.debug("LoRA already in Nunchaku format")
+
+        # Apply LoRA to transformer blocks
+        blocks_updated = 0
+        for i, block in enumerate(self.transformer_blocks):
+            # Extract LoRA weights for this block
+            block_lora = {}
+            for k, v in lora_dict.items():
+                if f"transformer_blocks.{i}." in k or f"blocks.{i}." in k:
+                    # Remove all prefixes to get relative key
+                    parts = k.split(f".{i}.")
+                    if len(parts) > 1:
+                        relative_key = parts[-1]
+                        block_lora[relative_key] = v
+
+            # Apply LoRA to this block if it has any weights
+            if block_lora:
+                # Disabled detailed logging - only show final summary
+                # if i == 0:  # Only log first block to reduce noise
+                #     logger.info(f"  Block {i}: {len(block_lora)} LoRA keys")
+                if hasattr(block, "update_lora_params"):
+                    block.update_lora_params(block_lora)
+                    blocks_updated += 1
+
+        logger.info(f"LoRA applied to {blocks_updated}/{len(self.transformer_blocks)} blocks")
+
+    def restore_original_params(self):
+        """
+        Restore original parameters for all transformer blocks.
+        This method should be called when LoRA is no longer needed.
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        logger.info("🔄 Restoring original model parameters...")
+        blocks_restored = 0
+        for block in self.transformer_blocks:
+            if hasattr(block, "restore_original_params"):
+                block.restore_original_params()
+                blocks_restored += 1
+
+        logger.info(f"Restored original parameters for {blocks_restored}/{len(self.transformer_blocks)} blocks")
+
+    def reset_lora(self):
+        """
+        Reset LoRA parameters to remove all LoRA effects.
+        """
+        # Import the nunchaku library's transformer model
+        from nunchaku.models.transformers.transformer_qwenimage import (
+            NunchakuQwenImageTransformer2DModel as NunchakuQwenImageTransformer2DModelLib,
+        )
+
+        # Check if the nunchaku library's model has the reset_lora method
+        if hasattr(NunchakuQwenImageTransformer2DModelLib, "reset_lora"):
+            NunchakuQwenImageTransformer2DModelLib.reset_lora(self)
+        else:
+            # Fallback: clear LoRA lists
+            self.comfy_lora_meta_list = []
+            self.comfy_lora_sd_list = []
 
     def set_offload(self, offload: bool, **kwargs):
         """
@@ -836,3 +1527,38 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
             self.offload_manager = None
             gc.collect()
             torch.cuda.empty_cache()
+
+    def set_lora_strength(self, strength: float):
+        """
+        Sets the LoRA scaling strength for the model.
+
+        This method allows dynamic adjustment of LoRA strength, similar to Flux's setLoraScale.
+        The strength is applied only to the LoRA part (ranks beyond original_rank), while
+        the original low-rank branches remain at strength 1.0.
+
+        Parameters
+        ----------
+        strength : float, optional
+            LoRA scaling strength (default: 1).
+
+        Note: This function will change the strength of all the LoRAs. So only use it when you only have a single LoRA.
+        """
+        # Set LoRA strength for all SVDQW4A4Linear layers in transformer blocks
+        from nunchaku.models.linear import SVDQW4A4Linear
+
+        for block in self.transformer_blocks:
+            # Set strength for all SVDQW4A4Linear layers in this block
+            for module in block.modules():
+                if isinstance(module, SVDQW4A4Linear):
+                    module.set_lora_strength(strength)
+
+        # Handle unquantized part (similar to Flux implementation)
+        if len(self._unquantized_part_loras) > 0:
+            self._update_unquantized_part_lora_params(strength)
+        if len(self._quantized_part_vectors) > 0:
+            from nunchaku.lora.qwenimage.utils import fuse_vectors
+
+            vector_dict = fuse_vectors(self._quantized_part_vectors, self._quantized_part_sd, strength)
+            for block in self.transformer_blocks:
+                if hasattr(block, "update_lora_params"):
+                    block.update_lora_params(vector_dict)
