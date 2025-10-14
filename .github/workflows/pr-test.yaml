@@ -81,31 +81,16 @@ jobs:
           ln -s "${COMFYUI_MODELS_ROOT}" models
           ln -s ../ComfyUI-nunchaku/tests tests
           ln -s ../ComfyUI-nunchaku/test_data test_data
-          mkdir -p custom_nodes
-          cd custom_nodes
-          ln -s ../../ComfyUI-nunchaku
-          git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
-          cd comfyui_controlnet_aux
-          git checkout cc6b232
-          cd ..
-          git clone https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy.git
-          cd ComfyUI-InpaintEasy
-          pip install -r requirements.txt
-          git checkout d631a03
-          cd ..
-          cd ..
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
-          mkdir -p input
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_inputs.py
+          python ../ComfyUI-nunchaku/scripts/setup_custom_nodes.py
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           pwd
-          cd ../ComfyUI
-          pytest tests/test_workflows.py -x -vv --reruns 2 --reruns-delay 0
+          cd ../test-workspace
+          pytest tests/test_workflows.py -x -vv --reruns 4 --reruns-delay 0
       - name: clean up
         if: always()
         run: |
           cd ..
-          rm -rf nunchaku ComfyUI
+          rm -rf nunchaku test-workspace
