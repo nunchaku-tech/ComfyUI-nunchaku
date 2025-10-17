@@ -74,6 +74,14 @@ class ComfyFluxWrapper(nn.Module):
         self._prev_timestep = None  # for first-block cache
         self._cache_context = None
 
+        # Reusable tensor caches keyed by (H, W, device, dtype, index)
+        self._img_ids_cache = {}
+        # txt_ids cache keyed by (batch, seq_len, device, dtype)
+        self._txt_ids_cache = {}
+        # Base linspace caches keyed by (length, device, dtype)
+        self._linspace_cache_h = {}
+        self._linspace_cache_w = {}
+
     def process_img(self, x, index=0, h_offset=0, w_offset=0):
         """
         Preprocess an input image tensor for the model.
@@ -109,14 +117,28 @@ class ComfyFluxWrapper(nn.Module):
         h_offset = (h_offset + (patch_size // 2)) // patch_size
         w_offset = (w_offset + (patch_size // 2)) // patch_size
 
-        img_ids = torch.zeros((h_len, w_len, 3), device=x.device, dtype=x.dtype)
+        # Cache img_ids by geometry/device/dtype/index to avoid reallocation
+        cache_key = (h_len, w_len, x.device, x.dtype, index, h_offset, w_offset)
+        cached = self._img_ids_cache.get(cache_key)
+        if cached is not None and cached.shape == (h_len, w_len, 3):
+            img_ids = cached
+        else:
+            img_ids = torch.zeros((h_len, w_len, 3), device=x.device, dtype=x.dtype)
+            self._img_ids_cache[cache_key] = img_ids
         img_ids[:, :, 0] = img_ids[:, :, 1] + index
-        img_ids[:, :, 1] = img_ids[:, :, 1] + torch.linspace(
-            h_offset, h_len - 1 + h_offset, steps=h_len, device=x.device, dtype=x.dtype
-        ).unsqueeze(1)
-        img_ids[:, :, 2] = img_ids[:, :, 2] + torch.linspace(
-            w_offset, w_len - 1 + w_offset, steps=w_len, device=x.device, dtype=x.dtype
-        ).unsqueeze(0)
+        # Use cached base linspace [0..len-1] and add offsets
+        h_key = (h_len, x.device, x.dtype)
+        w_key = (w_len, x.device, x.dtype)
+        h_base = self._linspace_cache_h.get(h_key)
+        if h_base is None or h_base.shape[0] != h_len:
+            h_base = torch.arange(h_len, device=x.device, dtype=x.dtype)
+            self._linspace_cache_h[h_key] = h_base
+        w_base = self._linspace_cache_w.get(w_key)
+        if w_base is None or w_base.shape[0] != w_len:
+            w_base = torch.arange(w_len, device=x.device, dtype=x.dtype)
+            self._linspace_cache_w[w_key] = w_base
+        img_ids[:, :, 1] = img_ids[:, :, 1] + (h_base + h_offset).unsqueeze(1)
+        img_ids[:, :, 2] = img_ids[:, :, 2] + (w_base + w_offset).unsqueeze(0)
         return img, repeat(img_ids, "h w c -> b (h w) c", b=bs)
 
     def forward(
@@ -197,7 +219,12 @@ class ComfyFluxWrapper(nn.Module):
                 h = max(h, ref.shape[-2] + h_offset)
                 w = max(w, ref.shape[-1] + w_offset)
 
-        txt_ids = torch.zeros((bs, context.shape[1], 3), device=x.device, dtype=x.dtype)
+        # Cache txt_ids by (batch, seq_len, device, dtype)
+        txt_cache_key = (bs, context.shape[1], x.device, x.dtype)
+        txt_ids = self._txt_ids_cache.get(txt_cache_key)
+        if txt_ids is None or txt_ids.shape != (bs, context.shape[1], 3):
+            txt_ids = torch.zeros((bs, context.shape[1], 3), device=x.device, dtype=x.dtype)
+            self._txt_ids_cache[txt_cache_key] = txt_ids
 
         # load and compose LoRA
         if self.loras != model.comfy_lora_meta_list:
@@ -253,34 +280,37 @@ class ComfyFluxWrapper(nn.Module):
             self._prev_timestep = timestep_float
             with cache_context(self._cache_context):
                 if self.customized_forward is None:
-                    out = model(
-                        hidden_states=img,
-                        encoder_hidden_states=context,
-                        pooled_projections=y,
-                        timestep=timestep,
-                        img_ids=img_ids,
-                        txt_ids=txt_ids,
-                        guidance=guidance if self.config["guidance_embed"] else None,
-                        controlnet_block_samples=controlnet_block_samples,
-                        controlnet_single_block_samples=controlnet_single_block_samples,
-                    ).sample
+                    with torch.inference_mode():
+                        out = model(
+                            hidden_states=img,
+                            encoder_hidden_states=context,
+                            pooled_projections=y,
+                            timestep=timestep,
+                            img_ids=img_ids,
+                            txt_ids=txt_ids,
+                            guidance=guidance if self.config["guidance_embed"] else None,
+                            controlnet_block_samples=controlnet_block_samples,
+                            controlnet_single_block_samples=controlnet_single_block_samples,
+                        ).sample
                 else:
-                    out = self.customized_forward(
-                        model,
-                        hidden_states=img,
-                        encoder_hidden_states=context,
-                        pooled_projections=y,
-                        timestep=timestep,
-                        img_ids=img_ids,
-                        txt_ids=txt_ids,
-                        guidance=guidance if self.config["guidance_embed"] else None,
-                        controlnet_block_samples=controlnet_block_samples,
-                        controlnet_single_block_samples=controlnet_single_block_samples,
-                        **self.forward_kwargs,
-                    ).sample
+                    with torch.inference_mode():
+                        out = self.customized_forward(
+                            model,
+                            hidden_states=img,
+                            encoder_hidden_states=context,
+                            pooled_projections=y,
+                            timestep=timestep,
+                            img_ids=img_ids,
+                            txt_ids=txt_ids,
+                            guidance=guidance if self.config["guidance_embed"] else None,
+                            controlnet_block_samples=controlnet_block_samples,
+                            controlnet_single_block_samples=controlnet_single_block_samples,
+                            **self.forward_kwargs,
+                        ).sample
         else:
             if self.customized_forward is None:
-                out = model(
+                with torch.inference_mode():
+                    out = model(
                     hidden_states=img,
                     encoder_hidden_states=context,
                     pooled_projections=y,
@@ -292,7 +322,8 @@ class ComfyFluxWrapper(nn.Module):
                     controlnet_single_block_samples=controlnet_single_block_samples,
                 ).sample
             else:
-                out = self.customized_forward(
+                with torch.inference_mode():
+                    out = self.customized_forward(
                     model,
                     hidden_states=img,
                     encoder_hidden_states=context,

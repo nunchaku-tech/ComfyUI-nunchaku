@@ -246,22 +246,22 @@ class NunchakuFluxDiTLoader:
         gpu_properties = torch.cuda.get_device_properties(device_id)
         gpu_memory = gpu_properties.total_memory / (1024**2)  # Convert to MiB
         gpu_name = gpu_properties.name
-        print(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
+        logger.info(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
 
         # Check if CPU offload needs to be enabled
         if cpu_offload == "auto":
             if gpu_memory < 14336:  # 14GB threshold
                 cpu_offload_enabled = True
-                print("VRAM < 14GiB, enabling CPU offload")
+                logger.info("VRAM < 14GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                print("VRAM > 14GiB, disabling CPU offload")
+                logger.info("VRAM > 14GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
-            print("Enabling CPU offload")
+            logger.info("Enabling CPU offload")
         else:
             cpu_offload_enabled = False
-            print("Disabling CPU offload")
+            logger.info("Disabling CPU offload")
 
         if (
             self.model_path != model_path
@@ -301,6 +301,10 @@ class NunchakuFluxDiTLoader:
             assert attention == "flash-attention2"
             transformer.set_attention_impl("flashattn2")
 
+        # Simple in-process config cache to avoid repeated disk I/O
+        if not hasattr(self, "_config_cache"):
+            self._config_cache = {}
+
         if self.metadata is None:
             if os.path.exists(os.path.join(model_path, "comfy_config.json")):
                 config_path = os.path.join(model_path, "comfy_config.json")
@@ -310,8 +314,14 @@ class NunchakuFluxDiTLoader:
                 config_path = os.path.join(default_config_root, f"{config_name}.json")
                 assert os.path.exists(config_path), f"Config file not found: {config_path}"
 
-            logger.info(f"Loading ComfyUI model config from {config_path}")
-            comfy_config = json.load(open(config_path, "r"))
+            if config_path in self._config_cache:
+                comfy_config = self._config_cache[config_path]
+                logger.debug(f"Using cached ComfyUI model config: {config_path}")
+            else:
+                logger.info(f"Loading ComfyUI model config from {config_path}")
+                with open(config_path, "r") as f:
+                    comfy_config = json.load(f)
+                self._config_cache[config_path] = comfy_config
         else:
             comfy_config_str = self.metadata.get("comfy_config", None)
             comfy_config = json.loads(comfy_config_str)
