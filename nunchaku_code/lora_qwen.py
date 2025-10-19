@@ -26,72 +26,72 @@ logger = logging.getLogger(__name__)
 # This version correctly tokenizes all module paths.
 KEY_MAPPING = [
     # Fused QKV (Double Block)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]qkv$"), r"\1.\2.attn.to_qkv", "qkv", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]to[._]qkv$"), r"\1.\2.attn.to_qkv", "qkv", None),
     # Decomposed QKV (Double Block)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._](q|k|v)$"), r"\1.\2.attn.to_qkv", "qkv",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]to[._](q|k|v)$"), r"\1.\2.attn.to_qkv", "qkv",
      lambda m: m.group(3).upper()),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._](q|k|v)[\._]proj$"), r"\1.\2.attn.to_qkv", "qkv",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._](q|k|v)[._]proj$"), r"\1.\2.attn.to_qkv", "qkv",
      lambda m: m.group(3).upper()),
     # Fused Add_QKV (Double Block)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]add[\._]qkv[\._]proj$"), r"\1.\2.attn.add_qkv_proj",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]add[._]qkv[._]proj$"), r"\1.\2.attn.add_qkv_proj",
      "add_qkv", None),
     # Decomposed Add_QKV (Double Block)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]add[\._](q|k|v)[\._]proj$"), r"\1.\2.attn.add_qkv_proj",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]add[._](q|k|v)[._]proj$"), r"\1.\2.attn.add_qkv_proj",
      "add_qkv",
      lambda m: m.group(3).upper()),
     # Fused QKV (Single Block)
-    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]qkv$"), r"\1.\2.attn.to_qkv", "qkv", None),
+    (re.compile(r"^(single_transformer_blocks)[._](\d+)[._]attn[._]to[._]qkv$"), r"\1.\2.attn.to_qkv", "qkv", None),
     # Decomposed QKV (Single Block)
-    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._](q|k|v)$"), r"\1.\2.attn.to_qkv", "qkv",
+    (re.compile(r"^(single_transformer_blocks)[._](\d+)[._]attn[._]to[._](q|k|v)$"), r"\1.\2.attn.to_qkv", "qkv",
      lambda m: m.group(3).upper()),
     # Output Projections
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]out[\._]proj[\._]context$"), r"\1.\2.attn.to_add_out", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]out[._]proj[._]context$"), r"\1.\2.attn.to_add_out", "regular",
      None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]add[\._]out$"), r"\1.\2.attn.to_add_out",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]to[._]add[._]out$"), r"\1.\2.attn.to_add_out",
      "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]out[\._]proj$"), r"\1.\2.attn.to_out.0", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]out$"), r"\1.\2.attn.to_out.0", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]out[\._]0$"), r"\1.\2.attn.to_out.0", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]out[._]proj$"), r"\1.\2.attn.to_out.0", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]to[._]out$"), r"\1.\2.attn.to_out.0", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]attn[._]to[._]out[._]0$"), r"\1.\2.attn.to_out.0", "regular",
      None),
-    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]out$"), r"\1.\2.attn.to_out", "regular",
+    (re.compile(r"^(single_transformer_blocks)[._](\d+)[._]attn[._]to[._]out$"), r"\1.\2.attn.to_out", "regular",
      None),
 
     # Feed-Forward / MLP Layers (Standard)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff[\._]net[\._]0(?:[\._]proj)?$"), r"\1.\2.mlp_fc1", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]ff[._]net[._]0(?:[._]proj)?$"), r"\1.\2.mlp_fc1", "regular",
      None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff[\._]net[\._]2$"), r"\1.\2.mlp_fc2", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff_context[\._]net[\._]0(?:[\._]proj)?$"),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]ff[._]net[._]2$"), r"\1.\2.mlp_fc2", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]ff_context[._]net[._]0(?:[._]proj)?$"),
      r"\1.\2.mlp_context_fc1", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff_context[\._]net[\._]2$"), r"\1.\2.mlp_context_fc2", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]ff_context[._]net[._]2$"), r"\1.\2.mlp_context_fc2", "regular",
      None),
 
     # --- THIS IS THE CORRECTED SECTION ---
     # Feed-Forward / MLP Layers (img/txt)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mlp)[\._](net)[\._](0)[\._](proj)$"), r"\1.\2.\3.\4.\5.\6",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](img_mlp)[._](net)[._](0)[._](proj)$"), r"\1.\2.\3.\4.\5.\6",
      "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mlp)[\._](net)[\._](0)$"), r"\1.\2.\3.\4.\5", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](img_mlp)[._](net)[._](0)$"), r"\1.\2.\3.\4.\5", "regular",
      None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mlp)[\._](net)[\._](2)$"), r"\1.\2.\3.\4.\5", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](img_mlp)[._](net)[._](2)$"), r"\1.\2.\3.\4.\5", "regular",
      None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mlp)[\._](net)[\._](0)[\._](proj)$"), r"\1.\2.\3.\4.\5.\6",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](txt_mlp)[._](net)[._](0)[._](proj)$"), r"\1.\2.\3.\4.\5.\6",
      "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mlp)[\._](net)[\._](0)$"), r"\1.\2.\3.\4.\5", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](txt_mlp)[._](net)[._](0)$"), r"\1.\2.\3.\4.\5", "regular",
      None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mlp)[\._](net)[\._](2)$"), r"\1.\2.\3.\4.\5", "regular",
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](txt_mlp)[._](net)[._](2)$"), r"\1.\2.\3.\4.\5", "regular",
      None),
     # Mod Layers (img/txt)
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mod)[\._](1)$"), r"\1.\2.\3.\4", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mod)[\._](1)$"), r"\1.\2.\3.\4", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](img_mod)[._](1)$"), r"\1.\2.\3.\4", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._](txt_mod)[._](1)$"), r"\1.\2.\3.\4", "regular", None),
     # ------------------------------------
 
     # Single Block Projections
-    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]proj[\._]out$"), r"\1.\2.proj_out", "single_proj_out",
+    (re.compile(r"^(single_transformer_blocks)[._](\d+)[._]proj[._]out$"), r"\1.\2.proj_out", "single_proj_out",
      None),
-    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]proj[\._]mlp$"), r"\1.\2.mlp_fc1", "regular", None),
+    (re.compile(r"^(single_transformer_blocks)[._](\d+)[._]proj[._]mlp$"), r"\1.\2.mlp_fc1", "regular", None),
     # Normalization Layers
-    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]norm[\._]linear$"), r"\1.\2.norm.linear", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]norm1[\._]linear$"), r"\1.\2.norm1.linear", "regular", None),
-    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]norm1_context[\._]linear$"), r"\1.\2.norm1_context.linear",
+    (re.compile(r"^(single_transformer_blocks)[._](\d+)[._]norm[._]linear$"), r"\1.\2.norm.linear", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]norm1[._]linear$"), r"\1.\2.norm1.linear", "regular", None),
+    (re.compile(r"^(transformer_blocks)[._](\d+)[._]norm1_context[._]linear$"), r"\1.\2.norm1_context.linear",
      "regular", None),
 ]
 _RE_LORA_SUFFIX = re.compile(r"\.(?P<tag>lora(?:[._](?:A|B|down|up)))(?:\.[^.]+)*\.weight$")
@@ -154,20 +154,23 @@ def _get_module_by_name(model: nn.Module, name: str) -> Optional[nn.Module]:
     module = model
     for part in name.split("."):
         if not part: continue
-        if part.isdigit():
-            if _is_indexable_module(module):
-                try:
-                    module = module[int(part)]
-                except IndexError:
-                    return None
-            else:
-                return None
-        elif hasattr(module, part):
+
+        # Prioritize hasattr check. This works for:
+        # 1. Regular attributes ('attn', 'img_mod')
+        # 2. Numerically-named children in nn.Sequential/nn.ModuleDict ('0', '1', '2')
+        if hasattr(module, part):
             module = getattr(module, part)
+        # Fallback to indexing for ModuleList (which fails hasattr for numeric keys)
+        elif part.isdigit() and _is_indexable_module(module):
+            try:
+                module = module[int(part)]
+            except (IndexError, TypeError):
+                logger.warning(f"Failed to index module {name} with part {part}")
+                return None
+        # All attempts failed
         else:
             return None
     return module
-
 
 def _resolve_module_name(model: nn.Module, name: str) -> Tuple[str, Optional[nn.Module]]:
     """Resolve a name string path to a module, attempting fallback paths."""
@@ -409,7 +412,7 @@ def compose_loras_v2(
 
     logger.info(f"Applied LoRA compositions to {applied_modules_count} modules.")
     if unused_keys:
-        logger.warning(f"Unused keys ({len(unused_keys)}), showing first 5: {unused_keys[:5]}")
+        logger.warning(f"Unused keys ({len(unused_keys)}): {unused_keys}")
     if invalid_modules:
         logger.warning(
             f"Could not find/apply LoRA to {len(invalid_modules)} modules, showing first 5: {invalid_modules[:5]}")
