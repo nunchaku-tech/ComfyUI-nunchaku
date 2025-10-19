@@ -93,6 +93,14 @@ KEY_MAPPING = [
     (re.compile(r"^(transformer_blocks)[._](\d+)[._]norm1[._]linear$"), r"\1.\2.norm1.linear", "regular", None),
     (re.compile(r"^(transformer_blocks)[._](\d+)[._]norm1_context[._]linear$"), r"\1.\2.norm1_context.linear",
      "regular", None),
+
+    # Mappings for top-level diffusion_model modules
+    (re.compile(r"^(img_in)$"), r"\1", "regular", None),
+    (re.compile(r"^(txt_in)$"), r"\1", "regular", None),
+    (re.compile(r"^(proj_out)$"), r"\1", "regular", None),
+    (re.compile(r"^(norm_out)[._](linear)$"), r"\1.\2", "regular", None),
+    (re.compile(r"^(time_text_embed)[._](timestep_embedder)[._](linear_1)$"), r"\1.\2.\3", "regular", None),
+    (re.compile(r"^(time_text_embed)[._](timestep_embedder)[._](linear_2)$"), r"\1.\2.\3", "regular", None),
 ]
 _RE_LORA_SUFFIX = re.compile(r"\.(?P<tag>lora(?:[._](?:A|B|down|up)))(?:\.[^.]+)*\.weight$")
 _RE_ALPHA_SUFFIX = re.compile(r"\.(?:alpha|lora_alpha)(?:\.[^.]+)*$")
