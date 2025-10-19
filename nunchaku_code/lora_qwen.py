@@ -21,49 +21,78 @@ logger = logging.getLogger(__name__)
 
 # --- Centralized & Optimized Key Mapping ---
 # This structure is faster to process and easier to maintain than a long if/elif chain.
+# --- CORRECTED Centralized & Optimized Key Mapping ---
+# --- Centralized & Optimized Key Mapping ---
+# This version correctly tokenizes all module paths.
 KEY_MAPPING = [
     # Fused QKV (Double Block)
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.to_qkv$"), r"\1.attn.to_qkv", "qkv", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]qkv$"), r"\1.\2.attn.to_qkv", "qkv", None),
     # Decomposed QKV (Double Block)
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.to_(q|k|v)$"), r"\1.attn.to_qkv", "qkv",
-     lambda m: m.group(2).upper()),
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.(q|k|v)_proj$"), r"\1.attn.to_qkv", "qkv",
-     lambda m: m.group(2).upper()),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._](q|k|v)$"), r"\1.\2.attn.to_qkv", "qkv",
+     lambda m: m.group(3).upper()),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._](q|k|v)[\._]proj$"), r"\1.\2.attn.to_qkv", "qkv",
+     lambda m: m.group(3).upper()),
     # Fused Add_QKV (Double Block)
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.add_qkv_proj$"), r"\1.attn.add_qkv_proj", "add_qkv", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]add[\._]qkv[\._]proj$"), r"\1.\2.attn.add_qkv_proj",
+     "add_qkv", None),
     # Decomposed Add_QKV (Double Block)
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.add_(q|k|v)_proj$"), r"\1.attn.add_qkv_proj", "add_qkv",
-     lambda m: m.group(2).upper()),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]add[\._](q|k|v)[\._]proj$"), r"\1.\2.attn.add_qkv_proj",
+     "add_qkv",
+     lambda m: m.group(3).upper()),
     # Fused QKV (Single Block)
-    (re.compile(r"^(single_transformer_blocks\.\d+)\.attn\.to_qkv$"), r"\1.attn.to_qkv", "qkv", None),
+    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]qkv$"), r"\1.\2.attn.to_qkv", "qkv", None),
     # Decomposed QKV (Single Block)
-    (re.compile(r"^(single_transformer_blocks\.\d+)\.attn\.to_(q|k|v)$"), r"\1.attn.to_qkv", "qkv",
-     lambda m: m.group(2).upper()),
+    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._](q|k|v)$"), r"\1.\2.attn.to_qkv", "qkv",
+     lambda m: m.group(3).upper()),
     # Output Projections
-    (re.compile(r"^(transformer_blocks\.\d+)\.out_proj_context$"), r"\1.attn.to_add_out", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.to_add_out$"), r"\1.attn.to_add_out", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.out_proj$"), r"\1.attn.to_out.0", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.attn\.to_out$"), r"\1.attn.to_out.0", "regular", None),
-    (re.compile(r"^(single_transformer_blocks\.\d+)\.attn\.to_out$"), r"\1.attn.to_out", "regular", None),
-    # Feed-Forward / MLP Layers
-    (re.compile(r"^(transformer_blocks\.\d+)\.ff\.net\.0(?:\.proj)?$"), r"\1.mlp_fc1", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.ff\.net\.2$"), r"\1.mlp_fc2", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.ff_context\.net\.0(?:\.proj)?$"), r"\1.mlp_context_fc1", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.ff_context\.net\.2$"), r"\1.mlp_context_fc2", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+\.img_mlp\.net\.0(?:\.proj)?)$"), r"\1", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+\.img_mlp\.net\.2)$"), r"\1", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+\.txt_mlp\.net\.0(?:\.proj)?)$"), r"\1", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+\.txt_mlp\.net\.2)$"), r"\1", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]out[\._]proj[\._]context$"), r"\1.\2.attn.to_add_out", "regular",
+     None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]add[\._]out$"), r"\1.\2.attn.to_add_out",
+     "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]out[\._]proj$"), r"\1.\2.attn.to_out.0", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]out$"), r"\1.\2.attn.to_out.0", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]out[\._]0$"), r"\1.\2.attn.to_out.0", "regular",
+     None),
+    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]attn[\._]to[\._]out$"), r"\1.\2.attn.to_out", "regular",
+     None),
+
+    # Feed-Forward / MLP Layers (Standard)
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff[\._]net[\._]0(?:[\._]proj)?$"), r"\1.\2.mlp_fc1", "regular",
+     None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff[\._]net[\._]2$"), r"\1.\2.mlp_fc2", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff_context[\._]net[\._]0(?:[\._]proj)?$"),
+     r"\1.\2.mlp_context_fc1", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]ff_context[\._]net[\._]2$"), r"\1.\2.mlp_context_fc2", "regular",
+     None),
+
+    # --- THIS IS THE CORRECTED SECTION ---
+    # Feed-Forward / MLP Layers (img/txt)
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mlp)[\._](net)[\._](0)[\._](proj)$"), r"\1.\2.\3.\4.\5.\6",
+     "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mlp)[\._](net)[\._](0)$"), r"\1.\2.\3.\4.\5", "regular",
+     None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mlp)[\._](net)[\._](2)$"), r"\1.\2.\3.\4.\5", "regular",
+     None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mlp)[\._](net)[\._](0)[\._](proj)$"), r"\1.\2.\3.\4.\5.\6",
+     "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mlp)[\._](net)[\._](0)$"), r"\1.\2.\3.\4.\5", "regular",
+     None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mlp)[\._](net)[\._](2)$"), r"\1.\2.\3.\4.\5", "regular",
+     None),
+    # Mod Layers (img/txt)
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](img_mod)[\._](1)$"), r"\1.\2.\3.\4", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._](txt_mod)[\._](1)$"), r"\1.\2.\3.\4", "regular", None),
+    # ------------------------------------
+
     # Single Block Projections
-    (re.compile(r"^(single_transformer_blocks\.\d+)\.proj_out$"), r"\1.proj_out", "single_proj_out", None),
-    (re.compile(r"^(single_transformer_blocks\.\d+)\.proj_mlp$"), r"\1.mlp_fc1", "regular", None),
+    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]proj[\._]out$"), r"\1.\2.proj_out", "single_proj_out",
+     None),
+    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]proj[\._]mlp$"), r"\1.\2.mlp_fc1", "regular", None),
     # Normalization Layers
-    (re.compile(r"^(single_transformer_blocks\.\d+)\.norm\.linear$"), r"\1.norm.linear", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.norm1\.linear$"), r"\1.norm1.linear", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.norm1_context\.linear$"), r"\1.norm1_context.linear", "regular", None),
-    # Mod Layers
-    (re.compile(r"^(transformer_blocks\.\d+)\.img_mod\.1$"), r"\1.img_mod.1", "regular", None),
-    (re.compile(r"^(transformer_blocks\.\d+)\.txt_mod\.1$"), r"\1.txt_mod.1", "regular", None),
+    (re.compile(r"^(single_transformer_blocks)[\._](\d+)[\._]norm[\._]linear$"), r"\1.\2.norm.linear", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]norm1[\._]linear$"), r"\1.\2.norm1.linear", "regular", None),
+    (re.compile(r"^(transformer_blocks)[\._](\d+)[\._]norm1_context[\._]linear$"), r"\1.\2.norm1_context.linear",
+     "regular", None),
 ]
 _RE_LORA_SUFFIX = re.compile(r"\.(?P<tag>lora(?:[._](?:A|B|down|up)))(?:\.[^.]+)*\.weight$")
 _RE_ALPHA_SUFFIX = re.compile(r"\.(?:alpha|lora_alpha)(?:\.[^.]+)*$")
@@ -81,6 +110,8 @@ def _classify_and_map_key(key: str) -> Optional[Tuple[str, str, Optional[str], s
         k = k[len("transformer."):]
     if k.startswith("diffusion_model."):
         k = k[len("diffusion_model."):]
+    if k.startswith("lora_unet_"):
+        k = k[len("lora_unet_"):]
 
     base = None
     ab = None
