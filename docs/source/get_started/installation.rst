@@ -5,6 +5,24 @@ We provide tutorial videos to help you install and use Nunchaku on Windows,
 available in both `English <nunchaku_windows_tutorial_en_>`_ and `Chinese <nunchaku_windows_tutorial_zh_>`_.
 If you run into issues, these resources are a good place to start.
 
+Packaged ComfyUI (Recommended for Windows)
+-------------------------------------------
+
+We provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in, 
+eliminating the need to download any additional dependencies. This is the easiest way to get started:
+
+1. Download the packaged ComfyUI zip file from our `GitHub release page <github_nunchaku_releases_>`_.
+
+2. Open the downloaded zip file. You will see another zip file inside. Extract this internal zip file 
+   to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
+
+3. Navigate to the extracted folder and execute ``ComfyUI.exe`` to launch the application and complete 
+   the installation steps.
+
+Once installed, you will be able to run the ComfyUI application directly from your PC without any 
+additional setup required.
+
+
 Step 1: Install the ComfyUI-nunchaku Plugin
 -------------------------------------------
 
