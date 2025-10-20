@@ -301,10 +301,6 @@ class NunchakuFluxDiTLoader:
             assert attention == "flash-attention2"
             transformer.set_attention_impl("flashattn2")
 
-        # Simple in-process config cache to avoid repeated disk I/O
-        if not hasattr(self, "_config_cache"):
-            self._config_cache = {}
-
         if self.metadata is None:
             if os.path.exists(os.path.join(model_path, "comfy_config.json")):
                 config_path = os.path.join(model_path, "comfy_config.json")
@@ -314,14 +310,8 @@ class NunchakuFluxDiTLoader:
                 config_path = os.path.join(default_config_root, f"{config_name}.json")
                 assert os.path.exists(config_path), f"Config file not found: {config_path}"
 
-            if config_path in self._config_cache:
-                comfy_config = self._config_cache[config_path]
-                logger.debug(f"Using cached ComfyUI model config: {config_path}")
-            else:
-                logger.info(f"Loading ComfyUI model config from {config_path}")
-                with open(config_path, "r") as f:
-                    comfy_config = json.load(f)
-                self._config_cache[config_path] = comfy_config
+            logger.info(f"Loading ComfyUI model config from {config_path}")
+            comfy_config = json.load(open(config_path, "r"))
         else:
             comfy_config_str = self.metadata.get("comfy_config", None)
             comfy_config = json.loads(comfy_config_str)
