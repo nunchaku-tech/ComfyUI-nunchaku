@@ -11,7 +11,7 @@ Packaged ComfyUI (Recommended for Windows)
 We provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in, 
 eliminating the need to download any additional dependencies. This is the easiest way to get started:
 
-1. Download the packaged ComfyUI zip file from our `GitHub release page <github_nunchaku_releases_>`_.
+1. Download the packaged ComfyUI zip file from our build-comfyui-desktop action page: `GitHub Action page <github_nunchaku_action_>`_. You can download the artifacts from the latest successful build.
 
 2. Open the downloaded zip file. You will see another zip file inside. Extract this internal zip file 
    to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
@@ -91,3 +91,6 @@ Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
 
 Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
+
+.. _github_nunchaku_action_: https://github.com/nunchaku-tech/ComfyUI-nunchaku/actions/workflows/build-comfyui-desktop.yaml
+
