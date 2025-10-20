@@ -84,6 +84,23 @@ class ComfyQwenImageWrapper(nn.Module):
             self._applied_loras = self.loras.copy()
             compose_loras_v2(self.model, self.loras)
 
+            # BUG FIX v2: Force a full teardown and rebuild of the OffloadManager
+            # This ensures all old buffers are deallocated before creating new ones.
+            if hasattr(self.model, "offload_manager") and self.model.offload_manager is not None:
+                # Store the settings from the old manager before destroying it
+                manager = self.model.offload_manager
+                offload_settings = {
+                    "num_blocks_on_gpu": manager.num_blocks_on_gpu,
+                    "use_pin_memory": manager.use_pin_memory,
+                }
+
+                # Step 1: Completely disable and clear the old offloader
+                self.model.set_offload(False)
+
+                # Step 2: Re-enable offloading, forcing it to rebuild
+                # with the new tensor shapes and the original settings.
+                self.model.set_offload(True, **offload_settings)
+
         # Caching logic
         use_caching = getattr(self.model, "residual_diff_threshold_multi", 0) != 0 or getattr(self.model, "_is_cached", False)
         if use_caching:
