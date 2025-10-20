@@ -85,8 +85,12 @@ class ComfyQwenImageWrapper(nn.Module):
 
         timestep_float = timestep.item() if isinstance(timestep, torch.Tensor) else float(timestep)
 
+        model_is_dirty = (
+            not self.loras and # We expect no LoRA
+            hasattr(self.model, "_lora_slots") and self.model._lora_slots # But the model actually has LoRA
+        )
         # Check if the LoRA stack has been changed by a loader node
-        if self._applied_loras != self.loras:
+        if self._applied_loras != self.loras or model_is_dirty:
             # The compose function handles resetting before applying the new stack
             reset_lora_v2(self.model)
             self._applied_loras = self.loras.copy()
