@@ -82,8 +82,14 @@ class ComfyQwenImageWrapper(nn.Module):
         Detects changes to the `self.loras` list and recomposes the model
         on-the-fly before inference.
         """
+        if isinstance(timestep, torch.Tensor):
+            if timestep.numel() == 1:
+                timestep_float = timestep.item()
+            else:
+                timestep_float = timestep.flatten()[0].item()
+        else:
+            timestep_float = float(timestep)
 
-        timestep_float = timestep.item() if isinstance(timestep, torch.Tensor) else float(timestep)
 
         model_is_dirty = (
             not self.loras and # We expect no LoRA
