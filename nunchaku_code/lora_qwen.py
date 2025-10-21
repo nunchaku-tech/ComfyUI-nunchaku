@@ -107,6 +107,49 @@ _RE_ALPHA_SUFFIX = re.compile(r"\.(?:alpha|lora_alpha)(?:\.[^.]+)*$")
 
 
 # --- Helper Functions ---
+def _rename_layer_underscore_layer_name(old_name: str) -> str:
+    """
+    Converts specific model layer names by replacing underscore patterns
+    with dot notation using an ordered set of regex rules.
+    """
+
+    # Rules are ordered from most specific to most general
+    # to prevent a general rule from incorrectly matching part
+    # of a more specific pattern.
+    rules = [
+        # Case: transformer_blocks_8_attn_to_out_0 -> transformer_blocks.8.attn.to_out.0
+        (r'_(\d+)_attn_to_out_(\d+)', r'.\1.attn.to_out.\2'),
+
+        # Case: transformer_blocks_8_img_mlp_net_0_proj -> transformer_blocks.8.img_mlp.net.0.proj
+        (r'_(\d+)_img_mlp_net_(\d+)_proj', r'.\1.img_mlp.net.\2.proj'),
+
+        # Case: transformer_blocks_8_txt_mlp_net_0_proj -> transformer_blocks.8.txt_mlp.net.0.proj
+        (r'_(\d+)_txt_mlp_net_(\d+)_proj', r'.\1.txt_mlp.net.\2.proj'),
+
+        # Case: transformer_blocks_8_img_mlp_net_2 -> transformer_blocks.8.img_mlp.net.2
+        (r'_(\d+)_img_mlp_net_(\d+)', r'.\1.img_mlp.net.\2'),
+
+        # Case: transformer_blocks_8_txt_mlp_net_2 -> transformer_blocks.8.txt_mlp.net.2
+        (r'_(\d+)_txt_mlp_net_(\d+)', r'.\1.txt_mlp.net.\2'),
+
+        # Case: transformer_blocks_8_img_mod_1 -> transformer_blocks.8.img_mod.1
+        (r'_(\d+)_img_mod_(\d+)', r'.\1.img_mod.\2'),
+
+        # Case: transformer_blocks_8_txt_mod_1 -> transformer_blocks.8.txt_mod.1
+        (r'_(\d+)_txt_mod_(\d+)', r'.\1.txt_mod.\2'),
+
+        # General 'attn' case: transformer_blocks_8_attn_... -> transformer_blocks.8.attn....
+        # This catches add_k_proj, add_q_proj, to_k, etc.
+        (r'_(\d+)_attn_', r'.\1.attn.'),
+    ]
+
+    new_name = old_name
+    for pattern, replacement in rules:
+        # Apply the substitution. If the pattern doesn't match,
+        # re.sub simply returns the original string.
+        new_name = re.sub(pattern, replacement, new_name)
+
+    return new_name
 
 def _classify_and_map_key(key: str) -> Optional[Tuple[str, str, Optional[str], str]]:
     """
@@ -120,6 +163,8 @@ def _classify_and_map_key(key: str) -> Optional[Tuple[str, str, Optional[str], s
         k = k[len("diffusion_model."):]
     if k.startswith("lora_unet_"):
         k = k[len("lora_unet_"):]
+        k = _rename_layer_underscore_layer_name(k)
+
 
     base = None
     ab = None
@@ -340,7 +385,6 @@ def compose_loras_v2(
     reset_lora_v2(model)
 
     aggregated_weights: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    unused_keys: List[str] = []
 
     # 1. Aggregate weights from all LoRAs
     for lora_path_or_dict, strength in lora_configs:
@@ -351,7 +395,6 @@ def compose_loras_v2(
         for key, value in lora_state_dict.items():
             parsed = _classify_and_map_key(key)
             if parsed is None:
-                unused_keys.append(key)
                 continue
 
             group, base_key, comp, ab = parsed
@@ -419,8 +462,7 @@ def compose_loras_v2(
         applied_modules_count += 1
 
     logger.info(f"Applied LoRA compositions to {applied_modules_count} modules.")
-    if unused_keys:
-        logger.warning(f"Unused keys ({len(unused_keys)}): {unused_keys}")
+
     if invalid_modules:
         logger.warning(
             f"Could not find/apply LoRA to {len(invalid_modules)} modules, showing first 5: {invalid_modules[:5]}")
