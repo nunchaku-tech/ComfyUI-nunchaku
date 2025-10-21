@@ -429,11 +429,10 @@ def compose_loras_v2(
 
     # 2. Apply aggregated weights to the model
     applied_modules_count = 0
-    invalid_modules = []
+
     for module_name, parts in aggregated_weights.items():
         resolved_name, module = _resolve_module_name(model, module_name)
         if module is None or not (hasattr(module, "proj_down") and hasattr(module, "proj_up")):
-            invalid_modules.append(module_name)
             continue
 
         all_A = []
@@ -462,11 +461,6 @@ def compose_loras_v2(
         applied_modules_count += 1
 
     logger.info(f"Applied LoRA compositions to {applied_modules_count} modules.")
-
-    if invalid_modules:
-        logger.warning(
-            f"Could not find/apply LoRA to {len(invalid_modules)} modules, showing first 5: {invalid_modules[:5]}")
-
 
 def update_lora_params_v2(
         model: torch.nn.Module,
