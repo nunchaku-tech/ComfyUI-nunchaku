@@ -42,6 +42,14 @@ except ImportError:
     logger.exception("Node `NunchakuQwenImageDiTLoader` import failed:")
 
 try:
+    from .nodes.models.sdxl import NunchakuSDXLUNetLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuSDXLUNetLoader"] = NunchakuSDXLUNetLoader
+except ImportError:
+    logger.exception("Node `NunchakuSDXLUNetLoader` import failed:")
+
+
+try:
     from .nodes.lora.flux import NunchakuFluxLoraLoader, NunchakuFluxLoraStack
 
     NODE_CLASS_MAPPINGS["NunchakuFluxLoraLoader"] = NunchakuFluxLoraLoader
