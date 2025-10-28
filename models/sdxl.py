@@ -147,24 +147,7 @@ TRANSFORMER_BLOCKS = {
     "ff.net.2.wscales"
 }
 
-def process_transformer_block_input_key(input_string: str) -> str:
-    """
-    Minor adjustments for compatibility with new NunchakuSDXLUNetModel
 
-    Args:
-        input_string: The string to process (e.g., "attn1.to_out.0.proj_up").
-
-    Returns:
-        The modified string if 'attn1' or 'attn2' is found at the start,
-        otherwise returns the original string.
-    """
-    
-    match = re.match(r"^(attn[12])(\.)", input_string)
-    
-    if match:
-        rest_of_string = input_string[len(match.group(0)):]
-        return match.group(1) + ".attn_module" + match.group(2) + rest_of_string
-    return input_string
 
 def convert_sdxl_state_dict(state_dict: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
     new_state_dict = {}
@@ -209,8 +192,7 @@ def unet_to_diffusers(unet_config):
                     diffusers_unet_map["down_blocks.{}.attentions.{}.{}".format(x, i, b)] = "input_blocks.{}.1.{}".format(n, b)
                 for t in range(num_transformers):
                     for b in TRANSFORMER_BLOCKS:
-                        processed_b = process_transformer_block_input_key(b)
-                        diffusers_unet_map["down_blocks.{}.attentions.{}.transformer_blocks.{}.{}".format(x, i, t, b)] = "input_blocks.{}.1.transformer_blocks.{}.{}".format(n, t, processed_b)
+                        diffusers_unet_map["down_blocks.{}.attentions.{}.transformer_blocks.{}.{}".format(x, i, t, b)] = "input_blocks.{}.1.transformer_blocks.{}.{}".format(n, t, b)
             n += 1
         for k in ["weight", "bias"]:
             diffusers_unet_map["down_blocks.{}.downsamplers.0.conv.{}".format(x, k)] = "input_blocks.{}.0.op.{}".format(n, k)
@@ -220,8 +202,7 @@ def unet_to_diffusers(unet_config):
         diffusers_unet_map["mid_block.attentions.{}.{}".format(i, b)] = "middle_block.1.{}".format(b)
     for t in range(transformers_mid):
         for b in TRANSFORMER_BLOCKS:
-            processed_b = process_transformer_block_input_key(b)
-            diffusers_unet_map["mid_block.attentions.{}.transformer_blocks.{}.{}".format(i, t, b)] = "middle_block.1.transformer_blocks.{}.{}".format(t, processed_b)
+            diffusers_unet_map["mid_block.attentions.{}.transformer_blocks.{}.{}".format(i, t, b)] = "middle_block.1.transformer_blocks.{}.{}".format(t, b)
 
     for i, n in enumerate([0, 2]):
         for b in UNET_MAP_RESNET:
@@ -243,8 +224,7 @@ def unet_to_diffusers(unet_config):
                     diffusers_unet_map["up_blocks.{}.attentions.{}.{}".format(x, i, b)] = "output_blocks.{}.1.{}".format(n, b)
                 for t in range(num_transformers):
                     for b in TRANSFORMER_BLOCKS:
-                        processed_b = process_transformer_block_input_key(b)
-                        diffusers_unet_map["up_blocks.{}.attentions.{}.transformer_blocks.{}.{}".format(x, i, t, b)] = "output_blocks.{}.1.transformer_blocks.{}.{}".format(n, t, processed_b)
+                        diffusers_unet_map["up_blocks.{}.attentions.{}.transformer_blocks.{}.{}".format(x, i, t, b)] = "output_blocks.{}.1.transformer_blocks.{}.{}".format(n, t, b)
             if i == l - 1:
                 for k in ["weight", "bias"]:
                     diffusers_unet_map["up_blocks.{}.upsamplers.0.conv.{}".format(x, k)] = "output_blocks.{}.{}.conv.{}".format(n, c, k)
@@ -384,7 +364,11 @@ class NunchakuSDXLSelfAttention(nn.Module):
         self.to_out[0] = SVDQW4A4Linear.from_linear(self.to_out[0], precision = attn_precision, rank = attn_rank)
 
 
-    def forward(self, x, mask=None, transformer_options={}):
+    def forward(self, x, context=None, value=None, mask=None, transformer_options={}):
+
+        assert context is None
+        assert value is None
+
         # 1. Compute Q, K, V in a single pass
         # x shape: (batch_size, seq_len, query_dim)
         # qkv shape: (batch_size, seq_len, inner_dim * 3)
@@ -438,39 +422,52 @@ class NunchakuSDXLCrossAttention(nn.Module):
             out = optimized_attention_masked(q, k, v, self.heads, mask, transformer_options=transformer_options)
         return self.to_out(out)
 
-class NunchakuSDXLAttentionWrapper(nn.Module):
-    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0., attn_precision=None, attn_rank=None, dtype=None, device=None, operations=ops):
-        super().__init__()
+def create_attention_module(
+    query_dim, 
+    context_dim=None, 
+    heads=8, 
+    dim_head=64, 
+    dropout=0., 
+    attn_precision=None, 
+    attn_rank=None, 
+    dtype=None, 
+    device=None, 
+    operations=ops
+):
+    """
+    Factory function that returns the correct attention module
+    based on whether context_dim is provided.
+    """
+    is_cross_attention = context_dim is not None
+    
+    if is_cross_attention:
+        # Return the CrossAttention module instance
+        return NunchakuSDXLCrossAttention(
+            query_dim, 
+            context_dim=context_dim, 
+            heads=heads, 
+            dim_head=dim_head, 
+            dropout=dropout, 
+            attn_precision=attn_precision, 
+            attn_rank=attn_rank, 
+            dtype=dtype, 
+            device=device, 
+            operations=operations
+        )
+    else:
+        # Return the SelfAttention module instance
+        return NunchakuSDXLSelfAttention(
+            query_dim, 
+            heads=heads, 
+            dim_head=dim_head, 
+            dropout=dropout, 
+            attn_precision=attn_precision, 
+            attn_rank=attn_rank, 
+            dtype=dtype, 
+            device=device, 
+            operations=operations
+        )
 
-        # Check if this should be self-attention or cross-attention
-        self.is_cross_attention = context_dim is not None
-
-        if self.is_cross_attention:
-            # Use the NunchakuSDXLCrossAttention module
-            self.attn_module = NunchakuSDXLCrossAttention(
-                query_dim, context_dim=context_dim, heads=heads, dim_head=dim_head, 
-                dropout=dropout, attn_precision=attn_precision, attn_rank=attn_rank, dtype=dtype, 
-                device=device, operations=operations
-            )
-        else:
-            # Use the NunchakuSDXLSelfAttention module
-            # don't pass context_dim here
-            self.attn_module = NunchakuSDXLSelfAttention(
-                query_dim, heads=heads, dim_head=dim_head, dropout=dropout, 
-                attn_precision=attn_precision, attn_rank=attn_rank, dtype=dtype, device=device, 
-                operations=operations
-            )
-
-    def forward(self, x, context=None, value=None, mask=None, transformer_options={}):
-        
-        # The forward pass must decide which arguments to send
-        if self.is_cross_attention:
-            # The CrossAttention module expects 'context'
-            return self.attn_module(x, context=context, value=value, mask=mask, transformer_options=transformer_options)
-        else:
-            # The SelfAttention module *only* expects 'x'
-            # It will ignore 'context' and 'value'
-            return self.attn_module(x, mask=mask, transformer_options=transformer_options)
 
 class NunchakuSDXLResBlock(TimestepBlock):
     """
@@ -631,7 +628,7 @@ class NunchakuSDXLBasicTransformerBlock(nn.Module):
             self.ff_in = NunchakuSDXLFeedForward(dim, dim_out=inner_dim, dropout=dropout, glu=gated_ff, dtype=dtype, attn_precision=self.attn_precision, attn_rank=self.attn_rank, device=device, operations=operations)
 
         self.disable_self_attn = disable_self_attn
-        self.attn1 = NunchakuSDXLAttentionWrapper(query_dim=inner_dim, heads=n_heads, dim_head=d_head, dropout=dropout,
+        self.attn1 = create_attention_module(query_dim=inner_dim, heads=n_heads, dim_head=d_head, dropout=dropout,
                               context_dim=context_dim if self.disable_self_attn else None, attn_precision=self.attn_precision, attn_rank=self.attn_rank, dtype=dtype, device=device, operations=operations)  # is a self-attention if not self.disable_self_attn
         self.ff = NunchakuSDXLFeedForward(inner_dim, dim_out=dim, dropout=dropout, glu=gated_ff, attn_precision=self.attn_precision, attn_rank=self.attn_rank, dtype=dtype, device=device, operations=operations)
 
@@ -645,7 +642,7 @@ class NunchakuSDXLBasicTransformerBlock(nn.Module):
             if not switch_temporal_ca_to_sa:
                 context_dim_attn2 = context_dim
 
-            self.attn2 = NunchakuSDXLAttentionWrapper(query_dim=inner_dim, context_dim=context_dim_attn2,
+            self.attn2 = create_attention_module(query_dim=inner_dim, context_dim=context_dim_attn2,
                                 heads=n_heads, dim_head=d_head, dropout=dropout, attn_precision=self.attn_precision, attn_rank=self.attn_rank, dtype=dtype, device=device, operations=operations)  # is self-attn if context is none
             self.norm2 = operations.LayerNorm(inner_dim, dtype=dtype, device=device)
 
@@ -705,6 +702,7 @@ class NunchakuSDXLBasicTransformerBlock(nn.Module):
             block_attn1 = block
 
         if block_attn1 in attn1_replace_patch:
+            #watch out, probably need to fuse layers
             if context_attn1 is None:
                 context_attn1 = n
                 value_attn1 = n
@@ -1336,4 +1334,106 @@ class NunchakuSDXLUNetModel(nn.Module):
             return self.id_predictor(h)
         else:
             return self.out(h)
+"""
+Section 3: handle LoRAs
+
+Since this file uses a custom architecture based on ComfyUI UNetModel rather than diffusers UNet2DConditionModel there will be a distinct lora implementation here.
+
+"""
+
+def convert_lora(lora):
+
+    sd = lora
+
+
+
+    #fuse attn1 layers (i.e. from to_q, to_k, to_v to to_qkv)
+    sd_part_one = {}
+    for k in sd:
+        tensor = sd[k]
+        if "attn1" in k:
+            if "to_k" in k:
+                k_to = k.replace("to_k", "to_qkv")
+                tensor_q = sd[k.replace("to_k", "to_q")]
+                tensor_v = sd[k.replace("to_k", "to_v")]
+                
+            
+        else:
+            sd_part_one[k] = tensor
+        
+        
+
+    #convert weights into compatible format for SVDQW4A4Linear
+
+
+
+    return sd_out
+
+def model_lora_keys_unet(model, key_map={}):
+    """
+    modified version of comfy.lora.model_lora_keys_unet which uses unet_to_diffusers as defined in this file
+    """
+    sd = model.state_dict()
+    sdk = sd.keys()
+
+    for k in sdk:
+        if k.startswith("diffusion_model."):
+            if k.endswith(".weight"):
+                key_lora = k[len("diffusion_model."):-len(".weight")].replace(".", "_")
+                key_map["lora_unet_{}".format(key_lora)] = k
+                key_map["{}".format(k[:-len(".weight")])] = k #generic lora format without any weird key names
+            else:
+                key_map["{}".format(k)] = k #generic lora format for not .weight without any weird key names
+
+    diffusers_keys = unet_to_diffusers(model.model_config.unet_config)
+    for k in diffusers_keys:
+        if k.endswith(".weight"):
+            unet_key = "diffusion_model.{}".format(diffusers_keys[k])
+            key_lora = k[:-len(".weight")].replace(".", "_")
+            key_map["lora_unet_{}".format(key_lora)] = unet_key
+            key_map["lycoris_{}".format(key_lora)] = unet_key #simpletuner lycoris format
+
+            diffusers_lora_prefix = ["", "unet."]
+            for p in diffusers_lora_prefix:
+                diffusers_lora_key = "{}{}".format(p, k[:-len(".weight")].replace(".to_", ".processor.to_"))
+                if diffusers_lora_key.endswith(".to_out.0"):
+                    diffusers_lora_key = diffusers_lora_key[:-2]
+                key_map[diffusers_lora_key] = unet_key
+
+
+def load_lora_for_models(model, lora, strength_model):
+    """
+    modified version of comfy.sd.load_lora_for_models
+    """
+
+    key_map = {}
+    if model is not None:
+        key_map = model_lora_keys_unet(model.model, key_map)
+    if clip is not None:
+        key_map = comfy.lora.model_lora_keys_clip(clip.cond_stage_model, key_map)
+
+    lora = convert_lora(lora)
+    loaded = comfy.lora.load_lora(lora, key_map)
+    if model is not None:
+        new_modelpatcher = model.clone()
+        k = new_modelpatcher.add_patches(loaded, strength_model)
+    else:
+        k = ()
+        new_modelpatcher = None
+
+    if clip is not None:
+        new_clip = clip.clone()
+        k1 = new_clip.add_patches(loaded, strength_clip)
+    else:
+        k1 = ()
+        new_clip = None
+    k = set(k)
+    k1 = set(k1)
+    for x in loaded:
+        if (x not in k) and (x not in k1):
+            logging.warning("NOT LOADED {}".format(x))
+
+    return (new_modelpatcher, new_clip)
+
+
 
