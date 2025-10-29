@@ -57,6 +57,14 @@ try:
 except ImportError:
     logger.exception("Nodes `NunchakuFluxLoraLoader` and `NunchakuFluxLoraStack` import failed:")
 
+try:
+    from .nodes.lora.sdxl import NunchakuSDXLLoraLoader, NunchakuSDXLLoraStack
+
+    NODE_CLASS_MAPPINGS["NunchakuSDXLLoraLoader"] = NunchakuSDXLLoraLoader
+    NODE_CLASS_MAPPINGS["NunchakuSDXLLoraStack"] = NunchakuSDXLLoraStack
+except ImportError:
+    logger.exception("Nodes `NunchakuSDXLLoraLoader` and `NunchakuSDXLLoraStack` import failed:")
+
 
 try:
     from .nodes.models.text_encoder import NunchakuTextEncoderLoader, NunchakuTextEncoderLoaderV2
