@@ -38,6 +38,9 @@ ops = comfy.ops.disable_weight_init
 
 from nunchaku.utils import load_state_dict_in_safetensors
 
+#these are still good for sdxl
+from nunchaku.lora.flux.nunchaku_converter import pack_lowrank_weight, unpack_lowrank_weight
+
 from comfy.ldm.modules.diffusionmodules.openaimodel import UNetModel, Upsample, Downsample, TimestepEmbedSequential, TimestepBlock, apply_control, timestep_embedding, ResBlock
 from comfy.ldm.modules.attention import BasicTransformerBlock as BasicTransformerBlockComfyUI, FeedForward as FeedForwardComfyUI, CrossAttention as CrossAttentionComfyUI, optimized_attention, optimized_attention_masked, GEGLU
 from comfy.ldm.modules.attention import SpatialTransformer as SpatialTransformerComfyUI
@@ -702,13 +705,12 @@ class NunchakuSDXLBasicTransformerBlock(nn.Module):
             block_attn1 = block
 
         if block_attn1 in attn1_replace_patch:
-            #watch out, probably need to fuse layers
-            if context_attn1 is None:
-                context_attn1 = n
-                value_attn1 = n
-            n = self.attn1.to_q(n)
-            context_attn1 = self.attn1.to_k(context_attn1)
-            value_attn1 = self.attn1.to_v(value_attn1)
+            #this assumes attn1 fuses q, k, v into qkv
+            #which means context and value are set to 'None'
+
+            n = self.attn1.to_qkv(n)
+            context_attn1 = None
+            value_attn1 = None
             n = attn1_replace_patch[block_attn1](n, context_attn1, value_attn1, extra_options)
             n = self.attn1.to_out(n)
         else:
@@ -1339,35 +1341,145 @@ Section 3: handle LoRAs
 
 Since this file uses a custom architecture based on ComfyUI UNetModel rather than diffusers UNet2DConditionModel there will be a distinct lora implementation here.
 
+To-do: proper LoRA weight implementation for quantized layers. We need to:
+1) unpack_lowrank_weight on original proj_up, proj_down
+2) concatenate proj_up, proj_down with lora's proj_up, proj_down
+3) pack_lowrank_weight on the new proj_up, proj_down
+
+If not quantized, then sends lora layers to the ComfyUI modelpatcher's default LoRA methods.
+
+May have some issues with mismatches in tensor sizes. Nunchaku FLUX LORA implementation just truncates the larger tensor. Will have to look further.
+
 """
 
+
+
+
 def convert_lora(lora):
+    """
+    compared to comfy.lora.convert_lora this splits the lora's state_dict into two state_dicts: weights that do not affect a quantized layer goes to ComfyUI ModelPatcher, the   
+    rest needs to be handled here.
+    """
 
     sd = lora
-
-
-
     #fuse attn1 layers (i.e. from to_q, to_k, to_v to to_qkv)
-    sd_part_one = {}
+    sd_to_nunchaku = {}
+    sd_to_comfy = {}
     for k in sd:
         tensor = sd[k]
         if "attn1" in k:
-            if "to_k" in k:
-                k_to = k.replace("to_k", "to_qkv")
-                tensor_q = sd[k.replace("to_k", "to_q")]
-                tensor_v = sd[k.replace("to_k", "to_v")]
+            if "to_k" in k and "alpha" not in k:
                 
+                k_to = k.replace("to_k", "to_qkv")
+
+                k_q = k.replace("to_k", "to_q")
+                k_v = k.replace("to_k", "to_v")
+                tensor_q = sd[k_q]
+                tensor_k = tensor
+                tensor_v = sd[k_v]
+
+                rank_q = min(tensor_q.shape)
+                rank_k = min(tensor_k.shape)
+                rank_v = min(tensor_v.shape)
+
+
+                default_alpha_q = rank_q
+                default_alpha_k = rank_k
+                default_alpha_v = rank_v
+                
+                alpha_q = sd.get(".".join(k_q.rsplit('.', 1)[:-1] + ["alpha"]), default_alpha_q)
+                alpha_k = sd.get(".".join(k.rsplit('.', 1)[:-1] + ["alpha"]), default_alpha_k)
+                alpha_v = sd.get(".".join(k_v.rsplit('.', 1)[:-1] + ["alpha"]), default_alpha_v)
+
+                if "lora_up" in k:
+                    concat_dim = 0
+                else: #assume "lora_down"
+                    concat_dim = 1
+
+
+                sd_to_nunchaku[k_to] = torch.cat([alpha_q/rank_q * tensor_q, alpha_k/rank_k * tensor_k, alpha_v/rank_v * tensor_v], dim=concat_dim)
             
-        else:
-            sd_part_one[k] = tensor
+        elif "attn2" in k and "to_q" not in k and "to_out" not in k:
+            #to_k and to_v are not quantized in attn2
+            sd_to_comfy[k] = tensor
+        elif "alpha" not in k:
+            #handle alpha/rank scaling for rest of nunchaku tensors
+            rank = min(tensor.shape)
+            default_alpha = rank
+            alpha = sd.get(".".join(k.rsplit('.', 1)[:-1] + ["alpha"]), default_alpha)
+
+            sd_to_nunchaku[k] = alpha/rank * tensor
+
+    for n_k in list(sd_to_nunchaku.keys()):
+        #renaming nunchaku keys to exact format of original model's keys rather than ComfyUI lora format
         
-        
+        n_k_new = n_k.replace("lora_unet_", "").replace("lycoris_", "")
+        n_k_new = n_k_new.replace("_", ".")
 
-    #convert weights into compatible format for SVDQW4A4Linear
+        n_k_new = n_k_new.replace("ff.net", "ff_net").replace("transformer.blocks", "transformer_blocks")
+
+        n_k_new = n_k_new.replace("lora.down", "proj_down").replace("lora.up", "proj_up")
+        n_k_new = n_k_new.replace("proj.down", "proj_down").replace("proj.up", "proj_up")
+
+        n_k_new = n_k_new.replace("down.", "input_").replace("mid.", "middle_").replace("up.", "output_")
+        n_k_new = n_k_new.replace("input.", "input_").replace("middle.", "middle_").replace("output.", "output_")
+
+        sd_to_nunchaku[n_k_new] = sd_to_nunchaku.pop(n_k)
 
 
+    return sd_to_nunchaku, sd_to_comfy
 
-    return sd_out
+def apply_nunchaku_lora_layers(loras: list[tuple[str | dict[str, torch.Tensor], float]], model: NunchakuSDXLUNetModel) -> NunchakuSDXLUNetModel:
+    """
+
+    Applys Nunchaku SDXL LoRA keys to quantized layers of NunchakuSDXL model.
+
+
+    Parameters
+    ----------
+    loras : list of (str or dict[str, torch.Tensor], float)
+        Each tuple contains:
+            - Path to a LoRA safetensors file or a LoRA weights dictionary.
+            - Strength/scale factor for that LoRA.
+    model : NunchakuSDXLUNetModel
+        Path to save the composed LoRA weights as a safetensors file. If None, does not save.
+
+    Returns
+    -------
+    NunchakuSDXLUNetModel
+        Model with applied LoRAs.
+
+    Raises
+    ------
+    AssertionError
+        If LoRA weights are in Nunchaku format (must be converted to Diffusers format first)
+        or if tensor shapes are incompatible.
+
+    """
+    sd = model.state_dict()
+
+    for k in sd.keys():
+        if ".qweight" in k:
+            proj_down_k = ".".join(k.rsplit('.', 1)[:-1] + ["proj_down"])
+            proj_up_k = ".".join(k.rsplit('.', 1)[:-1] + ["proj_up"])
+            sd_proj_down = unpack_lowrank_weight(sd.get(proj_down_k), down=True)
+            sd_proj_up = unpack_lowrank_weight(sd.get(proj_up_k), down=False)
+
+            for lora, strength in loras:
+                lora_proj_down = lora.get(proj_down_k)
+                lora_proj_up = lora.get(proj_up_k)
+                
+                if lora_proj_down is not None and lora_proj_up is not None:
+                    sd_proj_down = torch.cat([sd_proj_down, strength * lora_proj_down], dim=1)
+                    sd_proj_up = torch.cat([sd_proj_up, strength * lora_proj_up], dim=0)
+            
+            sd[proj_down_k] = pack_lowrank_weight(sd_proj_down, down=True)
+            sd[proj_up_k] = pack_lowrank_weight(sd_proj_up, down=False)
+
+    return model
+     
+    
+
 
 def model_lora_keys_unet(model, key_map={}):
     """
@@ -1382,6 +1494,7 @@ def model_lora_keys_unet(model, key_map={}):
                 key_lora = k[len("diffusion_model."):-len(".weight")].replace(".", "_")
                 key_map["lora_unet_{}".format(key_lora)] = k
                 key_map["{}".format(k[:-len(".weight")])] = k #generic lora format without any weird key names
+            
             else:
                 key_map["{}".format(k)] = k #generic lora format for not .weight without any weird key names
 
@@ -1399,11 +1512,14 @@ def model_lora_keys_unet(model, key_map={}):
                 if diffusers_lora_key.endswith(".to_out.0"):
                     diffusers_lora_key = diffusers_lora_key[:-2]
                 key_map[diffusers_lora_key] = unet_key
+        
+    return key_map
 
 
-def load_lora_for_models(model, lora, strength_model):
+def load_lora_for_models(model, clip, lora_list, strength_model_list, strength_clip_list):
     """
-    modified version of comfy.sd.load_lora_for_models
+    modified version of comfy.sd.load_lora_for_models which handles lists of loras
+    key_map only gets ComfyUI_compatible weights, the rest are handled manually
     """
 
     key_map = {}
@@ -1412,26 +1528,38 @@ def load_lora_for_models(model, lora, strength_model):
     if clip is not None:
         key_map = comfy.lora.model_lora_keys_clip(clip.cond_stage_model, key_map)
 
-    lora = convert_lora(lora)
-    loaded = comfy.lora.load_lora(lora, key_map)
-    if model is not None:
-        new_modelpatcher = model.clone()
-        k = new_modelpatcher.add_patches(loaded, strength_model)
-    else:
-        k = ()
-        new_modelpatcher = None
+    lora_nunchaku_list = []
+    lora_comfy_list = []
 
-    if clip is not None:
-        new_clip = clip.clone()
-        k1 = new_clip.add_patches(loaded, strength_clip)
-    else:
-        k1 = ()
-        new_clip = None
-    k = set(k)
-    k1 = set(k1)
-    for x in loaded:
-        if (x not in k) and (x not in k1):
-            logging.warning("NOT LOADED {}".format(x))
+    for lora, strength_model, strength_clip in zip(lora_list, strength_model_list, strength_clip_list):
+        lora_nunchaku, lora_comfy = convert_lora(lora)
+        lora_nunchaku_list.append((lora_nunchaku, strength_model))
+        lora_comfy_list.append((lora_comfy, strength_model, strength_clip))
+
+    if model is not None:
+        model.model = apply_nunchaku_lora_layers(lora_nunchaku_list, model.model)
+
+        
+    for comfy_lora_tuple in lora_comfy_list:
+        loaded = comfy.lora.load_lora(comfy_lora_tuple[0], key_map)
+        if model is not None:
+            new_modelpatcher = model.clone()
+            k = new_modelpatcher.add_patches(loaded, comfy_lora_tuple[1])
+        else:
+            k = ()
+            new_modelpatcher = None
+
+        if clip is not None:
+            new_clip = clip.clone()
+            k1 = new_clip.add_patches(loaded, comfy_lora_tuple[2])
+        else:
+            k1 = ()
+            new_clip = None
+        k = set(k)
+        k1 = set(k1)
+        for x in loaded:
+            if (x not in k) and (x not in k1):
+                logging.warning("NOT LOADED {}".format(x))
 
     return (new_modelpatcher, new_clip)
 
