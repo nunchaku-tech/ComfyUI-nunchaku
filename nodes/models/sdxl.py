@@ -1,6 +1,6 @@
 """
 This module provides the :class:`NunchakuSDXLUnetLoader` class for loading Nunchaku SDXL models.
-It also supports attention implementation selection. First-block caching not implemented yet. Currently CPU Offload is not supported.
+Currently CPU Offload and attention implementation selection are not supported.
 
 """
 
@@ -383,6 +383,8 @@ class NunchakuSDXLUNetLoader:
             cpu_offload_enabled = False
             print("Disabling CPU offload")
 
+        """
+
         if (
             self.model_path != model_path
             or self.device != device
@@ -399,14 +401,15 @@ class NunchakuSDXLUNetLoader:
                 comfy.model_management.cleanup_models_gc()
                 comfy.model_management.soft_empty_cache()
                 comfy.model_management.free_memory(model_size, device)
+        """
 
-            sd, metadata = load_torch_file(str(model_path), return_metadata=True)
-            self.model_sd = sd
-            self.metadata = metadata
-            self.model_path = model_path
-            self.device = device
-            self.cpu_offload = cpu_offload_enabled
-            self.data_type = data_type
+        sd, metadata = load_torch_file(str(model_path), return_metadata=True)
+        self.model_sd = sd
+        self.metadata = metadata
+        self.model_path = model_path
+        self.device = device
+        self.cpu_offload = cpu_offload_enabled
+        self.data_type = data_type
 
 
 
