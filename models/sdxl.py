@@ -41,6 +41,9 @@ from nunchaku.utils import load_state_dict_in_safetensors
 #these are still good for sdxl
 from nunchaku.lora.flux.nunchaku_converter import pack_lowrank_weight, unpack_lowrank_weight
 
+import contextvars
+from nunchaku.caching.fbcache import get_buffer, get_can_use_cache, set_buffer, cache_context, create_cache_context, get_current_cache_context
+
 from comfy.ldm.modules.diffusionmodules.openaimodel import UNetModel, Upsample, Downsample, TimestepEmbedSequential, TimestepBlock, apply_control, timestep_embedding, ResBlock
 from comfy.ldm.modules.attention import BasicTransformerBlock as BasicTransformerBlockComfyUI, FeedForward as FeedForwardComfyUI, CrossAttention as CrossAttentionComfyUI, optimized_attention, optimized_attention_masked, GEGLU
 from comfy.ldm.modules.attention import SpatialTransformer as SpatialTransformerComfyUI
@@ -247,6 +250,7 @@ def unet_to_diffusers(unet_config):
 """
 Section 2: define new NunchakuSDXLUNetModel based on ComfyUI's UNetModel
 """
+
 
 #Nunchaku SDXL implementation only accepts flashattn, I defer to ComfyUI's processor.
 
@@ -906,6 +910,7 @@ class NunchakuSDXLUNetModel(nn.Module):
         max_ddpm_temb_period=10000,
         attn_precision=None,
         attn_rank=None,
+        cache_threshold=0,
         device=None,
         operations=ops,
     ):
@@ -958,6 +963,12 @@ class NunchakuSDXLUNetModel(nn.Module):
         self.num_heads_upsample = num_heads_upsample
         self.use_temporal_resblocks = use_temporal_resblock
         self.predict_codebook_ids = n_embed is not None
+        self.cache_threshold = cache_threshold
+
+        #parameters for first-block cache
+        self._prev_timestep = None
+        self._cache_context = None
+        self._is_cached = False
 
         self.default_num_video_frames = None
 
@@ -1253,6 +1264,7 @@ class NunchakuSDXLUNetModel(nn.Module):
         )
 
     def forward(self, x, timesteps=None, context=None, y=None, control=None, transformer_options={}, **kwargs):
+
         return comfy.patcher_extension.WrapperExecutor.new_class_executor(
             self._forward,
             self,
@@ -1268,6 +1280,17 @@ class NunchakuSDXLUNetModel(nn.Module):
         :param y: an [N] Tensor of labels, if class-conditional.
         :return: an [N x C x ...] Tensor of outputs.
         """
+
+        if isinstance(timesteps, torch.Tensor):
+            if timesteps.numel() == 1:
+                timestep_float = timesteps.item()
+            else:
+                timestep_float = timesteps.flatten()[0].item()
+        else:
+            assert isinstance(timesteps, float)
+            timestep_float = timesteps
+
+
         transformer_options["original_shape"] = list(x.shape)
         transformer_options["transformer_index"] = 0
         transformer_patches = transformer_options.get("patches", {})
@@ -1293,6 +1316,114 @@ class NunchakuSDXLUNetModel(nn.Module):
             emb = emb + self.label_emb(y)
 
         h = x
+
+        #handle fb cache logic here (i.e. when to use context???) note that _forward has already been updated to use caching
+        if self.cache_threshold != 0 or self._is_cached == False:
+            # A more robust caching strategy
+            cache_invalid = False
+          
+            # Check if timestamps have changed or are out of valid range
+            if self._prev_timestep is None:
+                cache_invalid = True
+            elif self._prev_timestep < timestep_float + 1e-5:
+                cache_invalid = True
+            
+            if cache_invalid:
+                self._cache_context = create_cache_context()
+
+            self._prev_timestep = timestep_float
+            
+            
+
+            with cache_context(self._cache_context):
+
+                #handle first block
+                module = self.input_blocks[0]
+                transformer_options["block"] = ("input", 0)
+                h = forward_timestep_embed(module, h, emb, context, transformer_options, time_context=time_context, num_video_frames=num_video_frames, image_only_indicator=image_only_indicator)
+                h = apply_control(h, control, 'input')
+                if "input_block_patch" in transformer_patches:
+                    patch = transformer_patches["input_block_patch"]
+                    for p in patch:
+                        h = p(h, transformer_options)
+
+                hs.append(h)
+                if "input_block_patch_after_skip" in transformer_patches:
+                    patch = transformer_patches["input_block_patch_after_skip"]
+                    for p in patch:
+                        h = p(h, transformer_options)
+
+                torch._dynamo.graph_break()
+
+                #first_block cache logic
+                can_use_cache, diff = get_can_use_cache(h, threshold = self.cache_threshold, parallelized=False, mode='single')
+
+                if can_use_cache:
+                    h = get_buffer("final_output")
+                    return h
+        
+                #if still here, the cache did not activate
+
+                set_buffer("first_single_hidden_states_residual", h)
+  
+
+        
+                for id, module in enumerate(self.input_blocks[1:]):
+                    transformer_options["block"] = ("input", id)
+                    h = forward_timestep_embed(module, h, emb, context, transformer_options, time_context=time_context, num_video_frames=num_video_frames, image_only_indicator=image_only_indicator)
+                    h = apply_control(h, control, 'input')
+                    if "input_block_patch" in transformer_patches:
+                        patch = transformer_patches["input_block_patch"]
+                        for p in patch:
+                            h = p(h, transformer_options)
+
+                    hs.append(h)
+                    if "input_block_patch_after_skip" in transformer_patches:
+                        patch = transformer_patches["input_block_patch_after_skip"]
+                        for p in patch:
+                            h = p(h, transformer_options)
+
+                transformer_options["block"] = ("middle", 0)
+                if self.middle_block is not None:
+                    h = forward_timestep_embed(self.middle_block, h, emb, context, transformer_options, time_context=time_context, num_video_frames=num_video_frames, image_only_indicator=image_only_indicator)
+                h = apply_control(h, control, 'middle')
+
+
+                for id, module in enumerate(self.output_blocks):
+                    transformer_options["block"] = ("output", id)
+                    hsp = hs.pop()
+                    hsp = apply_control(hsp, control, 'output')
+
+                    if "output_block_patch" in transformer_patches:
+                        patch = transformer_patches["output_block_patch"]
+                        for p in patch:
+                            h, hsp = p(h, hsp, transformer_options)
+
+                    h = th.cat([h, hsp], dim=1)
+                    del hsp
+                    if len(hs) > 0:
+                        output_shape = hs[-1].shape
+                    else:
+                        output_shape = None
+                    h = forward_timestep_embed(module, h, emb, context, transformer_options, output_shape, time_context=time_context, num_video_frames=num_video_frames, image_only_indicator=image_only_indicator)
+                h = h.type(x.dtype)
+                if self.predict_codebook_ids:
+                    final = self.id_predictor(h)
+                else:
+                    final = self.out(h)
+        
+                set_buffer("final_output", final)
+
+                torch._dynamo.graph_break()
+
+                
+
+                return final
+
+        #if we're here then we are not using the cache
+
+        self._prev_timestep = timestep_float
+
         for id, module in enumerate(self.input_blocks):
             transformer_options["block"] = ("input", id)
             h = forward_timestep_embed(module, h, emb, context, transformer_options, time_context=time_context, num_video_frames=num_video_frames, image_only_indicator=image_only_indicator)
@@ -1336,6 +1467,7 @@ class NunchakuSDXLUNetModel(nn.Module):
             return self.id_predictor(h)
         else:
             return self.out(h)
+
 """
 Section 3: handle LoRAs
 
@@ -1351,9 +1483,6 @@ If not quantized, then sends lora layers to the ComfyUI modelpatcher's default L
 May have some issues with mismatches in tensor sizes. Nunchaku FLUX LORA implementation just truncates the larger tensor. Will have to look further.
 
 """
-
-
-
 
 def convert_lora(lora):
     """
