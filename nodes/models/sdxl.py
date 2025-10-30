@@ -131,8 +131,10 @@ def load_diffusion_model_state_dict(sd, model_options={}):
     model = model_config.get_model(new_sd, "")
 
     #change the unet_config to add Nunchaku-specific arguments
-    SDXL_model_unet_config["attn_precision"] = model_options["precision"]
-    SDXL_model_unet_config["attn_rank"] = model_options["rank"]
+    SDXL_model_unet_config["attn_precision"] = model_options.get("precision")
+    SDXL_model_unet_config["attn_rank"] = model_options.get("rank")
+    SDXL_model_unet_config["cache_threshold"] = model_options.get("cache_threshold")
+    SDXL_model_unet_config["dtype"] = model_options.get("dtype")
 
     model.diffusion_model = NunchakuSDXLUNetModel(**SDXL_model_unet_config, device=load_device, operations=ops)
     model = model.to(offload_device)
@@ -177,7 +179,7 @@ class NunchakuSDXLUNetLoader:
 
         Sets up internal state and selects the default torch device.
         """
-        self.transformer = None
+        self.model_sd = None
         self.metadata = None
         self.model_path = None
         self.device = None
@@ -247,7 +249,7 @@ class NunchakuSDXLUNetLoader:
                         "min": 0,
                         "max": 1,
                         "step": 0.001,
-                        "tooltip": "This is not implemented yet for SDXL; set to anything but NaN to avoid error. Adjusts the first-block caching tolerance"
+                        "tooltip": "Adjusts the first-block caching tolerance"
                         "like `residual_diff_threshold` in WaveSpeed. "
                         "Increasing the value enhances speed at the cost of quality. "
                         "A typical setting is 0.12. Setting it to 0 disables the effect.",
@@ -366,7 +368,7 @@ class NunchakuSDXLUNetLoader:
         gpu_name = gpu_properties.name
         print(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
 
-        # Check if CPU offload needs to be enabled
+        # Check if CPU offload needs to be enabled (this does nothing for now)
         if cpu_offload == "auto":
             if gpu_memory < 14336:  # 14GB threshold
                 cpu_offload_enabled = True
@@ -387,33 +389,31 @@ class NunchakuSDXLUNetLoader:
             or self.cpu_offload != cpu_offload_enabled
             or self.data_type != data_type
         ):
-            if self.transformer is not None:
-                model_size = comfy.model_management.module_size(self.transformer)
-                transformer = self.transformer
-                self.transformer = None
-                transformer.to("cpu")
-                del transformer
+            if self.model_sd is not None:
+                model_size = comfy.model_management.module_size(self.model_sd)
+                model = self.model_sd
+                self.model_sd = None
+                model.to("cpu")
+                del model
                 gc.collect()
                 comfy.model_management.cleanup_models_gc()
                 comfy.model_management.soft_empty_cache()
                 comfy.model_management.free_memory(model_size, device)
 
             sd, metadata = load_torch_file(str(model_path), return_metadata=True)
-
+            self.model_sd = sd
+            self.metadata = metadata
             self.model_path = model_path
             self.device = device
             self.cpu_offload = cpu_offload_enabled
             self.data_type = data_type
 
-        #cache_threshold for sdxl not implemented yet
- 
-        '''
-        self.transformer = apply_cache_on_transformer(
-            transformer=self.transformer, residual_diff_threshold=cache_threshold
-        )
-        '''
 
-        transformer = self.transformer
+
+        sd = self.model_sd
+        metadata = self.metadata
+
+
 
         #non-functional
         '''
@@ -432,7 +432,10 @@ class NunchakuSDXLUNetLoader:
         if precision == "fp4":
             precision = "nvfp4"        
 
-        model_options = {"precision": precision, "rank": rank}
+        dtype_inputs = {"bfloat16": torch.bfloat16, "float16": torch.float16}
+
+
+        model_options = {"precision": precision, "rank": rank, "cache_threshold": cache_threshold, "dtype": dtype_inputs.get(data_type)}
         
         model = load_diffusion_model_state_dict(sd, model_options)
 
