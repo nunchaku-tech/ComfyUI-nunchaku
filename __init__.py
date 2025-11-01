@@ -49,6 +49,13 @@ try:
 except ImportError:
     logger.exception("Nodes `NunchakuFluxLoraLoader` and `NunchakuFluxLoraStack` import failed:")
 
+try:
+    from .nodes.lora.qwenimage import NunchakuQwenImageLoraLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuQwenImageLoraLoader"] = NunchakuQwenImageLoraLoader
+except ImportError:
+    logger.exception("Node `NunchakuQwenImageLoraLoader` import failed:")
+
 
 try:
     from .nodes.models.text_encoder import NunchakuTextEncoderLoader, NunchakuTextEncoderLoaderV2
