@@ -42,12 +42,28 @@ except ImportError:
     logger.exception("Node `NunchakuQwenImageDiTLoader` import failed:")
 
 try:
+    from .nodes.models.sdxl import NunchakuSDXLUNetLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuSDXLUNetLoader"] = NunchakuSDXLUNetLoader
+except ImportError:
+    logger.exception("Node `NunchakuSDXLUNetLoader` import failed:")
+
+
+try:
     from .nodes.lora.flux import NunchakuFluxLoraLoader, NunchakuFluxLoraStack
 
     NODE_CLASS_MAPPINGS["NunchakuFluxLoraLoader"] = NunchakuFluxLoraLoader
     NODE_CLASS_MAPPINGS["NunchakuFluxLoraStack"] = NunchakuFluxLoraStack
 except ImportError:
     logger.exception("Nodes `NunchakuFluxLoraLoader` and `NunchakuFluxLoraStack` import failed:")
+
+try:
+    from .nodes.lora.sdxl import NunchakuSDXLLoraLoader, NunchakuSDXLLoraStack
+
+    NODE_CLASS_MAPPINGS["NunchakuSDXLLoraLoader"] = NunchakuSDXLLoraLoader
+    NODE_CLASS_MAPPINGS["NunchakuSDXLLoraStack"] = NunchakuSDXLLoraStack
+except ImportError:
+    logger.exception("Nodes `NunchakuSDXLLoraLoader` and `NunchakuSDXLLoraStack` import failed:")
 
 
 try:
