@@ -67,14 +67,17 @@ jobs:
             echo Renaming %%~nxf to ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip
             move "%%f" "artifacts\ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip"
           )
+          for %%f in (..\desktop\dist\*.exe) do (
+            echo Renaming %%~nxf to ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.exe
+            move "%%f" "artifacts\ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.exe"
+          )
           dir artifacts
         shell: cmd
         if: success()
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
-          path: artifacts/*.zip
+          path: artifacts/*
           retention-days: 7
         if: success()
       # - name: Upload Artifact to Existing Release
