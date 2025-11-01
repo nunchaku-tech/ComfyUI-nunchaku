@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        pytorch_version: ['2.7', '2.8']
+        pytorch_version: ['2.7', '2.8', '2.9']
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -39,11 +39,13 @@ jobs:
       - name: Get latest nunchaku release version
         id: get_nunchaku_version
         run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/nunchaku-tech/nunchaku/releases/latest" -Headers @{ "User-Agent" = "GitHub Actions" }
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/nunchaku-tech/nunchaku/releases/latest" -Headers @{ "Authorization" = "Bearer $env:GITHUB_TOKEN"; "User-Agent" = "GitHub Actions" }
           $NUNCHAKU_VERSION = $response.tag_name -replace '^v', ''
           echo "nunchaku_version=$NUNCHAKU_VERSION" >> $env:GITHUB_OUTPUT
           echo "Latest nunchaku release: $NUNCHAKU_VERSION"
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run build script
         run: |
           cd ..

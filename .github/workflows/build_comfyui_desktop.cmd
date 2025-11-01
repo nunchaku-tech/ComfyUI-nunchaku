@@ -26,6 +26,9 @@ if "%TORCH_VERSION%"=="2.7" (
 ) else if "%TORCH_VERSION%"=="2.8" (
     set TORCHAUDIO_VERSION=2.8
     set TORCHVISION_VERSION=0.23
+) else if "%TORCH_VERSION%"=="2.9" (
+    set TORCHAUDIO_VERSION=2.9
+    set TORCHVISION_VERSION=0.24
 ) else (
     echo Warning: Unknown TORCH_VERSION=%TORCH_VERSION%, using default versions
     set TORCHAUDIO_VERSION=%TORCH_VERSION%
@@ -43,7 +46,7 @@ REM 2. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
 git clone https://github.com/nunchaku-tech/desktop.git
 cd desktop
-git checkout ed6400a
+git checkout 5ffdab9
 
 REM 3. Install Yarn using corepack
 echo Installing yarn...
