@@ -1,11 +1,11 @@
-diffusers>=0.35
+diffusers
 accelerate
 sentencepiece
 protobuf
-huggingface_hub>=0.34
+huggingface_hub
 tomli
-peft>=0.17
-accelerate>=1.10
+peft
+accelerate
 
 # PuLID dependencies
 insightface
