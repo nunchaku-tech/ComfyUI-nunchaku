@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        pytorch_version: ['2.7', '2.8', '2.9']
+        pytorch_version: ['2.9']
     steps:
       - name: Check out code
         uses: actions/checkout@v4
