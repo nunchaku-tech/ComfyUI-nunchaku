@@ -8,11 +8,23 @@ jobs:
     name: Build ComfyUI Desktop - PyTorch ${{ matrix.pytorch_version }}
     runs-on: windows-latest
     strategy:
+      max-parallel: 1
       matrix:
-        pytorch_version: ['2.7']
+        pytorch_version: ['2.7', '2.8']
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Show latest commit
+        run: git log -1 --oneline
+        shell: bash
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Setup Node.js 20.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
       - name: Extract version from pyproject.toml
         id: get_version
         run: |
@@ -31,6 +43,11 @@ jobs:
       - name: Run build script
         run: |
           cd ..
+          where python
+          python --version
+          where node
+          node --version
+          rm -rf desktop
           ComfyUI-nunchaku\.github\workflows\build_comfyui_desktop.cmd
         shell: cmd
         env:
@@ -41,26 +58,35 @@ jobs:
           Get-ChildItem -Path "..\desktop\dist" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
         shell: pwsh
         if: always()
-      - name: Find build artifacts
-        id: find_artifacts
+      - name: Copy and rename artifacts
         run: |
-          $ARTIFACT_PATH = Get-ChildItem -Path "..\desktop\dist\Comfy-*-win.zip" | Select-Object -First 1 -ExpandProperty FullName
-          echo "artifact_path=$ARTIFACT_PATH" >> $env:GITHUB_OUTPUT
-          echo "Found artifact: $ARTIFACT_PATH"
-        shell: pwsh
+          dir ..\desktop\dist
+          mkdir artifacts
+          for %%f in (..\desktop\dist\*.zip) do (
+            echo Renaming %%~nxf to ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip
+            move "%%f" "artifacts\ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip"
+          )
+          dir artifacts
+        shell: cmd
         if: success()
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: comfyui-desktop-pytorch-${{ matrix.pytorch_version }}
-          path: ${{ steps.find_artifacts.outputs.artifact_path }}
+          path: artifacts/*.zip
           retention-days: 7
         if: success()
-      - name: Upload Artifact to Existing Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          files: ${{ steps.find_artifacts.outputs.artifact_path }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: success()
+      # - name: Upload Artifact to Existing Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: v${{ steps.get_version.outputs.version }}
+      #     files: artifacts/*.zip
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   if: success()
+      - name: Clean up
+        run: |
+          cd ..
+          rm -rf desktop
+        shell: cmd
+        if: always()

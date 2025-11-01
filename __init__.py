@@ -1,5 +1,47 @@
 import logging
 import os
+from pathlib import Path
+
+import torch
+import yaml
+from packaging.version import InvalidVersion, Version
+
+# vanilla and LTS compatibility snippet
+try:
+    from comfy_compatibility.vanilla import prepare_vanilla_environment
+
+    prepare_vanilla_environment()
+
+    from comfy.model_downloader import add_known_models
+    from comfy.model_downloader_types import HuggingFile
+
+    capability = torch.cuda.get_device_capability(0 if torch.cuda.is_available() else None)
+    sm = f"{capability[0]}{capability[1]}"
+    precision = "fp4" if sm == "120" else "int4"
+
+    # add known models
+
+    models_yaml_path = Path(__file__).parent / "test_data" / "models.yaml"
+    with open(models_yaml_path, "r") as f:
+        nunchaku_models_yaml = yaml.safe_load(f)
+
+    NUNCHAKU_SVDQ_MODELS = []
+    for model in nunchaku_models_yaml["models"]:
+        filename = model["filename"]
+        if not filename.startswith("svdq-"):
+            continue
+        if "{precision}" in filename:
+            filename = filename.format(precision=precision)
+        NUNCHAKU_SVDQ_MODELS.append(HuggingFile(repo_id=model["repo_id"], filename=filename))
+
+    NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS = [
+        HuggingFile(repo_id="nunchaku-tech/nunchaku-t5", filename="awq-int4-flux.1-t5xxl.safetensors"),
+    ]
+
+    add_known_models("diffusion_models", *NUNCHAKU_SVDQ_MODELS)
+    add_known_models("text_encoders", *NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS)
+except (ImportError, ModuleNotFoundError):
+    pass
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -10,19 +52,28 @@ logger = logging.getLogger(__name__)
 
 logger.info("=" * 40 + " ComfyUI-nunchaku Initialization " + "=" * 40)
 
-from .utils import get_package_version, get_plugin_version, supported_versions
+from .utils import get_package_version, get_plugin_version
 
 nunchaku_full_version = get_package_version("nunchaku").split("+")[0].strip()
 
 logger.info(f"Nunchaku version: {nunchaku_full_version}")
 logger.info(f"ComfyUI-nunchaku version: {get_plugin_version()}")
 
+
+min_nunchaku_version = "1.0.0"
 nunchaku_version = nunchaku_full_version.split("+")[0].strip()
 nunchaku_major_minor_patch_version = ".".join(nunchaku_version.split(".")[:3])
-if f"v{nunchaku_major_minor_patch_version}" not in supported_versions:
+
+try:
+    if Version(nunchaku_major_minor_patch_version) < Version(min_nunchaku_version):
+        logger.warning(
+            f"ComfyUI-nunchaku {get_plugin_version()} requires nunchaku >= v{min_nunchaku_version}, "
+            f"but found nunchaku {nunchaku_full_version}. Please update nunchaku."
+        )
+except InvalidVersion:
     logger.warning(
-        f"ComfyUI-nunchaku {get_plugin_version()} is not compatible with nunchaku {nunchaku_full_version}. "
-        f"Please update nunchaku to a supported version in {supported_versions}."
+        f"Could not parse nunchaku version: {nunchaku_full_version}. "
+        f"Please ensure you have at least v{min_nunchaku_version}."
     )
 
 NODE_CLASS_MAPPINGS = {}
@@ -48,7 +99,6 @@ try:
     NODE_CLASS_MAPPINGS["NunchakuFluxLoraStack"] = NunchakuFluxLoraStack
 except ImportError:
     logger.exception("Nodes `NunchakuFluxLoraLoader` and `NunchakuFluxLoraStack` import failed:")
-
 
 try:
     from .nodes.models.text_encoder import NunchakuTextEncoderLoader, NunchakuTextEncoderLoaderV2

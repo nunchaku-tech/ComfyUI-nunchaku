@@ -1,3 +1,7 @@
+models/
+output/
+input/
+temp/
 # Prerequisites
 *.d
 
@@ -205,3 +209,5 @@ cython_debug/
 *.nsys-rep
 *.ncu-rep
 nunchaku_versions.json
+*.lock
+workspace/

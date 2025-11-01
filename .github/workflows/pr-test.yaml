@@ -58,52 +58,39 @@ jobs:
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           which python
-          conda install -c conda-forge gxx=11 gcc=11
+          conda install -c conda-forge gxx=11 gcc=11 libsndfile -y
+          cd ..
           rm -rf nunchaku
           git clone --recurse-submodules https://github.com/nunchaku-tech/nunchaku.git
           cd nunchaku
-          pip install torch==2.8 torchvision==0.23 --index-url https://download.pytorch.org/whl/cu128
-          pip install -e ".[ci]"
-      - name: Install ComfyUI
+          pip install uv
+          uv pip install torch==2.8 torchvision==0.23 --index-url https://download.pytorch.org/whl/cu128
+          uv pip install -e ".[ci]"
+      - name: Setup ComfyUI-Nunchaku
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           which python
+          uv pip install --torch-backend=auto -e ".[ci]"
           pwd
           cd ..
-          rm -rf ComfyUI
-          mkdir -p ComfyUI
-          cd ComfyUI
+          rm -rf test-workspace
+          mkdir -p test-workspace
+          cd test-workspace
           mkdir -p "${COMFYUI_MODELS_ROOT}"
           ln -s "${COMFYUI_MODELS_ROOT}" models
-          pip install -r ../ComfyUI-nunchaku/requirements.txt
           ln -s ../ComfyUI-nunchaku/tests tests
-          pip install -r tests/requirements.txt
-          mkdir -p custom_nodes
-          cd custom_nodes
-          ln -s ../../ComfyUI-nunchaku
-          git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git
-          cd comfyui_controlnet_aux
-          git checkout cc6b232
-          cd ..
-          git clone https://github.com/CY-CHENYUE/ComfyUI-InpaintEasy.git
-          cd ComfyUI-InpaintEasy
-          pip install -r requirements.txt
-          git checkout d631a03
-          cd ..
-          cd ..
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_models.py
-          mkdir -p input
-          python custom_nodes/ComfyUI-nunchaku/scripts/download_inputs.py
+          ln -s ../ComfyUI-nunchaku/test_data test_data
+          python ../ComfyUI-nunchaku/scripts/setup_custom_nodes.py
       - name: Run tests
         run: |
           source $(conda info --base)/etc/profile.d/conda.sh
           conda activate test_env || { echo "Failed to activate conda env"; exit 1; }
           pwd
-          cd ../ComfyUI
-          pytest tests/test_workflows.py -x -vv --reruns 2 --reruns-delay 0
+          cd ../test-workspace
+          pytest tests/test_workflows.py -x -vv --reruns 4 --reruns-delay 0
       - name: clean up
         if: always()
         run: |
           cd ..
-          rm -rf nunchaku ComfyUI
+          rm -rf nunchaku test-workspace

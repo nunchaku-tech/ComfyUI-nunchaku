@@ -1,81 +1,57 @@
-import gc
-import os
-import subprocess
+import json
+import logging
+from pathlib import Path
 
-import numpy as np
 import pytest
+import pytest_asyncio
 import torch
-from diffusers.utils import load_image
-from PIL import Image
-from torchmetrics.image import LearnedPerceptualImagePatchSimilarity, PeakSignalNoiseRatio
-from torchmetrics.multimodal import CLIPImageQualityAssessment
+from comfy.api.components.schema.prompt import Prompt
+from comfy.cli_args_types import Configuration
+from comfy.client.embedded_comfy_client import Comfy
 
-from nunchaku.utils import get_precision
+from nunchaku.utils import get_precision, is_turing
 
-script_dir = os.path.join(os.path.dirname(__file__), "scripts")
+from .case import Case, cases, ids
+from .utils import compute_metrics, prepare_inputs, prepare_models, set_nested_value
+
+logger = logging.getLogger(__name__)
+
+precision = get_precision()
+torch_dtype = torch.float16 if is_turing() else torch.bfloat16
+dtype_str = "fp16" if torch_dtype == torch.float16 else "bf16"
 
 
-@pytest.mark.parametrize(
-    "script_name, expected_clip_iqa, expected_lpips, expected_psnr",
-    [
-        ("nunchaku-flux1-redux-dev.py", 0.9, 0.137, 18.9),
-        ("nunchaku-flux1-dev-controlnet_upscaler.py", 0.9, 0.1, 26),
-        ("nunchaku-flux1-dev-controlnet_union_pro2.py", 0.9, 0.1, 26),
-        ("nunchaku-flux1-depth-lora.py", 0.59, 0.13, 21),
-        ("nunchaku-flux1-canny.py", 0.9, 0.1, 26),
-        ("nunchaku-flux1-schnell.py", 0.9, 0.29, 19.3),
-        ("nunchaku-flux1-depth.py", 0.9, 0.13, 26),
-        ("nunchaku-shuttle-jaguar.py", 0.9, 0.157, 23.9),
-        ("nunchaku-flux1-fill.py", 0.9, 0.1, 26),
-        ("nunchaku-flux1-fill-removalV2.py", 0.56, 0.13, 26),
-        ("nunchaku-flux1-dev.py", 0.9, 0.28, 19.7),
-        ("nunchaku-flux1-canny-lora.py", 0.9, 0.1, 25),
-        ("nunchaku-flux1-dev-qencoder.py", 0.9, 0.27, 16.3),
-        ("nunchaku-flux1-dev-hand_drawn_game.py", 0.92, 0.254, 20),
-        ("nunchaku-flux1-dev-pulid.py", 0.9, 0.194, 15.8),
-        ("nunchaku-flux1-kontext-dev.py", 0.9, 0.1, 18.3),
-        ("nunchaku-flux1-kontext-dev-turbo_lora.py", 0.87, 0.13, 18.8),
-        ("nunchaku-flux1-ip-adapter.py", 0.5, 0.36, 14),
-    ],
-)
-@pytest.mark.flaky(reruns=2, reruns_delay=0)
-def test_workflows(script_name: str, expected_clip_iqa: float, expected_lpips: float, expected_psnr: float):
-    gc.collect()
-    torch.cuda.empty_cache()
-    script_path = os.path.join(script_dir, script_name)
+@pytest_asyncio.fixture(scope="module", autouse=False)
+async def inputs(tmp_path_factory):
+    config = Configuration()
+    input_path = config.input_directory = str(tmp_path_factory.mktemp("nunchaku_input"))
+    prepare_inputs(input_path)
+    yield config
 
-    result = subprocess.run(["python", script_path])
-    print(f"Running {script_path} -> Return code: {result.returncode}")
-    if result.returncode != 0:
-        print(f"Output: {result.stdout}")
-        print(f"Error: {result.stderr}")
-        assert result.returncode == 0, f"{script_path} failed with code {result.returncode}"
 
-    path = open("image_path.txt", "r").read().strip()
+@pytest_asyncio.fixture(scope="function", autouse=False)
+async def client(tmp_path_factory, inputs) -> Comfy:
+    async with Comfy(inputs) as client_instance:
+        prepare_models()
+        yield client_instance
 
-    # clip_iqa metric
-    metric = CLIPImageQualityAssessment(model_name_or_path="openai/clip-vit-large-patch14").to("cuda")
-    image = Image.open(path).convert("RGB")
-    gen_tensor = torch.from_numpy(np.array(image)).permute(2, 0, 1).to(torch.float32).unsqueeze(0).to("cuda")
-    clip_iqa = metric(gen_tensor).item()
-    print(f"CLIP-IQA: {clip_iqa}")
 
-    # lpips metric
-    ref_image_url = (
-        f"https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/ComfyUI-nunchaku/ref_images/"
-        f"{get_precision()}/{script_name.replace('.py', '.png')}"
-    )
-    ref_image = load_image(ref_image_url).convert("RGB")
-    metric = LearnedPerceptualImagePatchSimilarity().to("cuda")
-    ref_tensor = torch.from_numpy(np.array(ref_image)).permute(2, 0, 1).to(torch.float32)
-    ref_tensor = ref_tensor.unsqueeze(0).to("cuda")
-    lpips = metric(gen_tensor / 255, ref_tensor / 255).item()
-    print(f"LPIPS: {lpips}")
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", cases, ids=ids)
+async def test(case: Case, client: Comfy):
+    api_file = Path(__file__).parent / "workflows" / case.workflow_name / "api.json"
+    # Read and parse the workflow file
+    workflow = json.loads(api_file.read_text(encoding="utf8"))
+    for key, value in case.inputs.items():
+        set_nested_value(workflow, key, value)
+    prompt = Prompt.validate(workflow)
+    outputs = await client.queue_prompt(prompt)
+    save_image_node_id = next(key for key in prompt if prompt[key].class_type == "SaveImage")
+    path = outputs[save_image_node_id]["images"][0]["abs_path"]
+    logger.info("Generated image path: %s", path)
 
-    metric = PeakSignalNoiseRatio(data_range=(0, 255)).cuda()
-    psnr = metric(gen_tensor, ref_tensor).item()
-    print(f"PSNR: {psnr}")
+    clip_iqa, lpips, psnr = compute_metrics(path, case.ref_image_url)
 
-    assert clip_iqa >= expected_clip_iqa * 0.85
-    assert lpips <= expected_lpips * 1.15
-    assert psnr >= expected_psnr * 0.85
+    assert clip_iqa >= min(case.expected_clip_iqa[f"{precision}-{dtype_str}"], 1) * 0.9
+    assert lpips <= max(case.expected_lpips[f"{precision}-{dtype_str}"], 0.1) * 1.15
+    assert psnr >= min(case.expected_psnr[f"{precision}-{dtype_str}"], 24) * 0.85

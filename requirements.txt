@@ -1,13 +1,11 @@
 diffusers>=0.35
-accelerate
+transformers>=4.54
 sentencepiece
 protobuf
 huggingface_hub>=0.34
 tomli
 peft>=0.17
 accelerate>=1.10
-
-# PuLID dependencies
 insightface
 opencv-python
 facexlib
