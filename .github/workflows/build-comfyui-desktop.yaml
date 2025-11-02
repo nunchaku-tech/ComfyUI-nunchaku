@@ -77,14 +77,15 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: artifacts/*
+          name: ComfyUI-nunchaku-${{ steps.get_version.outputs.version }}-torch${{ matrix.pytorch_version }}-desktop-win.zip
+          path: artifacts/*.zip
           retention-days: 7
         if: success()
       # - name: Upload Artifact to Existing Release
       #   uses: softprops/action-gh-release@v1
       #   with:
       #     tag_name: v${{ steps.get_version.outputs.version }}
-      #     files: artifacts/*.zip
+      #     files: artifacts/*
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   if: success()
