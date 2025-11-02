@@ -45,7 +45,7 @@ Required Components
 
 1. **Visual Studio Community 2022** (17.12.1 or later)
 2. **Desktop development with C++ workload**
-3. **MSVC v143 x64 Spectre-mitigated libraries** (v14.42-17.12 or latest)
+3. **MSVC v143 x64 Spectre-mitigated libraries** (latest)
 
 Installing Spectre-mitigated Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

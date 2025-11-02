@@ -5,31 +5,20 @@ We provide tutorial videos to help you install and use Nunchaku on Windows,
 available in both `English <nunchaku_windows_tutorial_en_>`_ and `Chinese <nunchaku_windows_tutorial_zh_>`_.
 If you run into issues, these resources are a good place to start.
 
-Packaged ComfyUI (Recommended for Windows)
--------------------------------------------
+Choose one of the following installation methods:
 
-We provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in,
-eliminating the need to download any additional dependencies. This is the easiest way to get started:
+Option 1: Use as ComfyUI Plugin (Recommended)
+---------------------------------------------
 
-1. Download the packaged ComfyUI zip file from our build-comfyui-desktop action page: `GitHub Action page <github_nunchaku_action_>`_. You can download the artifacts from the latest successful build.
-
-2. Open the downloaded zip file. You will see another zip file inside. Extract this internal zip file
-   to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
-
-3. Navigate to the extracted folder and execute ``ComfyUI.exe`` to launch the application and complete
-   the installation steps.
-
-Once installed, you will be able to run the ComfyUI application directly from your PC without any
-additional setup required.
-
+This is the standard way to use Nunchaku with your existing or new ComfyUI installation.
+You can install the ComfyUI-nunchaku plugin using one of the following methods, then install the Nunchaku backend.
 
 Step 1: Install the ComfyUI-nunchaku Plugin
--------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can use the following ways to install the `ComfyUI-nunchaku <github_comfyui-nunchaku_>`_ plugin.
+Choose one of the following methods to install the `ComfyUI-nunchaku <github_comfyui-nunchaku_>`_ plugin:
 
-Comfy-CLI
-~~~~~~~~~
+**Method A: Comfy-CLI**
 
 You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku:
 
@@ -39,8 +28,7 @@ You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku
    comfy install          # Install ComfyUI
    comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
-ComfyUI-Manager
-~~~~~~~~~~~~~~~
+**Method B: ComfyUI-Manager**
 
 1. Install `ComfyUI <github_comfyui_>`_ with
 
@@ -66,8 +54,7 @@ ComfyUI-Manager
 
 4. Open the Manager, search ``ComfyUI-nunchaku`` in the Custom Nodes Manager and then install it.
 
-Manual Installation
-~~~~~~~~~~~~~~~~~~~
+**Method C: Manual Installation**
 
 1. Set up `ComfyUI <github_comfyui_>`_ with the following commands:
 
@@ -84,12 +71,40 @@ Manual Installation
       cd custom_nodes
       git clone https://github.com/mit-han-lab/ComfyUI-nunchaku nunchaku_nodes
 
-ComfyUI LTS Installation
-~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Install the Nunchaku Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`ComfyUI LTS <https://github.com/hiddenswitch/ComfyUI>`__ is a version of ComfyUI that is installable with modern Python packaging tools like `uv <https://github.com/astral-sh/uv>`_. This is a recommended installation method.
+Starting from **ComfyUI-nunchaku v0.3.2**,
+you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
+
+Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
+
+Option 2: Nunchaku Pre-installed ComfyUI Desktop (Windows Only, Experimental)
+------------------------------------------------------------------------------
+
+We provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in,
+eliminating the need to download any additional dependencies. This is the easiest way to get started on Windows:
+
+1. Download the packaged ComfyUI zip file from our build-comfyui-desktop action page: `GitHub Action page <github_nunchaku_action_>`_. You can download the artifacts from the latest successful build.
+
+2. Open the downloaded zip file. You will see another zip file inside. Extract this internal zip file
+   to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
+
+3. Navigate to the extracted folder and execute ``ComfyUI.exe`` to launch the application and complete
+   the installation steps.
+
+Once installed, you will be able to run the ComfyUI application directly from your PC without any
+additional setup required.
+
+Option 3: ComfyUI LTS Installation (For Developers)
+----------------------------------------------------
+
+`ComfyUI LTS <https://github.com/hiddenswitch/ComfyUI>`__ is a version of ComfyUI that is installable with modern Python packaging tools like `uv <https://github.com/astral-sh/uv>`_. This method is recommended for developers.
 
 These instructions are adapted from the `ComfyUI LTS README <https://github.com/hiddenswitch/ComfyUI#installing>`__. Please refer to it for more detailed instructions, especially for Windows.
+
+Step 1: Install ComfyUI LTS and ComfyUI-nunchaku
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1.  Install ``uv``, a fast Python package installer. You can install it using the following command:
 
@@ -135,7 +150,7 @@ To run ComfyUI, execute the following from your workspace directory:
    uv run comfyui
 
 Step 2: Install the Nunchaku Backend
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
