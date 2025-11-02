@@ -56,7 +56,7 @@ The Spectre-mitigated libraries are **critical dependencies** and must be instal
 2. Click "Modify" on your Visual Studio 2022 Community installation
 3. Go to the "Individual Components" tab
 4. Search for "Spectre"
-5. Check the boxes for: **"MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs"**
+5. Check the boxes for: **"MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)"**
 6. Install the selected components
 
 .. warning::
