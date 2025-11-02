@@ -25,7 +25,7 @@ You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku
 .. code-block:: shell
 
    pip install comfy-cli  # Install ComfyUI CLI
-   comfy install          # Install ComfyUI
+   comfy install          # Install ComfyUI (skip if already installed)
    comfy node registry-install ComfyUI-nunchaku  # Install Nunchaku
 
 **Method B: ComfyUI-Manager**
@@ -74,23 +74,22 @@ You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku
 .. _install-nunchaku-backend:
 
 Step 2: Install the Nunchaku Backend
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
 
 Alternatively, follow :ref:`nunchaku:installation-installation` to manually install the backend (pre-built wheels or build from source).
 
-Option 2: Nunchaku Pre-installed ComfyUI Desktop (Windows Only, Experimental)
-------------------------------------------------------------------------------
+Option 2: Nunchaku Pre-installed ComfyUI Desktop (Windows Only, Experimental for Now)
+-------------------------------------------------------------------------------------
 
-We provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in,
+Starting from **v1.0.2**, we provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in,
 eliminating the need to download any additional dependencies. This is the easiest way to get started on Windows:
 
-1. Download the packaged ComfyUI zip file from our build-comfyui-desktop action page: `GitHub Action page <github_nunchaku_action_>`_. You can download the artifacts from the latest successful build.
+1. Download the packaged ComfyUI zip file from our `GitHub releases <https://github.com/nunchaku-tech/ComfyUI-nunchaku/releases>`__.
 
-2. Open the downloaded zip file. You will see another zip file inside. Extract this internal zip file
-   to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
+2. Extract the zip file to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
 
 3. Navigate to the extracted folder and execute ``ComfyUI.exe`` to launch the application and complete
    the installation steps.
@@ -98,8 +97,8 @@ eliminating the need to download any additional dependencies. This is the easies
 Once installed, you will be able to run the ComfyUI application directly from your PC without any
 additional setup required.
 
-Option 3: ComfyUI LTS Installation (For Developers)
-----------------------------------------------------
+Option 3: ComfyUI LTS Installation
+----------------------------------
 
 `ComfyUI LTS <https://github.com/hiddenswitch/ComfyUI>`__ is a version of ComfyUI that is installable with modern Python packaging tools like `uv <https://github.com/astral-sh/uv>`_. This method is recommended for developers.
 
@@ -156,5 +155,3 @@ To run ComfyUI, execute the following from your workspace directory:
 .. code-block:: shell
 
    uv run comfyui
-
-.. _github_nunchaku_action_: https://github.com/nunchaku-tech/ComfyUI-nunchaku/actions/workflows/build-comfyui-desktop.yaml
