@@ -58,12 +58,11 @@ cd desktop || (
     echo ERROR: Failed to enter desktop directory
     exit /b 1
 )
-git checkout dev || (
+git checkout ComfyUI-nunchaku-1.0.2 || (
     echo ERROR: Failed to checkout dev branch
     exit /b 1
 )
 git log -1 --oneline
-@REM git checkout ed6400a78e9ad855179de00a7cf200397ea834ab
 
 REM 3. Install Yarn using corepack
 echo Installing yarn...
