@@ -14,10 +14,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Publish Custom Node
-        uses: Comfy-Org/publish-node-action@main
-        with:
-          personal_access_token: ${{ secrets.COMFYUI_REGISTRY_ACCESS_TOKEN }}
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -25,3 +21,13 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update project name for Comfy Registry
+        run: |
+          sed -i 's/name = "comfyui-nunchaku"/name = "ComfyUI-nunchaku"/' pyproject.toml
+          echo "Updated pyproject.toml:"
+          grep 'name = "ComfyUI-nunchaku"' pyproject.toml
+        shell: bash
+      - name: Publish Custom Node
+        uses: Comfy-Org/publish-node-action@main
+        with:
+          personal_access_token: ${{ secrets.COMFYUI_REGISTRY_ACCESS_TOKEN }}
