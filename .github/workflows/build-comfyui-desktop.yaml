@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.ref || github.ref }}
+        if: success()
       - name: Show latest commit
         run: git log -1 --oneline
         shell: bash
@@ -25,10 +26,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+        if: success()
       - name: Setup Node.js 20.18.0
         uses: actions/setup-node@v4
         with:
           node-version: '20.18.0'
+        if: success()
       - name: Extract version from pyproject.toml
         id: get_version
         run: |
@@ -36,6 +39,7 @@ jobs:
           echo "version=$VERSION" >> $env:GITHUB_OUTPUT
           echo "Extracted ComfyUI-nunchaku version: $VERSION"
         shell: pwsh
+        if: success()
       - name: Get latest nunchaku release version
         id: get_nunchaku_version
         run: |
@@ -46,6 +50,7 @@ jobs:
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if: success()
       - name: Run build script
         run: |
           cd ..
@@ -54,11 +59,12 @@ jobs:
         env:
           NUNCHAKU_VERSION: ${{ steps.get_nunchaku_version.outputs.nunchaku_version }}
           TORCH_VERSION: ${{ matrix.pytorch_version }}
+          if: success()
       - name: List build output
         run: |
           Get-ChildItem -Path "..\desktop\dist" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
         shell: pwsh
-        if: always()
+        if: success()
       - name: Copy and rename artifacts
         run: |
           dir ..\desktop\dist
@@ -81,14 +87,14 @@ jobs:
           path: artifacts/*.zip
           retention-days: 7
         if: success()
-      # - name: Upload Artifact to Existing Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: v${{ steps.get_version.outputs.version }}
-      #     files: artifacts/*
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   if: success()
+      - name: Upload Artifact to Existing Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          files: artifacts/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success()
       - name: Clean up
         run: |
           cd ..

@@ -87,12 +87,12 @@ Option 2: Nunchaku Pre-installed ComfyUI Desktop (Windows Only, Experimental for
 Starting from **v1.0.2**, we provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in,
 eliminating the need to download any additional dependencies. This is the easiest way to get started on Windows:
 
-1. Download the packaged ComfyUI zip file from our `GitHub releases <https://github.com/nunchaku-tech/ComfyUI-nunchaku/releases>`__.
+1. Download the packaged ComfyUI zip file from our `GitHub releases <https://github.com/nunchaku-tech/ComfyUI-nunchaku/releases>`__. Choose the appropriate PyTorch version for your system (e.g., torch2.7, torch2.8, or torch2.9).
 
 2. Extract the zip file to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
 
 3. Navigate to the extracted folder and execute ``ComfyUI.exe`` to launch the application and complete
-   the installation steps.
+   the installation steps. If Windows SmartScreen blocks the execution, click "Run anyway" to proceed.
 
 Once installed, you will be able to run the ComfyUI application directly from your PC without any
 additional setup required.
