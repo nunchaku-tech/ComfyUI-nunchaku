@@ -71,13 +71,15 @@ You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku
       cd custom_nodes
       git clone https://github.com/mit-han-lab/ComfyUI-nunchaku nunchaku_nodes
 
+.. _install-nunchaku-backend:
+
 Step 2: Install the Nunchaku Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Starting from **ComfyUI-nunchaku v0.3.2**,
 you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
 
-Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
+Alternatively, follow :ref:`nunchaku:installation-installation` to manually install the backend (pre-built wheels or build from source).
 
 Option 2: Nunchaku Pre-installed ComfyUI Desktop (Windows Only, Experimental)
 ------------------------------------------------------------------------------
@@ -137,7 +139,13 @@ Step 1: Install ComfyUI LTS and ComfyUI-nunchaku
 
 3.  Install Nunchaku.
 
-    You are using a specific version of PyTorch. To get the right dependencies, specify it as an extra when installing Nunchaku. For example, for PyTorch 2.8:
+    .. code-block:: shell
+
+       uv pip install "nunchaku@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
+
+    Then manually install the Nunchaku backend wheel following :ref:`install-nunchaku-backend`.
+
+    Alternatively, you can specify your PyTorch version as an extra to install both the plugin and backend wheel in one step. For example, for PyTorch 2.8:
 
     .. code-block:: shell
 
@@ -148,13 +156,5 @@ To run ComfyUI, execute the following from your workspace directory:
 .. code-block:: shell
 
    uv run comfyui
-
-Step 2: Install the Nunchaku Backend
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Starting from **ComfyUI-nunchaku v0.3.2**,
-you can easily install or update the `Nunchaku <github_nunchaku_>`_ wheel using :ref:`install-wheel-json`, once all dependencies are installed.
-
-Alternatively, you can follow the manual installation instructions in the :ref:`nunchaku:installation-installation`.
 
 .. _github_nunchaku_action_: https://github.com/nunchaku-tech/ComfyUI-nunchaku/actions/workflows/build-comfyui-desktop.yaml
