@@ -29,34 +29,34 @@ follow these steps for a smooth and efficient contribution process.
 
    Choose an installation method based on your development needs:
 
-   **Option A: Fresh Installation with Published Wheels**
+**Option A: Fresh Installation with Published Wheels**
 
-   .. code-block:: shell
+.. code-block:: shell
 
-      TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
-      uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},dev]"
+   TORCH_VERSION=$(uv pip freeze | sed -n 's/^torch==\([0-9]\+\)\.\([0-9]\+\).*/torch\1\2/p')
+   uv pip install --torch-backend=auto -e ".[${TORCH_VERSION},dev]"
 
-   **Option B: Build from Source (For Development)**
+**Option B: Build from Source (For Development)**
 
-   See :ref:`Build from Source <nunchaku:build-from-source>` for building ``nunchaku`` from source. Then install the environment:
+See :ref:`Build from Source <nunchaku:build-from-source>` for building ``nunchaku`` from source. Then install the environment:
 
-   .. code-block:: shell
+.. code-block:: shell
 
-      uv pip install --torch-backend=auto -e ".[dev]"
+   uv pip install --torch-backend=auto -e ".[dev]"
 
-3. Create Test Workspace
+**3. Create Test Workspace**
 
-   Set up an isolated testing workspace outside the repository:
+Set up an isolated testing workspace outside the repository:
 
-   .. code-block:: shell
+.. code-block:: shell
 
-      cd ..
-      mkdir -p test-workspace && cd test-workspace
-      ln -s ../ComfyUI-nunchaku/tests tests
-      ln -s ../ComfyUI-nunchaku/test_data test_data
-      python ../ComfyUI-nunchaku/scripts/setup_custom_nodes.py
+   cd ..
+   mkdir -p test-workspace && cd test-workspace
+   ln -s ../ComfyUI-nunchaku/tests tests
+   ln -s ../ComfyUI-nunchaku/test_data test_data
+   python ../ComfyUI-nunchaku/scripts/setup_custom_nodes.py
 
-   This creates a clean environment with symlinks to test files and installs required ComfyUI custom nodes.
+This creates a clean environment with symlinks to test files and installs required ComfyUI custom nodes.
 
 🧹 Code Formatting with Pre-Commit
 ----------------------------------
@@ -186,7 +186,7 @@ To add a test case:
         url: https://github.com/username/ComfyUI-CustomNode
         branch: abcdefg # commit hash or branch name
 
-   The ``scripts/setup_custom_nodes.py`` script automatically processes this configuration to:
+   The ``scripts/setup_custom_nodes.py`` script (which runs automatically during test workspace setup in Step 3) processes this configuration to:
 
    - Clone custom node repositories into the test workspace
    - Install Python dependencies from each node's ``requirements.txt`` (if present)
@@ -195,5 +195,3 @@ To add a test case:
    **Dependency Management:**
 
    By default, dependencies are installed from the custom node's ``requirements.txt``. To override this, create a file at ``test_data/dependencies/{node_name}.txt`` with your custom requirements. This is useful when the default requirements conflict with the test environment or need version pinning.
-
-   This script runs automatically during test workspace setup (Step 3).
