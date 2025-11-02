@@ -39,31 +39,64 @@ set PYTHON_VERSION_STR=%PYTHON_VERSION:.=%
 
 REM 1. Install uv package
 echo Installing uv package...
-python -m pip install --upgrade pip
-python -m pip install uv
+python -m pip install --upgrade pip || (
+    echo ERROR: Failed to upgrade pip
+    exit /b 1
+)
+python -m pip install uv || (
+    echo ERROR: Failed to install uv
+    exit /b 1
+)
 
 REM 2. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
-git clone https://github.com/nunchaku-tech/desktop.git
-cd desktop
-git checkout dev
+git clone https://github.com/nunchaku-tech/desktop.git || (
+    echo ERROR: Failed to clone desktop repository
+    exit /b 1
+)
+cd desktop || (
+    echo ERROR: Failed to enter desktop directory
+    exit /b 1
+)
+git checkout dev || (
+    echo ERROR: Failed to checkout dev branch
+    exit /b 1
+)
 @REM git checkout ed6400a78e9ad855179de00a7cf200397ea834ab
 
 REM 3. Install Yarn using corepack
 echo Installing yarn...
-call corepack enable
-call corepack prepare yarn@%YARN_VERSION% --activate
+call corepack enable || (
+    echo ERROR: Failed to enable corepack
+    exit /b 1
+)
+call corepack prepare yarn@%YARN_VERSION% --activate || (
+    echo ERROR: Failed to prepare yarn
+    exit /b 1
+)
 
 REM 4. Install node modules and rebuild electron
 echo Rebuilding native modules...
-call yarn install
-call npx --yes electron-rebuild
-call yarn make:assets
+call yarn install || (
+    echo ERROR: Failed to run yarn install
+    exit /b 1
+)
+call npx --yes electron-rebuild || (
+    echo ERROR: Failed to rebuild electron
+    exit /b 1
+)
+call yarn make:assets || (
+    echo ERROR: Failed to make assets
+    exit /b 1
+)
 
 REM 5. Overwrite override.txt with torch version + custom nunchaku wheel
 echo Writing override.txt...
 
-xcopy /E /I /Y /H ..\ComfyUI-nunchaku assets\ComfyUI\custom_nodes\ComfyUI-nunchaku
+xcopy /E /I /Y /H ..\ComfyUI-nunchaku assets\ComfyUI\custom_nodes\ComfyUI-nunchaku || (
+    echo ERROR: Failed to copy ComfyUI-nunchaku to assets
+    exit /b 1
+)
 
 set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
 
@@ -84,11 +117,17 @@ assets\ComfyUI\custom_nodes\ComfyUI-nunchaku\requirements.txt ^
 -o assets\requirements\windows_nvidia.compiled ^
 --override assets\override.txt ^
 --index-url https://pypi.org/simple ^
---extra-index-url https://download.pytorch.org/whl/%CUDA_PIP_INDEX%
+--extra-index-url https://download.pytorch.org/whl/%CUDA_PIP_INDEX% || (
+    echo ERROR: Failed to compile requirements with uv
+    exit /b 1
+)
 
 REM 7. Build for NVIDIA users on Windows
 echo Building ComfyUI for NVIDIA...
-call yarn make:nvidia
+call yarn make:nvidia || (
+    echo ERROR: Failed to build ComfyUI for NVIDIA
+    exit /b 1
+)
 
 echo ========================================
 echo ✅ Build process completed successfully!
