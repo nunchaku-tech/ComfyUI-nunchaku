@@ -220,7 +220,7 @@ class NunchakuQwenImageDiTLoader:
             sd, metadata = cached
             logger.debug(f"Using cached state_dict for {model_path}")
         else:
-            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True,, model_options={"cpu_offload_enabled": cpu_offload_enabled})
+            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
             self._sd_cache[cache_key] = (sd, metadata)
 
         if cpu_offload == "auto":
@@ -238,12 +238,12 @@ class NunchakuQwenImageDiTLoader:
             cpu_offload_enabled = False
             logger.info("Disabling CPU offload")
 
+        model = load_diffusion_model_state_dict(sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled})
         if cpu_offload_enabled:
             assert use_pin_memory in ["enable", "disable"], "Invalid use_pin_memory option"
             model.model.diffusion_model.set_offload(
                 cpu_offload_enabled, num_blocks_on_gpu=num_blocks_on_gpu, use_pin_memory=use_pin_memory == "enable"
             )
-        model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
         # Wrap transformer in ComfyQwenImageWrapper for LoRA support (Flux-style)
         from ...models.qwenimage import NunchakuQwenImageTransformer2DModel
