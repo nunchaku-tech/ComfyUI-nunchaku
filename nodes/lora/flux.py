@@ -7,11 +7,10 @@ import copy
 import logging
 import os
 
-import folder_paths
-
 from nunchaku.lora.flux import to_diffusers
 
 from ...wrappers.flux import ComfyFluxWrapper
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -61,7 +60,7 @@ class NunchakuFluxLoraLoader:
                     },
                 ),
                 "lora_name": (
-                    folder_paths.get_filename_list("loras"),
+                    get_filename_list("loras"),
                     {"tooltip": "The file name of the LoRA."},
                 ),
                 "lora_strength": (
@@ -122,7 +121,7 @@ class NunchakuFluxLoraLoader:
         model_wrapper.model = transformer
         ret_model_wrapper.model = transformer
 
-        lora_path = folder_paths.get_full_path_or_raise("loras", lora_name)
+        lora_path = get_full_path_or_raise("loras", lora_name)
         ret_model_wrapper.loras.append((lora_path, lora_strength))
 
         sd = to_diffusers(lora_path)
@@ -190,7 +189,7 @@ class NunchakuFluxLoraStack:
         # Add fixed number of LoRA inputs (15 slots)
         for i in range(1, 16):  # Support up to 15 LoRAs
             inputs["optional"][f"lora_name_{i}"] = (
-                ["None"] + folder_paths.get_filename_list("loras"),
+                ["None"] + get_filename_list("loras"),
                 {"tooltip": f"The file name of LoRA {i}. Select 'None' to skip this slot."},
             )
             inputs["optional"][f"lora_strength_{i}"] = (
@@ -275,7 +274,7 @@ class NunchakuFluxLoraStack:
 
         # Add all LoRAs
         for lora_name, lora_strength in loras_to_apply:
-            lora_path = folder_paths.get_full_path_or_raise("loras", lora_name)
+            lora_path = get_full_path_or_raise("loras", lora_name)
             ret_model_wrapper.loras.append((lora_path, lora_strength))
 
             # Check if input channels need to be updated

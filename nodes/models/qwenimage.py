@@ -15,6 +15,7 @@ from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_pre
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 from ...model_patcher import NunchakuModelPatcher
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -62,14 +63,20 @@ def load_diffusion_model_state_dict(
     load_device = model_management.get_torch_device()
     check_hardware_compatibility(quantization_config, load_device)
 
+    offload_device = model_management.unet_offload_device()
     model_config = NunchakuQwenImage(
-        {"image_model": "qwen_image", "scale_shift": 0, "rank": rank, "precision": precision}
+        {
+            "image_model": "qwen_image",
+            "scale_shift": 0,
+            "rank": rank,
+            "precision": precision,
+            "transformer_offload_device": offload_device if model_options.get("cpu_offload_enabled", False) else None,
+        }
     )
     model_config.optimizations["fp8"] = False
 
     new_sd = sd
 
-    offload_device = model_management.unet_offload_device()
     unet_weight_dtype = list(model_config.supported_inference_dtypes)
     if model_config.scaled_fp8 is not None:
         weight_dtype = None
@@ -89,7 +96,7 @@ def load_diffusion_model_state_dict(
     if model_options.get("fp8_optimizations", False):
         model_config.optimizations["fp8"] = True
 
-    model = model_config.get_model(new_sd, "")
+    model = model_config.get_model(new_sd, "", load_device)
     model = model.to(offload_device)
     model.load_model_weights(new_sd, "")
     return NunchakuModelPatcher(model, load_device=load_device, offload_device=offload_device)
@@ -124,7 +131,7 @@ class NunchakuQwenImageDiTLoader:
         return {
             "required": {
                 "model_name": (
-                    folder_paths.get_filename_list("diffusion_models"),
+                    get_filename_list("diffusion_models"),
                     {"tooltip": "The Nunchaku Qwen-Image model."},
                 ),
                 "cpu_offload": (
@@ -201,7 +208,7 @@ class NunchakuQwenImageDiTLoader:
         tuple
             A tuple containing the loaded and patched model.
         """
-        model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
+        model_path = get_full_path_or_raise("diffusion_models", model_name)
 
         # In-process cache to avoid repeated disk I/O when toggling options
         if not hasattr(self, "_sd_cache"):
@@ -213,9 +220,8 @@ class NunchakuQwenImageDiTLoader:
             sd, metadata = cached
             logger.debug(f"Using cached state_dict for {model_path}")
         else:
-            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True,, model_options={"cpu_offload_enabled": cpu_offload_enabled})
             self._sd_cache[cache_key] = (sd, metadata)
-        model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
         if cpu_offload == "auto":
             if get_gpu_memory() < 15:  # 15GB threshold
@@ -237,6 +243,7 @@ class NunchakuQwenImageDiTLoader:
             model.model.diffusion_model.set_offload(
                 cpu_offload_enabled, num_blocks_on_gpu=num_blocks_on_gpu, use_pin_memory=use_pin_memory == "enable"
             )
+        model = load_diffusion_model_state_dict(sd, metadata=metadata)
 
         # Wrap transformer in ComfyQwenImageWrapper for LoRA support (Flux-style)
         from ...models.qwenimage import NunchakuQwenImageTransformer2DModel

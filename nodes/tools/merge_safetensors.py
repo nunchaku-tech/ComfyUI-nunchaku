@@ -5,10 +5,11 @@ into a single safetensors file.
 
 from pathlib import Path
 
-import folder_paths
 from safetensors.torch import save_file
 
 from nunchaku.merge_safetensors import merge_safetensors
+
+from ..utils import folder_paths
 
 
 class NunchakuModelMerger:

@@ -1,0 +1,30 @@
+name: Update CDN Version File
+on:
+  # Only run on schedule or manual dispatch for the main repo
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+jobs:
+  update-version-file:
+    if: github.repository == 'nunchaku-tech/ComfyUI-nunchaku'
+    name: Build and Upload Versions File
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install script dependencies
+        run: pip install packaging
+      - name: Generate the versions.json file
+        run: python scripts/update_versions.py
+      - name: Upload file to Nunchaku CDN
+        run: |
+          echo "${{ secrets.DO_SSH_KEY }}" > ./id_rsa
+          chmod 600 id_rsa
+          rsync -avz nunchaku_versions.json ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }}:/var/www/cdn/
+          rm id_rsa
+        env:
+          RSYNC_RSH: "ssh -o StrictHostKeyChecking=no -i id_rsa"

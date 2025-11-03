@@ -36,3 +36,6 @@ Check out `DeepCompressor <github_deepcompressor_>`_ for the quantization librar
     :caption: Other Resources
 
     developer/contribution_guide.rst
+    developer/build_docs.rst
+    developer/docstring.rst
+    developer/build_comfyui_desktop.rst

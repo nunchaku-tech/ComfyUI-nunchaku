@@ -7,11 +7,9 @@ import gc
 import json
 import logging
 import os
-from pathlib import Path
 
 import comfy.model_management
 import comfy.model_patcher
-import folder_paths
 import torch
 from comfy.supported_models import Flux, FluxSchnell
 
@@ -20,6 +18,7 @@ from nunchaku.caching.diffusers_adapters.flux import apply_cache_on_transformer
 from nunchaku.utils import is_turing
 
 from ...wrappers.flux import ComfyFluxWrapper
+from ..utils import get_filename_list, get_full_path_or_raise
 
 # Get log level from environment variable (default to INFO)
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -79,29 +78,7 @@ class NunchakuFluxDiTLoader:
         dict
             A dictionary specifying the required inputs and their descriptions for the node interface.
         """
-        prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
-        local_folders = set()
-        for prefix in prefixes:
-            if os.path.exists(prefix) and os.path.isdir(prefix):
-                local_folders_ = os.listdir(prefix)
-                local_folders_ = [
-                    folder
-                    for folder in local_folders_
-                    if not folder.startswith(".") and os.path.isdir(os.path.join(prefix, folder))
-                ]
-                local_folders.update(local_folders_)
-        model_paths = sorted(list(local_folders))
-        safetensor_files = folder_paths.get_filename_list("diffusion_models")
-
-        # exclude the safetensors in the legacy svdquant folders
-        new_safetensor_files = []
-        for safetensor_file in safetensor_files:
-            safetensor_path = folder_paths.get_full_path_or_raise("diffusion_models", safetensor_file)
-            safetensor_path = Path(safetensor_path)
-            if not (safetensor_path.parent / "config.json").exists():
-                new_safetensor_files.append(safetensor_file)
-        safetensor_files = new_safetensor_files
-        model_paths = model_paths + safetensor_files
+        safetensor_files = get_filename_list("diffusion_models")
 
         ngpus = torch.cuda.device_count()
 
@@ -120,7 +97,7 @@ class NunchakuFluxDiTLoader:
         return {
             "required": {
                 "model_path": (
-                    model_paths,
+                    safetensor_files,
                     {"tooltip": "The Nunchaku FLUX model."},
                 ),
                 "cache_threshold": (
@@ -140,9 +117,11 @@ class NunchakuFluxDiTLoader:
                     attention_options,
                     {
                         "default": attention_options[0],
-                        "tooltip": "Attention implementation. The default implementation is `flash-attention2`. "
-                        "`nunchaku-fp16` use FP16 attention, offering ~1.2× speedup. "
-                        "Note that 20-series GPUs can only use `nunchaku-fp16`.",
+                        "tooltip": (
+                            "Attention implementation. The default implementation is `flash-attention2`. "
+                            "`nunchaku-fp16` use FP16 attention, offering ~1.2× speedup. "
+                            "Note that 20-series GPUs can only use `nunchaku-fp16`."
+                        ),
                     },
                 ),
                 "cpu_offload": (
@@ -228,15 +207,7 @@ class NunchakuFluxDiTLoader:
         """
         device = torch.device(f"cuda:{device_id}")
 
-        if model_path.endswith((".sft", ".safetensors")):
-            model_path = Path(folder_paths.get_full_path_or_raise("diffusion_models", model_path))
-        else:
-            prefixes = folder_paths.folder_names_and_paths["diffusion_models"][0]
-            for prefix in prefixes:
-                prefix = Path(prefix)
-                if (prefix / model_path).exists() and (prefix / model_path).is_dir():
-                    model_path = prefix / model_path
-                    break
+        model_path = get_full_path_or_raise("diffusion_models", model_path)
 
         # Check if the device_id is valid
         if device_id >= torch.cuda.device_count():
@@ -246,7 +217,7 @@ class NunchakuFluxDiTLoader:
         gpu_properties = torch.cuda.get_device_properties(device_id)
         gpu_memory = gpu_properties.total_memory / (1024**2)  # Convert to MiB
         gpu_name = gpu_properties.name
-        logger.info(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
+        logger.debug(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
 
         # Check if CPU offload needs to be enabled
         if cpu_offload == "auto":

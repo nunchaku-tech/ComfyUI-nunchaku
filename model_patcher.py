@@ -2,10 +2,10 @@
 This module wraps the ComfyUI model patcher for Nunchaku models to load and unload the model correctly.
 """
 
-import comfy.model_patcher
+from comfy.model_patcher import ModelPatcher
 
 
-class NunchakuModelPatcher(comfy.model_patcher.ModelPatcher):
+class NunchakuModelPatcher(ModelPatcher):
     """
     This class extends the ComfyUI ModelPatcher to provide custom logic for loading and unloading the model correctly.
     """

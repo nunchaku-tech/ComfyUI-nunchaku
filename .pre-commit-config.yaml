@@ -2,7 +2,7 @@
 default_stages: [pre-commit, pre-push, manual]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-symlinks
       - id: destroyed-symlinks
@@ -20,17 +20,17 @@ repos:
         #      - id: debug-statements
         #      - id: no-commit-to-branch
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.1.0
     hooks:
       - id: isort
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.2
+    rev: v0.13.3
     hooks:
       - id: ruff
         args: [--fixable=F401]
         exclude: \.ipynb$
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.9.0
     hooks:
       - id: black-jupyter
       - id: black
@@ -44,7 +44,7 @@ repos:
           - '--keep-output'
           - '--extra-keys=metadata.kernelspec metadata.language_info.version'
   - repo: https://github.com/google/yamlfmt
-    rev: v0.17.0
+    rev: v0.17.2
     hooks:
       - id: yamlfmt
   - repo: https://github.com/hukkin/mdformat
@@ -62,7 +62,11 @@ repos:
       - id: doc8
         additional_dependencies: []
   - repo: https://github.com/rstcheck/rstcheck
-    rev: main # should be replaced with the current verison
+    rev: v6.2.5 # should be replaced with the current verison
     hooks:
       - id: rstcheck
         additional_dependencies: ['rstcheck[sphinx,toml]']
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "v2.6.0"
+    hooks:
+      - id: pyproject-fmt

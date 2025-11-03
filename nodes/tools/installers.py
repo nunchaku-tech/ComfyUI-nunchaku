@@ -1,16 +1,16 @@
 """
 This module provides an advanced utility node for installing the Nunchaku Python wheel.
 It operates with a 100% offline startup using a local cache file ('nunchaku_versions.json').
+The online update URL for the version file is: https://nunchaku.tech/cdn/nunchaku_versions.json
 The node features separate dropdowns for official and development versions. Selecting
-'latest' triggers an online update of the local version lists before
-installing, ensuring a simple, reliable, and error-free user experience.
+'latest' triggers an online update of the local version lists from a centralized
+CDN, ensuring a simple, reliable, and error-free user experience for everyone.
 """
 
 import importlib.metadata
 import json
 import os
 import platform
-import re
 import subprocess
 import sys
 import urllib.error
@@ -25,11 +25,9 @@ from packaging.version import parse as parse_version
 LOCAL_VERSIONS_FILE = "nunchaku_versions.json"
 NODE_DIR = Path(__file__).parent.parent.parent
 
-GITHUB_API_URL = "https://api.github.com/repos/nunchaku-tech/nunchaku"
-HF_API_URL = "https://huggingface.co/api/models/nunchaku-tech/nunchaku/tree/main"
-MODEL_SCOPE_API_URL = (
-    "https://modelscope.cn/api/v1/models/nunchaku-tech/nunchaku/repo/files?Revision=master&PageSize=500"
-)
+# Centralized CDN URL for the versions file, accessible to all users.
+NUNCHAKU_CDN_URL = "https://nunchaku.tech/cdn/nunchaku_versions.json"
+
 
 # --- Network Fetching and Config Management ---
 
@@ -61,96 +59,27 @@ def _get_json_from_url(url: str) -> List[Dict] | Dict:
         return {}
 
 
-def get_nunchaku_versions_from_sources() -> Tuple[set, set]:
-    """
-    Fetch all unique Nunchaku version numbers from all sources.
-
-    Returns
-    -------
-    tuple of set
-        (official_versions, dev_versions)
-    """
-    official_tags, dev_tags = set(), set()
-    wheel_regex = re.compile(r"nunchaku-([^-+]+)")
-
-    # GitHub (Official + Dev) - Parsing from asset filenames for accuracy
-    releases = _get_json_from_url(f"{GITHUB_API_URL}/releases")
-    if isinstance(releases, list):
-        for release in releases:
-            for asset in release.get("assets", []):
-                filename = asset.get("name", "")
-                if filename.endswith(".whl"):
-                    match = wheel_regex.search(filename)
-                    if match:
-                        version_str = match.group(1)
-                        if "dev" in version_str:
-                            dev_tags.add(version_str)
-                        else:
-                            official_tags.add(version_str)
-                        break
-
-    # Hugging Face / ModelScope
-    sources = {"huggingface": (HF_API_URL, "path"), "modelscope": (MODEL_SCOPE_API_URL, "Name")}
-    for source_name, (url, path_key) in sources.items():
-        api_response = _get_json_from_url(url)
-        if not api_response:
-            print(f"Could not get response from {source_name}, skipping.")
-            continue
-
-        file_list = []
-        if source_name == "modelscope" and isinstance(api_response, dict):
-            file_list = api_response.get("Data", {}).get("Files", [])
-        elif source_name == "huggingface" and isinstance(api_response, list):
-            file_list = api_response
-
-        for file_info in file_list:
-            filename = file_info.get(path_key)
-            if filename and filename.endswith(".whl"):
-                match = wheel_regex.search(filename)
-                if match:
-                    version_str = match.group(1)
-                    if "dev" in version_str:
-                        dev_tags.add(version_str)
-                    else:
-                        official_tags.add(version_str)
-
-    return official_tags, dev_tags
-
-
 def generate_and_save_config() -> Dict:
     """
-    Fetch all available versions and update the local ``nunchaku_versions.json`` file.
+    Fetch the centralized versions file from the CDN and update the local cache.
 
     Returns
     -------
     dict
         The updated configuration dictionary, or empty dict on failure.
     """
-    print("Checking for new versions from internet sources...")
-    official_versions, dev_versions = get_nunchaku_versions_from_sources()
+    print(f"Checking for new versions from CDN: {NUNCHAKU_CDN_URL}...")
+    config = _get_json_from_url(NUNCHAKU_CDN_URL)
 
-    if not official_versions and not dev_versions:
-        print("Could not fetch any version information. Network might be down.")
+    if not config:
+        print("Could not fetch the version list. Network might be down.")
         return {}
-
-    config = {
-        "versions": sorted(list(official_versions), key=parse_version, reverse=True),
-        "dev_versions": sorted(list(dev_versions), key=parse_version, reverse=True),
-        "supported_torch": ["torch2.5", "torch2.6", "torch2.7", "torch2.8", "torch2.9"],
-        "supported_python": ["cp310", "cp311", "cp312", "cp313"],
-        "filename_template": "nunchaku-{version}+{torch_version}-{python_version}-{python_version}-{platform}.whl",
-        "url_templates": {
-            "github": "https://github.com/nunchaku-tech/nunchaku/releases/download/{version_tag}/{filename}",
-            "huggingface": "https://huggingface.co/nunchaku-tech/nunchaku/resolve/main/{filename}",
-            "modelscope": "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/{filename}",
-        },
-    }
 
     try:
         file_path = NODE_DIR / LOCAL_VERSIONS_FILE
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
-        print(f"Successfully created/updated '{LOCAL_VERSIONS_FILE}'")
+        print(f"Successfully created/updated '{LOCAL_VERSIONS_FILE}' from CDN.")
         return config
     except Exception as e:
         print(f"Error writing '{LOCAL_VERSIONS_FILE}': {e}")
@@ -207,8 +136,8 @@ def prepare_all_version_lists(version_config: Dict) -> Tuple[List[str], List[str
     tuple of list[str]
         (official_versions, dev_versions)
     """
-    official_list = ["none", "latest"] + version_config.get("versions", [])
-    dev_list = ["none", "latest"] + version_config.get("dev_versions", [])
+    official_list = ["none"] + version_config.get("versions", [])
+    dev_list = ["none"] + version_config.get("dev_versions", [])
     return official_list, dev_list
 
 
@@ -359,9 +288,9 @@ def install_wheel(wheel_url: str, backend: str) -> str:
 
 VERSION_CONFIG = load_version_config()
 if not VERSION_CONFIG:
-    print(f"'{LOCAL_VERSIONS_FILE}' not found. Node will start in minimal mode.")
-    OFFICIAL_VERSIONS = ["latest"]
-    DEV_VERSIONS = ["none", "latest"]
+    print(f"'{LOCAL_VERSIONS_FILE}' not found. Node will start in minimal mode. Use 'update node' to fetch versions.")
+    OFFICIAL_VERSIONS = ["none"]
+    DEV_VERSIONS = ["none"]
 else:
     OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(VERSION_CONFIG)
 
@@ -400,14 +329,14 @@ class NunchakuWheelInstaller:
         dict
             Dictionary specifying required inputs: version, dev_version, and mode.
         """
-        return {
+        inputs = {
             "required": {
                 "version": (
                     OFFICIAL_VERSIONS,
                     {
                         "tooltip": (
-                            "Official Nunchaku version to install. Use 'lastest' to pull the latest version list. "
-                            "When you specify both version and dev_version, the dev_version will be used."
+                            "Official Nunchaku version to install. Use 'update node' mode to get the latest list."
+                            "If dev_version is also selected, it will take priority."
                         ),
                     },
                 ),
@@ -416,22 +345,24 @@ class NunchakuWheelInstaller:
                     {
                         "default": "none",
                         "tooltip": (
-                            "Development Nunchaku version to install. Use 'lastest' to pull the latest version list. "
-                            "When you specify both version and dev_version, the dev_version will be used."
+                            "Development Nunchaku version to install. Use 'update node' mode to get the latest list."
+                            "This option has priority over the official version."
                         ),
                     },
                 ),
                 "mode": (
-                    ["install", "uninstall"],
-                    {"default": "install", "tooltip": "Install or uninstall Nunchaku."},
+                    ["install", "uninstall", "update node"],
+                    {"default": "install", "tooltip": "Install, uninstall, or update the version list."},
                 ),
             }
         }
 
+        return inputs
+
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("status",)
 
-    def run(self, version: str, dev_version: str, mode: str):
+    def run(self, version: str, mode: str, dev_version: str = "none"):
         """
         Execute the install or uninstall operation.
 
@@ -439,10 +370,10 @@ class NunchakuWheelInstaller:
         ----------
         version : str
             The official Nunchaku version to install.
-        dev_version : str
-            The development Nunchaku version to install.
         mode : str
-            "install" or "uninstall".
+            "install", "uninstall", or "update node".
+        dev_version : str, optional
+            The development Nunchaku version to install, by default "none".
 
         Returns
         -------
@@ -460,33 +391,38 @@ class NunchakuWheelInstaller:
                     return (
                         "✅ Existing Nunchaku uninstalled.\n**Please restart ComfyUI completely.**\nThen, run again to install.",
                     )
-            else:
-                current_config = VERSION_CONFIG
-                # Step 1: Check if an online update is needed
-                if version == "latest" or dev_version == "latest":
-                    updated_config = generate_and_save_config()
-                    if updated_config:
-                        VERSION_CONFIG = updated_config
-                        OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(updated_config)
-                        current_config = updated_config
-                        print("Version lists updated. Please restart or refresh web UI to see changes.")
-                    elif not current_config:
-                        raise RuntimeError("Update check failed and no local cache exists. Check internet connection.")
+                else:
+                    return ("Nunchaku is not installed. Nothing to do.",)
+
+            elif mode == "update node":
+                updated_config = generate_and_save_config()
+                if updated_config:
+                    VERSION_CONFIG = updated_config
+                    OFFICIAL_VERSIONS, DEV_VERSIONS = prepare_all_version_lists(updated_config)
+                    return (
+                        "✅ Version list updated.\nPlease refresh the web UI (press 'r') to see the new version list.",
+                    )
+                else:
+                    return ("❌ Update failed. Check internet connection and logs.",)
+
+            else:  # install mode
+                if not VERSION_CONFIG:
+                    raise RuntimeError(
+                        "Local version list not found. Please run in 'update node' mode first to fetch versions."
+                    )
 
                 # Step 2: Determine the final version to install
-                if dev_version not in ["none", "latest"]:
+                final_version = None
+                sources_to_try = []
+                if dev_version != "none":
                     final_version = dev_version
                     sources_to_try = ["github"]
-                elif dev_version == "latest":
-                    if not current_config.get("dev_versions"):
-                        raise RuntimeError("No dev versions found. Run with 'latest' first or check GitHub.")
-                    final_version = current_config["dev_versions"][0]
-                    sources_to_try = ["github"]
-                else:  # Official version
-                    if not current_config.get("versions"):
-                        raise RuntimeError("No official versions found. Run with 'latest' to fetch them.")
-                    final_version = current_config["versions"][0] if version == "latest" else version
+                elif version != "none":
+                    final_version = version
                     sources_to_try = ["modelscope", "huggingface", "github"]
+
+                if not final_version:
+                    return ("No version selected. Please choose a version to install or update the node.",)
 
                 # Step 3: Find compatible wheel and install
                 sys_info = get_system_info()
@@ -501,7 +437,7 @@ class NunchakuWheelInstaller:
                 for source in sources_to_try:
                     print(f"\n--- Trying source: {source} for version {final_version} ---")
                     try:
-                        wheel_info = construct_compatible_wheel_info(final_version, source, sys_info, current_config)
+                        wheel_info = construct_compatible_wheel_info(final_version, source, sys_info, VERSION_CONFIG)
                         if not wheel_info:
                             last_error = f"No compatible wheel found on '{source}' for your system."
                             print(last_error)

@@ -7,12 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import re
-import sys
 import tomllib
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "ComfyUI"))
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 project = "ComfyUI-nunchaku"
 copyright = "2025, Nunchaku Team"
@@ -67,15 +63,6 @@ html_static_path = ["_static"]
 
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
-
-# Mock imports for autodoc
-autodoc_mock_imports = [
-    "comfy",
-    "comfy.model_management",
-    "comfy.model_patcher",
-    "comfy.ldm.common_dit",
-    "comfy.supported_models",
-]
 
 extlinks = {
     "nunchaku-issue": ("https://github.com/mit-han-lab/nunchaku/issues/%s", "nunchaku#%s"),

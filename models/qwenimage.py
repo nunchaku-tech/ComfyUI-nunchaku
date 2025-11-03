@@ -4,6 +4,11 @@ This module implements the Nunchaku Qwen-Image model and related components.
 .. note::
 
     Inherits and modifies from https://github.com/comfyanonymous/ComfyUI/blob/v0.3.51/comfy/ldm/qwen_image/model.py
+
+.. warning::
+
+    There is a sage-attention dispatch bug that may cause black images until the upstream issue is fixed.
+    See: https://github.com/comfyanonymous/ComfyUI/issues/9773
 """
 
 import gc
@@ -537,6 +542,8 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         Module providing normalization and linear layers.
     scale_shift : float, optional
         Value added to scale in modulation (default: 1.0).
+    transformer_offload_device: torch.device, optional
+        If not None, transformer blocks will be initialized to this device (usually cpu) rather than `device`
     **kwargs
         Additional arguments for quantized linear layers.
     """
@@ -558,6 +565,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
         device=None,
         operations=None,
         scale_shift: float = 1.0,
+        transformer_offload_device=None,
         **kwargs,
     ):
         super(QwenImageTransformer2DModel, self).__init__()
@@ -601,7 +609,7 @@ class NunchakuQwenImageTransformer2DModel(NunchakuModelMixin, QwenImageTransform
                     num_attention_heads=num_attention_heads,
                     attention_head_dim=attention_head_dim,
                     dtype=dtype,
-                    device=device,
+                    device=transformer_offload_device if transformer_offload_device is not None else device,
                     operations=operations,
                     scale_shift=scale_shift,
                     **kwargs,

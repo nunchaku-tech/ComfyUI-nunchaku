@@ -1,8 +1,4 @@
 models:
-  - repo_id: "comfyanonymous/flux_text_encoders"
-    filename: "t5xxl_fp8_e4m3fn_scaled.safetensors"
-    sub_folder: "text_encoders"
-    new_filename: "t5xxl_fp8_e4m3fn_scaled.safetensors"
   # loras
   - repo_id: "alimama-creative/FLUX.1-Turbo-Alpha"
     filename: "diffusion_pytorch_model.safetensors"
@@ -15,11 +11,11 @@ models:
   - repo_id: "black-forest-labs/FLUX.1-Depth-dev-lora"
     filename: "flux1-depth-dev-lora.safetensors"
     sub_folder: "loras"
-    new_filename: "flux1-depth-dev-lora.safetensors"
+    new_filename: "flux.1-depth-dev-lora.safetensors"
   - repo_id: "black-forest-labs/FLUX.1-Canny-dev-lora"
     filename: "flux1-canny-dev-lora.safetensors"
     sub_folder: "loras"
-    new_filename: "flux1-canny-dev-lora.safetensors"
+    new_filename: "flux.1-canny-dev-lora.safetensors"
   - repo_id: "RiverZ/normal-lora"
     filename: "pytorch_lora_weights.safetensors"
     sub_folder: "loras"
@@ -66,6 +62,34 @@ models:
     filename: "svdq-{precision}_r32-flux.1-kontext-dev.safetensors"
     sub_folder: "diffusion_models"
     new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image"
+    filename: "svdq-{precision}_r32-qwen-image.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image"
+    filename: "svdq-{precision}_r128-qwen-image.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image-edit"
+    filename: "svdq-{precision}_r32-qwen-image-edit.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image-edit"
+    filename: "svdq-{precision}_r128-qwen-image-edit.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image-edit-2509"
+    filename: "svdq-{precision}_r32-qwen-image-edit-2509.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image-edit-2509"
+    filename: "svdq-{precision}_r128-qwen-image-edit-2509.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
+  - repo_id: "nunchaku-tech/nunchaku-qwen-image"
+    filename: "svdq-{precision}_r128-qwen-image-lightningv1.1-8steps.safetensors"
+    sub_folder: "diffusion_models"
+    new_filename: null
   # pulid related
   - repo_id: "guozinan/PuLID"
     filename: "pulid_flux_v0.9.1.safetensors"
@@ -75,16 +99,12 @@ models:
     filename: "EVA02_CLIP_L_336_psz14_s6B.pt"
     sub_folder: "clip"
     new_filename: null
-# qwen-image related
-# - repo_id: "Comfy-Org/Qwen-Image_ComfyUI"
-#   filename: "split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors"
-#   sub_folder: "diffusion_models"
-#   new_filename: null
-# - repo_id: "Comfy-Org/Qwen-Image_ComfyUI"
-#   filename: "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
-#   sub_folder: "text_encoders"
-#   new_filename: null
-# - repo_id: "Comfy-Org/Qwen-Image_ComfyUI"
-#   filename: "split_files/vae/qwen_image_vae.safetensors"
-#   sub_folder: "vae"
-#   new_filename: null
+  # other
+  - repo_id: "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro-2.0"
+    filename: "diffusion_pytorch_model.safetensors"
+    sub_folder: "controlnet"
+    new_filename: "controlnet-union-pro-2.0.safetensors"
+  - repo_id: "jasperai/Flux.1-dev-Controlnet-Upscaler"
+    filename: "diffusion_pytorch_model.safetensors"
+    sub_folder: "controlnet"
+    new_filename: "controlnet-upscaler.safetensors"
