@@ -230,8 +230,28 @@ class ComfyFluxWrapper(nn.Module):
                         model.reset_x_embedder()
                 model.update_lora_params(composed_lora)
 
-        controlnet_block_samples = None if control is None else [y.to(x.dtype) for y in control["input"]]
-        controlnet_single_block_samples = None if control is None else [y.to(x.dtype) for y in control["output"]]
+        assert img.ndim == 3, f"expected (B,S,D), got {tuple(img.shape)}"
+        seq_ref = img.shape[1]
+        xe = getattr(model, "x_embedder", None)
+        ref_dim = int(getattr(xe, "out_features", 0) or 0)
+        device, dtype = img.device, img.dtype
+
+        controlnet_block_samples = _prep_ctrl_list(
+            (control or {}).get("input", []),
+            model=model, ref_seq=seq_ref, ref_dim=ref_dim, device=device, dtype=dtype
+        )
+
+        controlnet_single_block_samples = _prep_ctrl_list(
+            (control or {}).get("input_single", []),
+            model=model, ref_seq=seq_ref, ref_dim=ref_dim, device=device, dtype=dtype
+        )
+
+        if controlnet_block_samples:
+            assert all(isinstance(t, torch.Tensor) and t.shape[-1] == ref_dim and t.shape[1] == seq_ref
+                    for t in controlnet_block_samples), "control blocks not aligned to post-embed shape"
+        if controlnet_single_block_samples:
+            assert all(isinstance(t, torch.Tensor) and t.shape[-1] == ref_dim and t.shape[1] == seq_ref
+                    for t in controlnet_single_block_samples), "control single not aligned"
 
         if self.pulid_pipeline is not None:
             self.model.transformer_blocks[0].pulid_ca = self.pulid_pipeline.pulid_ca
@@ -321,3 +341,43 @@ class ComfyFluxWrapper(nn.Module):
 
         self._prev_timestep = timestep_float
         return out
+
+def _prep_ctrl_list(control_list, *, model, ref_seq, ref_dim, device, dtype):
+    if not control_list:
+        return None
+    xe = getattr(model, "x_embedder", None)
+    in_feat  = int(getattr(xe, "in_features", 0)  or 0)
+    out_feat = int(getattr(xe, "out_features", 0) or 0)
+
+    out = []
+    for t in control_list:
+        if not torch.is_tensor(t):
+            continue
+        t = t.to(device=device, dtype=dtype)
+        # -> (B,S,D)
+        if t.ndim == 2: t = t.unsqueeze(0)
+        if t.ndim != 3: raise RuntimeError(f"Unexpected control tensor shape {tuple(t.shape)}")
+        B, S, D = t.shape
+
+        # match sequence
+        if S != ref_seq:
+            if S * 2 == ref_seq:
+                t = t.repeat_interleave(2, dim=1)
+            else:
+                t = torch.nn.functional.interpolate(t.permute(0,2,1), size=ref_seq, mode="linear", align_corners=False).permute(0,2,1)
+
+        # match channels (post-embed)
+        if D == ref_dim:
+            pass
+        elif xe is not None and D == in_feat and out_feat == ref_dim:
+            with torch.no_grad():
+                t = t @ xe.weight.t()
+                if xe.bias is not None:
+                    t = t + xe.bias
+        else:
+            raise RuntimeError(
+                f"Control dim {D} incompatible (in={in_feat}, out={out_feat}, ref_dim={ref_dim})"
+            )
+        out.append(t.contiguous())
+
+    return out or None
