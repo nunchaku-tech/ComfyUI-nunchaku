@@ -8,7 +8,10 @@ from typing import Callable, Tuple
 
 import torch
 from comfy.ldm.common_dit import pad_to_patch_size
-from comfy.model_patcher import ModelPatcher
+try:
+    from comfy.model_patcher import ModelPatcherDynamic as ModelPatcherBase
+except ImportError:
+    from comfy.model_patcher import ModelPatcher as ModelPatcherBase
 from einops import rearrange, repeat
 from torch import nn
 
@@ -331,7 +334,7 @@ class ComfyFluxWrapper(nn.Module):
         return out
 
 
-def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, ModelPatcher]:
+def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, ModelPatcherBase]:
     """
     Duplicates a ComfyFluxWrapper object with it's initialization context such as comfy_config, model_config, device and device_id.
 
@@ -360,5 +363,5 @@ def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, Mo
     )
     model_base = ctx_for_copy["model_config"].get_model({})
     model_base.diffusion_model = ret_model_wrapper
-    ret_model = ModelPatcher(model_base, ctx_for_copy["device"], ctx_for_copy["device_id"])
+    ret_model = ModelPatcherBase(model_base, ctx_for_copy["device"], ctx_for_copy["device_id"])
     return ret_model_wrapper, ret_model
