@@ -13,7 +13,7 @@ class NunchakuModelPatcher(ModelPatcherBase):
     This class extends the ComfyUI ModelPatcher to provide custom logic for loading and unloading the model correctly.
     """
 
-    def load(self, device_to=None, lowvram_model_memory=0, force_patch_weights=False, full_load=False):
+    def load(self, device_to=None, lowvram_model_memory=0, force_patch_weights=False, full_load=False, **kwargs):
         """
         Load the diffusion model onto the specified device.
 
@@ -31,7 +31,7 @@ class NunchakuModelPatcher(ModelPatcherBase):
         with self.use_ejected():
             self.model.diffusion_model.to_safely(device_to)
 
-    def detach(self, unpatch_all: bool = True):
+    def detach(self, unpatch_all: bool = True, **kwargs):
         """
         Detach the model and move it to the offload device.
 
