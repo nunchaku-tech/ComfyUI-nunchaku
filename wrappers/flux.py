@@ -251,6 +251,12 @@ class ComfyFluxWrapper(nn.Module):
             # A more robust caching strategy
             cache_invalid = False
 
+            # Check if input shape or text context shape has changed
+            current_shape = (img.shape, context.shape)
+            if getattr(self, "_prev_shape", None) != current_shape:
+                cache_invalid = True
+            self._prev_shape = current_shape
+
             # Check if timestamps have changed or are out of valid range
             if self._prev_timestep is None:
                 cache_invalid = True
