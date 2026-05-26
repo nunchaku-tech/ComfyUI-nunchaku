@@ -15,9 +15,12 @@ try:
     from comfy.model_downloader import add_known_models
     from comfy.model_downloader_types import HuggingFile
 
-    capability = torch.cuda.get_device_capability(0 if torch.cuda.is_available() else None)
-    sm = f"{capability[0]}{capability[1]}"
-    precision = "fp4" if sm == "120" else "int4"
+    if torch.cuda.is_available():
+        capability = torch.cuda.get_device_capability(0)
+        sm = f"{capability[0]}{capability[1]}"
+        precision = "fp4" if sm == "120" else "int4"
+    else:
+        precision = "int4"
 
     # add known models
 
@@ -54,15 +57,15 @@ logger.info("=" * 40 + " ComfyUI-nunchaku Initialization " + "=" * 40)
 
 from .utils import get_package_version, get_plugin_version
 
-nunchaku_full_version = get_package_version("nunchaku").split("+")[0].strip()
+nunchaku_full_version = get_package_version("nunchaku")
+nunchaku_version = nunchaku_full_version.split("+")[0].strip()
+nunchaku_major_minor_patch_version = ".".join(nunchaku_version.split(".")[:3])
 
 logger.info(f"Nunchaku version: {nunchaku_full_version}")
 logger.info(f"ComfyUI-nunchaku version: {get_plugin_version()}")
 
 
 min_nunchaku_version = "1.0.0"
-nunchaku_version = nunchaku_full_version.split("+")[0].strip()
-nunchaku_major_minor_patch_version = ".".join(nunchaku_version.split(".")[:3])
 
 try:
     if Version(nunchaku_major_minor_patch_version) < Version(min_nunchaku_version):
@@ -101,37 +104,19 @@ except ImportError:
     logger.exception("Nodes `NunchakuFluxLoraLoader` and `NunchakuFluxLoraStack` import failed:")
 
 try:
-    from .nodes.models.text_encoder import NunchakuTextEncoderLoader, NunchakuTextEncoderLoaderV2
+    from .nodes.models.text_encoder import NunchakuTextEncoderLoaderV2
 
-    NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoader"] = NunchakuTextEncoderLoader
     NODE_CLASS_MAPPINGS["NunchakuTextEncoderLoaderV2"] = NunchakuTextEncoderLoaderV2
 except ImportError:
-    logger.exception("Nodes `NunchakuTextEncoderLoader` and `NunchakuTextEncoderLoaderV2` import failed:")
+    logger.exception("Node `NunchakuTextEncoderLoaderV2` import failed:")
 
 try:
-    from .nodes.preprocessors.depth import FluxDepthPreprocessor
+    from .nodes.models.pulid import NunchakuFluxPuLIDApplyV2, NunchakuPuLIDLoaderV2
 
-    NODE_CLASS_MAPPINGS["NunchakuDepthPreprocessor"] = FluxDepthPreprocessor
-except ImportError:
-    logger.exception("Node `NunchakuDepthPreprocessor` import failed:")
-
-try:
-    from .nodes.models.pulid import (
-        NunchakuFluxPuLIDApplyV2,
-        NunchakuPulidApply,
-        NunchakuPulidLoader,
-        NunchakuPuLIDLoaderV2,
-    )
-
-    NODE_CLASS_MAPPINGS["NunchakuPulidApply"] = NunchakuPulidApply
-    NODE_CLASS_MAPPINGS["NunchakuPulidLoader"] = NunchakuPulidLoader
     NODE_CLASS_MAPPINGS["NunchakuPuLIDLoaderV2"] = NunchakuPuLIDLoaderV2
     NODE_CLASS_MAPPINGS["NunchakuFluxPuLIDApplyV2"] = NunchakuFluxPuLIDApplyV2
 except ImportError:
-    logger.exception(
-        "Nodes `NunchakuPulidApply`,`NunchakuPulidLoader`, "
-        "`NunchakuPuLIDLoaderV2` and `NunchakuFluxPuLIDApplyV2` import failed:"
-    )
+    logger.exception("Nodes `NunchakuPuLIDLoaderV2` and `NunchakuFluxPuLIDApplyV2` import failed:")
 try:
     from .nodes.models.ipadapter import NunchakuFluxIPAdapterApply, NunchakuIPAdapterLoader
 

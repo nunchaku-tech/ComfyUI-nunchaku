@@ -193,12 +193,12 @@ class NunchakuQwenImageDiTLoader:
         sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
 
         if cpu_offload == "auto":
-            if get_gpu_memory() < 15:  # 15GB threshold
+            if get_gpu_memory() < 14:  # 14GB threshold
                 cpu_offload_enabled = True
-                logger.info("VRAM < 15GiB, enabling CPU offload")
+                logger.info("VRAM < 14GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                logger.info("VRAM > 15GiB, disabling CPU offload")
+                logger.info("VRAM >= 14GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
             logger.info("Enabling CPU offload")

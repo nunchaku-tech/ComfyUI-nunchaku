@@ -67,6 +67,13 @@ class NunchakuModelPatcher(ModelPatcherBase):
         """Nunchaku doesn't use pinned host buffers."""
         return 0
 
+    @staticmethod
+    def _to_safely(module, device, non_blocking=True):
+        try:
+            module.to_safely(device, non_blocking=non_blocking)
+        except TypeError:
+            module.to_safely(device)
+
     def load(self, device_to=None, lowvram_model_memory=0, force_patch_weights=False, full_load=False, **kwargs):
         """
         Load the diffusion model onto the specified device.
@@ -88,10 +95,7 @@ class NunchakuModelPatcher(ModelPatcherBase):
                 comfy.model_management.free_memory(model_size, device_to)
 
         with self.use_ejected():
-            try:
-                self.model.diffusion_model.to_safely(device_to, non_blocking=True)
-            except TypeError:
-                self.model.diffusion_model.to_safely(device_to)
+            self._to_safely(self.model.diffusion_model, device_to)
 
         self.model.comfy_patched_weights = True
 
@@ -105,9 +109,6 @@ class NunchakuModelPatcher(ModelPatcherBase):
             If True, unpatch all model components (default is True).
         """
         self.eject_model()
-        try:
-            self.model.diffusion_model.to_safely(self.offload_device, non_blocking=True)
-        except TypeError:
-            self.model.diffusion_model.to_safely(self.offload_device)
+        self._to_safely(self.model.diffusion_model, self.offload_device)
         self.model.comfy_patched_weights = False
 

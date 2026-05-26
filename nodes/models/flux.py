@@ -271,8 +271,12 @@ class NunchakuFluxDiTLoader:
                 config_path = os.path.join(model_path, "comfy_config.json")
             else:
                 default_config_root = os.path.join(os.path.dirname(__file__), "configs")
-                config_name = os.path.basename(model_path).replace("svdq-int4-", "").replace("svdq-fp4-", "")
-                config_path = os.path.join(default_config_root, f"{config_name}.json")
+                model_basename = os.path.basename(model_path)
+                for prefix in ("svdq-int4-", "svdq-fp4-"):
+                    if model_basename.startswith(prefix):
+                        model_basename = model_basename[len(prefix):]
+                        break
+                config_path = os.path.join(default_config_root, f"{model_basename}.json")
                 assert os.path.exists(config_path), f"Config file not found: {config_path}"
 
             logger.info(f"Loading ComfyUI model config from {config_path}")

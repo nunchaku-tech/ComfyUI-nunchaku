@@ -67,8 +67,8 @@ class ComfyFluxWrapper(nn.Module):
         config,
         pulid_pipeline=None,
         customized_forward: Callable = None,
-        forward_kwargs: dict | None = {},
-        ctx_for_copy: dict = {},
+        forward_kwargs: dict | None = None,
+        ctx_for_copy: dict | None = None,
     ):
         super(ComfyFluxWrapper, self).__init__()
         self.model = model
@@ -80,7 +80,7 @@ class ComfyFluxWrapper(nn.Module):
         self.customized_forward = customized_forward
         self.forward_kwargs = {} if forward_kwargs is None else forward_kwargs
 
-        self.ctx_for_copy = ctx_for_copy.copy()
+        self.ctx_for_copy = {} if ctx_for_copy is None else ctx_for_copy.copy()
 
         self._prev_timestep = None  # for first-block cache
         self._cache_context = None
