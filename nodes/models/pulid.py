@@ -54,7 +54,7 @@ class NunchakuFluxPuLIDApplyV2:
         return {
             "required": {
                 "model": ("MODEL",),
-                "pulid_pipline": ("PULID_PIPELINE",),
+                "pulid_pipeline": ("PULID_PIPELINE",),
                 "image": ("IMAGE",),
                 "weight": ("FLOAT", {"default": 1.0, "min": -1.0, "max": 5.0, "step": 0.05}),
                 "start_at": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001}),
@@ -75,7 +75,7 @@ class NunchakuFluxPuLIDApplyV2:
     def apply(
         self,
         model,
-        pulid_pipline: PuLIDPipeline,
+        pulid_pipeline: PuLIDPipeline,
         image,
         weight: float,
         start_at: float,
@@ -123,7 +123,7 @@ class NunchakuFluxPuLIDApplyV2:
             single_image = image[i : i + 1].squeeze().cpu().numpy() * 255.0
             single_image = np.clip(single_image, 0, 255).astype(np.uint8)
 
-            id_embedding, _ = pulid_pipline.get_id_embedding(single_image)
+            id_embedding, _ = pulid_pipeline.get_id_embedding(single_image)
             if id_embedding is not None:
                 all_embeddings.append(id_embedding)
 
@@ -138,7 +138,7 @@ class NunchakuFluxPuLIDApplyV2:
 
         ret_model_wrapper, ret_model = copy_with_ctx(model_wrapper)
 
-        ret_model_wrapper.pulid_pipeline = pulid_pipline
+        ret_model_wrapper.pulid_pipeline = pulid_pipeline
         ret_model_wrapper.customized_forward = partial(
             pulid_forward, id_embeddings=id_embeddings, id_weight=weight, start_timestep=start_at, end_timestep=end_at
         )
@@ -215,7 +215,7 @@ class NunchakuPuLIDLoaderV2:
         insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
         facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
 
-        pulid_pipline = PuLIDPipeline(
+        pulid_pipeline = PuLIDPipeline(
             dit=transformer,
             device=device,
             weight_dtype=weight_dtype,
@@ -226,7 +226,7 @@ class NunchakuPuLIDLoaderV2:
             facexlib_dirpath=facexlib_dirpath,
         )
 
-        return (model, pulid_pipline)
+        return (model, pulid_pipeline)
 
 
 class NunchakuPulidApply:
@@ -390,7 +390,7 @@ class NunchakuPulidLoader:
             The input model and the loaded PuLID pipeline.
         """
         logger.warning(
-            'This node is deprecated and will be removed in December 2025. Directly use "Nunchaku PuLID Loader V22 instead.'
+            'This node is deprecated and will be removed in December 2025. Directly use "Nunchaku PuLID Loader V2" instead.'
         )
         pulid_model = PuLIDPipeline(
             dit=model.model.diffusion_model.model,

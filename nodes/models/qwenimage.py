@@ -4,7 +4,6 @@ This module provides the :class:`NunchakuQwenImageDiTLoader` class for loading N
 
 import json
 import logging
-import os
 
 import comfy.utils
 import torch
@@ -16,11 +15,6 @@ from ...model_configs.qwenimage import NunchakuQwenImage
 from ...model_patcher.common import NunchakuModelPatcher
 from ..utils import get_filename_list, get_full_path_or_raise
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 

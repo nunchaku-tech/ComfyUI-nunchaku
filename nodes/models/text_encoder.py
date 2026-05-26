@@ -19,11 +19,6 @@ from nunchaku import NunchakuT5EncoderModel
 
 from ..utils import folder_paths, get_filename_list, get_full_path_or_raise
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -158,7 +153,7 @@ def nunchaku_t5_forward(
     assert intermediate_output is None
     assert final_layer_norm_intermediate
 
-    def get_device(tensors: list[torch.Tensor]) -> torch.device:
+    def get_device(tensors: list[torch.Tensor | None]) -> torch.device:
         """
         Returns the device of the first non-None tensor in the list.
 
@@ -178,16 +173,17 @@ def nunchaku_t5_forward(
         return torch.device("cpu")
 
     original_device = None
-    if get_device([input_ids, attention_mask, embeds]) != "cuda":
+    if get_device([input_ids, attention_mask, embeds]).type != "cuda":
         original_device = get_device([input_ids, attention_mask, embeds])
         logger.warning(
             "Currently, Nunchaku T5 encoder requires CUDA for processing. "
             f"Input tensor is not on {str(original_device)}, moving to CUDA for T5 encoder processing."
         )
-        input_ids = input_ids.to(torch.cuda.current_device()) if input_ids is not None else None
-        embeds = embeds.to(torch.cuda.current_device()) if embeds is not None else None
-        attention_mask = attention_mask.to(torch.cuda.current_device()) if attention_mask is not None else None
-        self.encoder = self.encoder.to(torch.cuda.current_device())
+        cuda_device = torch.cuda.current_device()
+        input_ids = input_ids.to(cuda_device) if input_ids is not None else None
+        embeds = embeds.to(cuda_device) if embeds is not None else None
+        attention_mask = attention_mask.to(cuda_device) if attention_mask is not None else None
+        self.encoder = self.encoder.to(cuda_device)
     outputs = self.encoder(input_ids=input_ids, inputs_embeds=embeds, attention_mask=attention_mask)
 
     hidden_states = outputs["last_hidden_state"]

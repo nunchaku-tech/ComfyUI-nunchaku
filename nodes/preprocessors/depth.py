@@ -12,11 +12,6 @@ import torch
 
 from ..utils import folder_paths
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
