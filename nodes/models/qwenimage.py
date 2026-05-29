@@ -111,6 +111,11 @@ class NunchakuQwenImageDiTLoader:
         Node title ("Nunchaku Qwen-Image DiT Loader").
     """
 
+    def __init__(self):
+        self.model = None
+        self.model_path = None
+        self.cpu_offload = None
+
     @classmethod
     def INPUT_TYPES(s):
         """
@@ -190,7 +195,6 @@ class NunchakuQwenImageDiTLoader:
             A tuple containing the loaded and patched model.
         """
         model_path = get_full_path_or_raise("diffusion_models", model_name)
-        sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
 
         if cpu_offload == "auto":
             if get_gpu_memory() < 14:  # 14GB threshold
@@ -207,14 +211,21 @@ class NunchakuQwenImageDiTLoader:
             cpu_offload_enabled = False
             logger.info("Disabling CPU offload")
 
-        model = load_diffusion_model_state_dict(
-            sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}
-        )
+        if (
+            self.model_path != model_path
+            or self.cpu_offload != cpu_offload_enabled
+        ):
+            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+            self.model = load_diffusion_model_state_dict(
+                sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}
+            )
+            self.model_path = model_path
+            self.cpu_offload = cpu_offload_enabled
 
         if cpu_offload_enabled:
             assert use_pin_memory in ["enable", "disable"], "Invalid use_pin_memory option"
-            model.model.diffusion_model.set_offload(
+            self.model.model.diffusion_model.set_offload(
                 cpu_offload_enabled, num_blocks_on_gpu=num_blocks_on_gpu, use_pin_memory=use_pin_memory == "enable"
             )
 
-        return (model,)
+        return (self.model,)

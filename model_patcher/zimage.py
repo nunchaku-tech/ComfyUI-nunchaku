@@ -118,7 +118,7 @@ class ZImageModelPatcher(ModelPatcherBase):
         + Clone quantized svdq_backup weights for Nunchaku Z-Image model.
         """
         n = ModelPatcherBase.clone(self)
-        n.svdq_backup = self.svdq_backup
+        n.svdq_backup = dict(self.svdq_backup)
         logging.debug("ZImageModelPatcher cloned.")
         return n
 

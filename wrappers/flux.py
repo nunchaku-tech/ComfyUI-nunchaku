@@ -266,8 +266,6 @@ class ComfyFluxWrapper(nn.Module):
             if cache_invalid:
                 self._cache_context = create_cache_context()
 
-            # Update the previous timestamp
-            self._prev_timestep = timestep_float
             with cache_context(self._cache_context):
                 if self.customized_forward is None:
                     out = model(
