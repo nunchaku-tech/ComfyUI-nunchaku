@@ -11,7 +11,11 @@ from comfy.ldm.lumina.model import NextDiT
 from comfy.lora import calculate_weight, model_lora_keys_unet
 from comfy.model_base import BaseModel
 from comfy.model_management import cast_to_device, lora_compute_dtype
-from comfy.model_patcher import LowVramPatch, ModelPatcher, get_key_weight, move_weight_functions, string_to_seed
+from comfy.model_patcher import LowVramPatch, get_key_weight, move_weight_functions, string_to_seed
+try:
+    from comfy.model_patcher import ModelPatcherDynamic as ModelPatcherBase
+except ImportError:
+    from comfy.model_patcher import ModelPatcher as ModelPatcherBase
 from comfy.utils import get_attr, set_attr_param
 from comfy.weight_adapter.lora import LoRAAdapter
 
@@ -92,7 +96,7 @@ def concat_lora_weights(
     return concatenated_down, concatenated_up
 
 
-class ZImageModelPatcher(ModelPatcher):
+class ZImageModelPatcher(ModelPatcherBase):
     def __init__(self, model, load_device, offload_device, size=0, weight_inplace_update=False):
         """
         Adapted from comfy.model_patcher.ModelPatcher#clone
@@ -113,8 +117,8 @@ class ZImageModelPatcher(ModelPatcher):
         ----
         + Clone quantized svdq_backup weights for Nunchaku Z-Image model.
         """
-        n = ModelPatcher.clone(self)
-        n.svdq_backup = self.svdq_backup
+        n = ModelPatcherBase.clone(self)
+        n.svdq_backup = dict(self.svdq_backup)
         logging.debug("ZImageModelPatcher cloned.")
         return n
 

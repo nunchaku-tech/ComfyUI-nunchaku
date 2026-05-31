@@ -20,11 +20,6 @@ from nunchaku.utils import is_turing
 from ...wrappers.flux import ComfyFluxWrapper
 from ..utils import get_filename_list, get_full_path_or_raise
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -62,11 +57,10 @@ class NunchakuFluxDiTLoader:
         self.transformer = None
         self.metadata = None
         self.model_path = None
-        self.device = None
+        self.device = comfy.model_management.get_torch_device()
         self.cpu_offload = None
         self.data_type = None
         self.patcher = None
-        self.device = comfy.model_management.get_torch_device()
 
     @classmethod
     def INPUT_TYPES(s):
@@ -83,7 +77,7 @@ class NunchakuFluxDiTLoader:
         ngpus = torch.cuda.device_count()
 
         all_turing = True
-        for i in range(torch.cuda.device_count()):
+        for i in range(ngpus):
             if not is_turing(f"cuda:{i}"):
                 all_turing = False
 
@@ -277,12 +271,17 @@ class NunchakuFluxDiTLoader:
                 config_path = os.path.join(model_path, "comfy_config.json")
             else:
                 default_config_root = os.path.join(os.path.dirname(__file__), "configs")
-                config_name = os.path.basename(model_path).replace("svdq-int4-", "").replace("svdq-fp4-", "")
-                config_path = os.path.join(default_config_root, f"{config_name}.json")
+                model_basename = os.path.basename(model_path)
+                for prefix in ("svdq-int4-", "svdq-fp4-"):
+                    if model_basename.startswith(prefix):
+                        model_basename = model_basename[len(prefix):]
+                        break
+                config_path = os.path.join(default_config_root, f"{model_basename}.json")
                 assert os.path.exists(config_path), f"Config file not found: {config_path}"
 
             logger.info(f"Loading ComfyUI model config from {config_path}")
-            comfy_config = json.load(open(config_path, "r"))
+            with open(config_path, "r") as f:
+                comfy_config = json.load(f)
         else:
             comfy_config_str = self.metadata.get("comfy_config", None)
             comfy_config = json.loads(comfy_config_str)

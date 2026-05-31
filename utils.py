@@ -2,7 +2,7 @@
 This module provides helper functions for ComfyUI-nunchaku.
 """
 
-from importlib.metadata import PackageNotFoundError, distribution, metadata
+from importlib.metadata import PackageNotFoundError, distribution, metadata, version
 from pathlib import Path
 
 try:
@@ -55,12 +55,7 @@ def get_package_version(package_name: str) -> str:
         The version string, or an error message if not found.
     """
     try:
-        meta = metadata(package_name)
-        meta_dict = dict(meta)
-
-        version = meta_dict.get("Version", "Unknown version")
-        return version
-
+        return version(package_name)
     except PackageNotFoundError:
         return f"Package '{package_name}' not found."
 

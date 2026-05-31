@@ -10,7 +10,6 @@ from typing import Callable
 
 import comfy
 import comfy.sd
-import comfy.sd1_clip
 import torch
 from comfy.text_encoders.flux import FluxClipModel
 from torch import nn
@@ -19,11 +18,6 @@ from nunchaku import NunchakuT5EncoderModel
 
 from ..utils import folder_paths, get_filename_list, get_full_path_or_raise
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -158,7 +152,7 @@ def nunchaku_t5_forward(
     assert intermediate_output is None
     assert final_layer_norm_intermediate
 
-    def get_device(tensors: list[torch.Tensor]) -> torch.device:
+    def get_device(tensors: list[torch.Tensor | None]) -> torch.device:
         """
         Returns the device of the first non-None tensor in the list.
 
@@ -178,16 +172,17 @@ def nunchaku_t5_forward(
         return torch.device("cpu")
 
     original_device = None
-    if get_device([input_ids, attention_mask, embeds]) != "cuda":
+    if get_device([input_ids, attention_mask, embeds]).type != "cuda":
         original_device = get_device([input_ids, attention_mask, embeds])
         logger.warning(
             "Currently, Nunchaku T5 encoder requires CUDA for processing. "
             f"Input tensor is not on {str(original_device)}, moving to CUDA for T5 encoder processing."
         )
-        input_ids = input_ids.to(torch.cuda.current_device()) if input_ids is not None else None
-        embeds = embeds.to(torch.cuda.current_device()) if embeds is not None else None
-        attention_mask = attention_mask.to(torch.cuda.current_device()) if attention_mask is not None else None
-        self.encoder = self.encoder.to(torch.cuda.current_device())
+        cuda_device = torch.cuda.current_device()
+        input_ids = input_ids.to(cuda_device) if input_ids is not None else None
+        embeds = embeds.to(cuda_device) if embeds is not None else None
+        attention_mask = attention_mask.to(cuda_device) if attention_mask is not None else None
+        self.encoder = self.encoder.to(cuda_device)
     outputs = self.encoder(input_ids=input_ids, inputs_embeds=embeds, attention_mask=attention_mask)
 
     hidden_states = outputs["last_hidden_state"]
@@ -415,148 +410,4 @@ def load_text_encoder_state_dicts(
     return clip
 
 
-class NunchakuTextEncoderLoader:
-    """
-    Node for loading Nunchaku text encoders (deprecated).
 
-    .. warning::
-        This node is deprecated and will be removed in December 2025. Please use
-        :class:`NunchakuTextEncoderLoaderV2` instead.
-
-    This node loads a pair of text encoder checkpoints for use with Nunchaku models,
-    with optional support for 4-bit T5 models.
-    """
-
-    @classmethod
-    def INPUT_TYPES(s):
-        """
-        Defines the input types and tooltips for the node.
-
-        Returns
-        -------
-        dict
-            A dictionary specifying the required inputs and their descriptions for the node interface.
-        """
-        prefixes = folder_paths.folder_names_and_paths["text_encoders"][0]
-        local_folders = set()
-        for prefix in prefixes:
-            if os.path.exists(prefix) and os.path.isdir(prefix):
-                local_folders_ = os.listdir(prefix)
-                local_folders_ = [
-                    folder
-                    for folder in local_folders_
-                    if not folder.startswith(".") and os.path.isdir(os.path.join(prefix, folder))
-                ]
-                local_folders.update(local_folders_)
-        model_paths = ["none"] + sorted(list(local_folders))
-        return {
-            "required": {
-                "model_type": (["flux"],),
-                "text_encoder1": (get_filename_list("text_encoders"),),
-                "text_encoder2": (get_filename_list("text_encoders"),),
-                "t5_min_length": (
-                    "INT",
-                    {
-                        "default": 512,
-                        "min": 256,
-                        "max": 1024,
-                        "step": 128,
-                        "display": "number",
-                        "lazy": True,
-                        "tooltip": "Minimum sequence length for the T5 encoder.",
-                    },
-                ),
-                "use_4bit_t5": (["disable", "enable"],),
-                "int4_model": (
-                    model_paths,
-                    {"tooltip": "The name of the 4-bit T5 model."},
-                ),
-            }
-        }
-
-    RETURN_TYPES = ("CLIP",)
-    FUNCTION = "load_text_encoder"
-    CATEGORY = "Nunchaku"
-    TITLE = "Nunchaku Text Encoder Loader (Deprecated)"
-
-    def load_text_encoder(
-        self,
-        model_type: str,
-        text_encoder1: str,
-        text_encoder2: str,
-        t5_min_length: int,
-        use_4bit_t5: str,
-        int4_model: str,
-    ):
-        """
-        Loads the text encoders with the given configuration.
-
-        Parameters
-        ----------
-        model_type : str
-            The type of model to load (e.g., "flux").
-        text_encoder1 : str
-            Filename of the first text encoder checkpoint.
-        text_encoder2 : str
-            Filename of the second text encoder checkpoint.
-        t5_min_length : int
-            Minimum sequence length for the T5 encoder.
-        use_4bit_t5 : str
-            Whether to use a 4-bit T5 model ("enable" or "disable").
-        int4_model : str
-            The name or path of the 4-bit T5 model.
-
-        Returns
-        -------
-        tuple
-            Tuple containing the loaded CLIP model.
-
-        Warns
-        -----
-        UserWarning
-            If this deprecated node is used.
-        """
-        logger.warning(
-            "Nunchaku Text Encoder Loader will be deprecated in v0.4. "
-            "Please use the Nunchaku Text Encoder Loader V2 node instead."
-        )
-        text_encoder_path1 = get_full_path_or_raise("text_encoders", text_encoder1)
-        text_encoder_path2 = get_full_path_or_raise("text_encoders", text_encoder2)
-        if model_type == "flux":
-            clip_type = comfy.sd.CLIPType.FLUX
-        else:
-            raise ValueError(f"Unknown type {model_type}")
-
-        clip = comfy.sd.load_clip(
-            ckpt_paths=[text_encoder_path1, text_encoder_path2],
-            embedding_directory=folder_paths.get_folder_paths("embeddings"),
-            clip_type=clip_type,
-        )
-
-        if model_type == "flux":
-            clip.tokenizer.t5xxl.min_length = t5_min_length
-
-        if use_4bit_t5 == "enable":
-            assert int4_model != "none", "Please select a 4-bit T5 model."
-            transformer = clip.cond_stage_model.t5xxl.transformer
-            param = next(transformer.parameters())
-            dtype = param.dtype
-            device = param.device
-
-            prefixes = folder_paths.folder_names_and_paths["text_encoders"][0]
-            model_path = None
-            for prefix in prefixes:
-                if os.path.exists(os.path.join(prefix, int4_model)):
-                    model_path = os.path.join(prefix, int4_model)
-                    break
-            if model_path is None:
-                model_path = int4_model
-            transformer = NunchakuT5EncoderModel.from_pretrained(model_path)
-            transformer.forward = types.MethodType(nunchaku_t5_forward, transformer)
-            transformer.shared = WrappedEmbedding(transformer.shared)
-
-            clip.cond_stage_model.t5xxl.transformer = (
-                transformer.to(device=device, dtype=dtype) if device.type == "cuda" else transformer
-            )
-
-        return (clip,)

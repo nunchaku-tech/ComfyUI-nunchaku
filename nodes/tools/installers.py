@@ -462,6 +462,3 @@ class NunchakuWheelInstaller:
         except Exception as e:
             return (f"❌ ERROR:\n{e}",)
 
-
-NODE_CLASS_MAPPINGS = {"NunchakuWheelInstaller": NunchakuWheelInstaller}
-NODE_DISPLAY_NAME_MAPPINGS = {"NunchakuWheelInstaller": "Nunchaku Installer"}

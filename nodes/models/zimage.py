@@ -171,6 +171,10 @@ class NunchakuZImageDiTLoader:
         Node title ("Nunchaku Z-Image DiT Loader").
     """
 
+    def __init__(self):
+        self.model = None
+        self.model_path = None
+
     @classmethod
     def INPUT_TYPES(s):
         """
@@ -210,8 +214,10 @@ class NunchakuZImageDiTLoader:
             A tuple containing the loaded and patched model.
         """
         model_path = get_full_path_or_raise("diffusion_models", model_name)
-        sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
 
-        model = _load(sd, metadata=metadata)
+        if self.model_path != model_path:
+            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+            self.model = _load(sd, metadata=metadata)
+            self.model_path = model_path
 
-        return (model,)
+        return (self.model,)
