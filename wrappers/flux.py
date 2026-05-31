@@ -367,5 +367,5 @@ def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, Mo
     )
     model_base = ctx_for_copy["model_config"].get_model({})
     model_base.diffusion_model = ret_model_wrapper
-    ret_model = ModelPatcherBase(model_base, ctx_for_copy["device"], ctx_for_copy["device_id"])
+    ret_model = ModelPatcherBase(model_base, ctx_for_copy["device"], ctx_for_copy["device"])
     return ret_model_wrapper, ret_model

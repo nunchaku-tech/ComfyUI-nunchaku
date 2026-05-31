@@ -17,13 +17,13 @@ from typing import Optional, Tuple
 import torch
 from comfy.ldm.flux.layers import EmbedND
 from comfy.ldm.modules.attention import optimized_attention_masked
+from comfy.ldm.flux.math import apply_rope1
 from comfy.ldm.qwen_image.model import (
     GELU,
     FeedForward,
     LastLayer,
     QwenImageTransformer2DModel,
     QwenTimestepProjEmbeddings,
-    apply_rotary_emb,
 )
 from torch import nn
 
@@ -303,8 +303,8 @@ class Attention(nn.Module):
         joint_value = torch.cat([txt_value, img_value], dim=1)
 
         # Apply rotary embeddings
-        joint_query = apply_rotary_emb(joint_query, image_rotary_emb)
-        joint_key = apply_rotary_emb(joint_key, image_rotary_emb)
+        joint_query = apply_rope1(joint_query, image_rotary_emb)
+        joint_key = apply_rope1(joint_key, image_rotary_emb)
 
         joint_query = joint_query.flatten(start_dim=2)
         joint_key = joint_key.flatten(start_dim=2)

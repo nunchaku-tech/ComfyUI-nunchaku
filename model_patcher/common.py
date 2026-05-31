@@ -67,6 +67,19 @@ class NunchakuModelPatcher(ModelPatcherBase):
         """Nunchaku doesn't use pinned host buffers."""
         return 0
 
+    def get_non_dynamic_delegate(self):
+        """Nunchaku manages its own memory — no non-dynamic delegate needed."""
+        return self
+
+    def pin_weight_to_device(self, key):
+        pass
+
+    def unpin_weight(self, key):
+        pass
+
+    def unpin_all_weights(self):
+        pass
+
     @staticmethod
     def _to_safely(module, device, non_blocking=True):
         try:
