@@ -2,48 +2,26 @@ import logging
 import os
 from pathlib import Path
 
-import torch
 import yaml
 from packaging.version import InvalidVersion, Version
 
-# vanilla and LTS compatibility snippet
+# Register model folder paths for ComfyUI's model scanner
 try:
-    from comfy_compatibility.vanilla import prepare_vanilla_environment
-
-    prepare_vanilla_environment()
-
-    from comfy.model_downloader import add_known_models
-    from comfy.model_downloader_types import HuggingFile
-
-    if torch.cuda.is_available():
-        capability = torch.cuda.get_device_capability(0)
-        sm = f"{capability[0]}{capability[1]}"
-        precision = "fp4" if sm == "120" else "int4"
-    else:
-        precision = "int4"
-
-    # add known models
+    import folder_paths
 
     models_yaml_path = Path(__file__).parent / "test_data" / "models.yaml"
     with open(models_yaml_path, "r") as f:
         nunchaku_models_yaml = yaml.safe_load(f)
 
-    NUNCHAKU_SVDQ_MODELS = []
     for model in nunchaku_models_yaml["models"]:
-        filename = model["filename"]
-        if not filename.startswith("svdq-"):
-            continue
-        if "{precision}" in filename:
-            filename = filename.format(precision=precision)
-        NUNCHAKU_SVDQ_MODELS.append(HuggingFile(repo_id=model["repo_id"], filename=filename))
-
-    NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS = [
-        HuggingFile(repo_id="nunchaku-tech/nunchaku-t5", filename="awq-int4-flux.1-t5xxl.safetensors"),
-    ]
-
-    add_known_models("diffusion_models", *NUNCHAKU_SVDQ_MODELS)
-    add_known_models("text_encoders", *NUNCHAKU_SVDQ_TEXT_ENCODER_MODELS)
-except (ImportError, ModuleNotFoundError):
+        folder_name = model.get("sub_folder", "diffusion_models")
+        if folder_name not in folder_paths.folder_names_and_paths:
+            default_dir = os.path.join(folder_paths.models_dir, folder_name)
+            folder_paths.folder_names_and_paths[folder_name] = (
+                [default_dir],
+                folder_paths.supported_pt_extensions,
+            )
+except Exception:
     pass
 
 # Get log level from environment variable (default to INFO)

@@ -155,6 +155,14 @@ class NunchakuPuLIDLoaderV2:
     returns both the original model and a ready-to-use PuLID pipeline.
     """
 
+    @staticmethod
+    def _get_folder_path(key: str) -> str | None:
+        try:
+            return folder_paths.get_folder_paths(key)[0]
+        except KeyError:
+            logger.warning("Folder path '%s' not registered by any custom node. PuLID may not work.", key)
+            return None
+
     @classmethod
     def INPUT_TYPES(s):
         """
@@ -210,8 +218,8 @@ class NunchakuPuLIDLoaderV2:
 
         pulid_path = get_full_path_or_raise("pulid", pulid_file)
         eva_clip_path = get_full_path_or_raise("clip", eva_clip_file)
-        insightface_dirpath = folder_paths.get_folder_paths("insightface")[0]
-        facexlib_dirpath = folder_paths.get_folder_paths("facexlib")[0]
+        insightface_dirpath = self._get_folder_path("insightface")
+        facexlib_dirpath = self._get_folder_path("facexlib")
 
         pulid_pipeline = PuLIDPipeline(
             dit=transformer,

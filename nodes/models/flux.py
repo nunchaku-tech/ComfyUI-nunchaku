@@ -9,16 +9,15 @@ import logging
 import os
 
 import comfy.model_management
-import comfy.model_patcher
 import torch
 from comfy.supported_models import Flux, FluxSchnell
 
 from nunchaku import NunchakuFluxTransformer2dModel
 from nunchaku.caching.diffusers_adapters.flux import apply_cache_on_transformer
-from nunchaku.utils import is_turing
 
+from ...model_patcher.common import NunchakuModelPatcher
 from ...wrappers.flux import ComfyFluxWrapper
-from ..utils import get_filename_list, get_full_path_or_raise
+from ..utils import get_filename_list, get_full_path_or_raise, get_nunchaku_model_list, get_nunchaku_model_full_path
 
 logger = logging.getLogger(__name__)
 
@@ -72,21 +71,16 @@ class NunchakuFluxDiTLoader:
         dict
             A dictionary specifying the required inputs and their descriptions for the node interface.
         """
-        safetensor_files = get_filename_list("diffusion_models")
+        safetensor_files = get_nunchaku_model_list()
 
         ngpus = torch.cuda.device_count()
 
-        all_turing = True
-        for i in range(ngpus):
-            if not is_turing(f"cuda:{i}"):
-                all_turing = False
-
-        if all_turing:
-            attention_options = ["nunchaku-fp16"]  # turing GPUs do not support flashattn2
-            dtype_options = ["float16"]
-        else:
+        if comfy.model_management.flash_attention_enabled():
             attention_options = ["nunchaku-fp16", "flash-attention2"]
             dtype_options = ["bfloat16", "float16"]
+        else:
+            attention_options = ["nunchaku-fp16"]  # GPUs without flashattn2 support
+            dtype_options = ["float16"]
 
         return {
             "required": {
@@ -201,7 +195,7 @@ class NunchakuFluxDiTLoader:
         """
         device = torch.device(f"cuda:{device_id}")
 
-        model_path = get_full_path_or_raise("diffusion_models", model_path)
+        model_path = get_nunchaku_model_full_path(model_path)
 
         # Check if the device_id is valid
         if device_id >= torch.cuda.device_count():
@@ -209,18 +203,18 @@ class NunchakuFluxDiTLoader:
 
         # Get the GPU properties
         gpu_properties = torch.cuda.get_device_properties(device_id)
-        gpu_memory = gpu_properties.total_memory / (1024**2)  # Convert to MiB
         gpu_name = gpu_properties.name
-        logger.debug(f"GPU {device_id} ({gpu_name}) Memory: {gpu_memory} MiB")
+        logger.debug(f"GPU {device_id} ({gpu_name}) Memory: {gpu_properties.total_memory / (1024**2):.0f} MiB")
 
         # Check if CPU offload needs to be enabled
+        vram_for_weights = comfy.model_management.maximum_vram_for_weights(device)
         if cpu_offload == "auto":
-            if gpu_memory < 14336:  # 14GB threshold
+            if vram_for_weights < 12 * 1024**3:  # less than ~12 GiB available for weights
                 cpu_offload_enabled = True
-                logger.debug("VRAM < 14GiB, enabling CPU offload")
+                logger.debug("VRAM for weights < 12GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                logger.debug("VRAM > 14GiB, disabling CPU offload")
+                logger.debug("VRAM for weights >= 12GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
             logger.debug("Enabling CPU offload")
@@ -310,5 +304,5 @@ class NunchakuFluxDiTLoader:
                 "device_id": device_id,
             },
         )
-        model = comfy.model_patcher.ModelPatcher(model, device, device)
+        model = NunchakuModelPatcher(model, load_device=device, offload_device=device)
         return (model,)

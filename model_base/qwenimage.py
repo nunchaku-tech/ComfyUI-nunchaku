@@ -4,12 +4,16 @@ Nunchaku Qwen-Image model base.
 This module provides a wrapper for ComfyUI's Qwen-Image model base.
 """
 
+import logging
+
 import torch
 from comfy.model_base import ModelType, QwenImage
 
 from nunchaku.models.linear import SVDQW4A4Linear
 
 from ..models.qwenimage import NunchakuQwenImageTransformer2DModel
+
+logger = logging.getLogger(__name__)
 
 
 class NunchakuQwenImage(QwenImage):
@@ -66,6 +70,12 @@ class NunchakuQwenImage(QwenImage):
             if k not in sd:
                 if ".wcscales" not in k:
                     raise ValueError(f"Key {k} not found in state_dict")
+                logger.warning(
+                    "Key %s not found in state_dict — filling with ones. "
+                    "This is normal for some quantized model formats, but if outputs are incorrect "
+                    "this may be the cause.",
+                    k,
+                )
                 sd[k] = torch.ones_like(state_dict[k])
         for n, m in diffusion_model.named_modules():
             if isinstance(m, SVDQW4A4Linear):

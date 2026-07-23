@@ -11,12 +11,12 @@ from comfy.ldm.lumina.model import NextDiT
 from comfy.lora import calculate_weight, model_lora_keys_unet
 from comfy.model_base import BaseModel
 from comfy.model_management import cast_to_device, lora_compute_dtype
-from comfy.model_patcher import LowVramPatch, get_key_weight, move_weight_functions, string_to_seed
+from comfy.model_patcher import LowVramPatch, get_key_weight, move_weight_functions
 try:
     from comfy.model_patcher import ModelPatcherDynamic as ModelPatcherBase
 except ImportError:
     from comfy.model_patcher import ModelPatcher as ModelPatcherBase
-from comfy.utils import get_attr, set_attr_param
+from comfy.utils import get_attr, set_attr_param, string_to_seed
 from comfy.weight_adapter.lora import LoRAAdapter
 
 from nunchaku.lora.flux.nunchaku_converter import pack_lowrank_weight, unpack_lowrank_weight

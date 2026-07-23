@@ -9,11 +9,11 @@ import comfy.utils
 import torch
 from comfy import model_detection, model_management
 
-from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_precision_from_quantization_config
+from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 from ...model_patcher.common import NunchakuModelPatcher
-from ..utils import get_filename_list, get_full_path_or_raise
+from ..utils import get_filename_list, get_full_path_or_raise, get_nunchaku_model_list, get_nunchaku_model_full_path
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +129,7 @@ class NunchakuQwenImageDiTLoader:
         return {
             "required": {
                 "model_name": (
-                    get_filename_list("diffusion_models"),
+                    get_nunchaku_model_list(),
                     {"tooltip": "The Nunchaku Qwen-Image model."},
                 ),
                 "cpu_offload": (
@@ -194,15 +194,17 @@ class NunchakuQwenImageDiTLoader:
         tuple
             A tuple containing the loaded and patched model.
         """
-        model_path = get_full_path_or_raise("diffusion_models", model_name)
+        model_path = get_nunchaku_model_full_path(model_name)
 
         if cpu_offload == "auto":
-            if get_gpu_memory() < 14:  # 14GB threshold
+            device = model_management.get_torch_device()
+            vram_for_weights = model_management.maximum_vram_for_weights(device)
+            if vram_for_weights < 12 * 1024**3:  # less than ~12 GiB available for weights
                 cpu_offload_enabled = True
-                logger.info("VRAM < 14GiB, enabling CPU offload")
+                logger.info("VRAM for weights < 12GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                logger.info("VRAM >= 14GiB, disabling CPU offload")
+                logger.info("VRAM for weights >= 12GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
             logger.info("Enabling CPU offload")

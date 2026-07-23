@@ -16,6 +16,7 @@ from typing import Optional, Tuple
 
 import torch
 from comfy.ldm.flux.layers import EmbedND
+from comfy.ldm.flux.math import apply_rope1
 from comfy.ldm.modules.attention import optimized_attention_masked
 from comfy.ldm.flux.math import apply_rope1
 from comfy.ldm.qwen_image.model import (

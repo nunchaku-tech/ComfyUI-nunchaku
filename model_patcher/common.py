@@ -40,6 +40,7 @@ class NunchakuModelPatcher(ModelPatcherBase):
                     "active": False,
                 }
             self.non_dynamic_delegate_model = None
+            self.register_load_device(self.load_device)
         else:
             super().__init__(model, load_device, offload_device, size, weight_inplace_update=False)
 
@@ -72,12 +73,19 @@ class NunchakuModelPatcher(ModelPatcherBase):
         return self
 
     def pin_weight_to_device(self, key):
-        pass
+        comfy.model_management.pin_memory(self.model.state_dict()[key])
 
     def unpin_weight(self, key):
-        pass
+        comfy.model_management.unpin_memory(self.model.state_dict()[key])
 
     def unpin_all_weights(self):
+        for key in list(self.model.state_dict().keys()):
+            comfy.model_management.unpin_memory(self.model.state_dict()[key])
+
+    def patch_cached_hook_weights(self, cached_weights, key, memory_counter):
+        pass
+
+    def patch_hook_weight_to_device(self, hooks, combined_patches, key, original_weights, memory_counter):
         pass
 
     @staticmethod
