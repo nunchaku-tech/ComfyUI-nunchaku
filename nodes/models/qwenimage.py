@@ -2,6 +2,7 @@
 This module provides the :class:`NunchakuQwenImageDiTLoader` class for loading Nunchaku Qwen-Image models.
 """
 
+import gc
 import json
 import logging
 
@@ -217,6 +218,17 @@ class NunchakuQwenImageDiTLoader:
             self.model_path != model_path
             or self.cpu_offload != cpu_offload_enabled
         ):
+            if self.model is not None:
+                model_size = comfy.model_management.module_size(self.model.model.diffusion_model)
+                model_obj = self.model
+                self.model = None
+                model_obj.model.diffusion_model.to("cpu")
+                del model_obj
+                gc.collect()
+                comfy.model_management.cleanup_models_gc()
+                comfy.model_management.soft_empty_cache()
+                comfy.model_management.free_memory(model_size, model_management.get_torch_device())
+
             sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
             self.model = load_diffusion_model_state_dict(
                 sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}

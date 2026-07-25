@@ -73,14 +73,13 @@ class NunchakuModelPatcher(ModelPatcherBase):
         return self
 
     def pin_weight_to_device(self, key):
-        comfy.model_management.pin_memory(self.model.state_dict()[key])
+        pass
 
     def unpin_weight(self, key):
-        comfy.model_management.unpin_memory(self.model.state_dict()[key])
+        pass
 
     def unpin_all_weights(self):
-        for key in list(self.model.state_dict().keys()):
-            comfy.model_management.unpin_memory(self.model.state_dict()[key])
+        pass
 
     def patch_cached_hook_weights(self, cached_weights, key, memory_counter):
         pass
