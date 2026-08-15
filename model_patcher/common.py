@@ -7,10 +7,8 @@ from comfy.model_patcher import ModelPatcher
 
 try:
     from comfy.model_patcher import ModelPatcherDynamic as ModelPatcherBase
-    _HAS_DYNAMIC = True
 except ImportError:
     from comfy.model_patcher import ModelPatcher as ModelPatcherBase
-    _HAS_DYNAMIC = False
 
 
 class NunchakuModelPatcher(ModelPatcherBase):
@@ -19,38 +17,19 @@ class NunchakuModelPatcher(ModelPatcherBase):
     """
 
     def __init__(self, model, load_device, offload_device, size=0, weight_inplace_update=False):
-        if _HAS_DYNAMIC:
-            # Bypass ModelPatcherDynamic.__init__ to avoid HostBuffer(0,0,0) allocations
-            # that cause Windows heap corruption (0xc0000374) when GC'd with Nunchaku's
-            # custom load/detach. We still enable smart caching via is_dynamic().
-            ModelPatcher.__init__(self, model, load_device, offload_device, size, weight_inplace_update=False)
-            # Initialize minimal structures expected by ComfyUI's dynamic-aware code paths
-            if not hasattr(self.model, "dynamic_vbars"):
-                self.model.dynamic_vbars = {}
-            if not hasattr(self.model, "dynamic_pins"):
-                self.model.dynamic_pins = {}
-            if self.load_device not in self.model.dynamic_pins:
-                # Use None instead of HostBuffer to avoid crash — reset_cast_buffers
-                # will replace with properly-allocated HostBuffers later if needed
-                self.model.dynamic_pins[self.load_device] = {
-                    "weights": None,
-                    "patches": None,
-                    "hostbufs_initialized": True,
-                    "failed": False,
-                    "active": False,
-                }
-            self.non_dynamic_delegate_model = None
-            self.register_load_device(self.load_device)
-        else:
-            super().__init__(model, load_device, offload_device, size, weight_inplace_update=False)
+        ModelPatcher.__init__(self, model, load_device, offload_device, size, weight_inplace_update=False)
+        self.non_dynamic_delegate_model = None
 
     def is_dynamic(self):
-        """Enable smart caching in ComfyUI — non-dynamic models get aggressively evicted."""
-        return _HAS_DYNAMIC
+        """Return False to prevent ComfyUI from creating HostBuffer objects in reset_cast_buffers,
+        which causes heap corruption on Windows with Nunchaku's custom load/detach.
+        Nunchaku manages its own VRAM — no ComfyUI pin management needed.
+        """
+        return False
 
     def _vbar_get(self, create=False):
         """Nunchaku manages its own VRAM — no vbar needed."""
-        return None
+        return
 
     def partially_unload_ram(self, *args, **kwargs):
         """Nunchaku manages its own pin memory — no-op."""
@@ -71,6 +50,11 @@ class NunchakuModelPatcher(ModelPatcherBase):
     def get_non_dynamic_delegate(self):
         """Nunchaku manages its own memory — no non-dynamic delegate needed."""
         return self
+
+    def __del__(self):
+        """Override to prevent ModelPatcherDynamic.__del__ from running cleanup on Nunchaku models.
+        Nunchaku manages its own memory lifecycle — no ComfyUI cleanup needed.
+        """
 
     def pin_weight_to_device(self, key):
         pass
