@@ -59,13 +59,31 @@ def fuse_to_svdquant_linear(comfy_linear1: nn.Linear, comfy_linear2: nn.Linear, 
     """
     assert comfy_linear1.in_features == comfy_linear2.in_features
     assert comfy_linear1.bias is None and comfy_linear2.bias is None
-    torch_dtype = kwargs.pop("torch_dtype", comfy_linear1.weight.dtype)
+    # `dict.pop(key, default)` evaluates its default eagerly, so `comfy_linear1.weight.dtype`
+    # is read even when the caller passes `torch_dtype`. ComfyUI 0.33 ships a Windows-only lazy
+    # `Linear` (comfy/ops.py) whose `weight` stays None until `_load_from_state_dict` runs, and
+    # patching happens before that -- so this line raises `AttributeError: 'NoneType' object has
+    # no attribute 'dtype'` before the explicit argument is ever considered. `device` below has
+    # the same problem with no caller-supplied alternative at all.
+    torch_dtype = kwargs.pop("torch_dtype", None)
+    device = kwargs.pop("device", None)
+    weight = getattr(comfy_linear1, "weight", None)
+    if torch_dtype is None or device is None:
+        if weight is None:
+            raise ValueError(
+                "this Linear carries no weight tensor yet, so torch_dtype and device cannot be "
+                "read from it. ComfyUI allocates weights lazily on Windows unless it is started "
+                "with --disable-dynamic-vram; pass both explicitly to patch before the state "
+                "dict is loaded."
+            )
+        torch_dtype = weight.dtype if torch_dtype is None else torch_dtype
+        device = weight.device if device is None else device
     svdq_linear = SVDQW4A4Linear(
         comfy_linear1.in_features,
         comfy_linear1.out_features + comfy_linear2.out_features,
         bias=False,
         torch_dtype=torch_dtype,
-        device=comfy_linear1.weight.device,
+        device=device,
         **kwargs,
     )
     add_comfy_cast_weights_attr(svdq_linear, comfy_linear1)
