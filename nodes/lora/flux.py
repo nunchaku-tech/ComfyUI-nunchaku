@@ -4,18 +4,12 @@ for applying LoRA weights to Nunchaku FLUX models within ComfyUI.
 """
 
 import logging
-import os
 
 from nunchaku.lora.flux import to_diffusers
 
 from ...wrappers.flux import ComfyFluxWrapper, copy_with_ctx
 from ..utils import get_filename_list, get_full_path_or_raise
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -252,7 +246,7 @@ class NunchakuFluxLoraStack:
         ret_model_wrapper, ret_model = copy_with_ctx(model_wrapper)
 
         # Clear existing LoRA list
-        ret_model_wrapper.loras = []
+        ret_model_wrapper.loras = [*model_wrapper.loras]
 
         # Track the maximum input channels needed
         max_in_channels = ret_model.model.model_config.unet_config["in_channels"]

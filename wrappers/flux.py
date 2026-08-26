@@ -8,7 +8,10 @@ from typing import Callable, Tuple
 
 import torch
 from comfy.ldm.common_dit import pad_to_patch_size
-from comfy.model_patcher import ModelPatcher
+try:
+    from comfy.model_patcher import ModelPatcherDynamic as ModelPatcherBase
+except ImportError:
+    from comfy.model_patcher import ModelPatcher as ModelPatcherBase
 from einops import rearrange, repeat
 from torch import nn
 
@@ -64,8 +67,8 @@ class ComfyFluxWrapper(nn.Module):
         config,
         pulid_pipeline=None,
         customized_forward: Callable = None,
-        forward_kwargs: dict | None = {},
-        ctx_for_copy: dict = {},
+        forward_kwargs: dict | None = None,
+        ctx_for_copy: dict | None = None,
     ):
         super(ComfyFluxWrapper, self).__init__()
         self.model = model
@@ -77,7 +80,7 @@ class ComfyFluxWrapper(nn.Module):
         self.customized_forward = customized_forward
         self.forward_kwargs = {} if forward_kwargs is None else forward_kwargs
 
-        self.ctx_for_copy = ctx_for_copy.copy()
+        self.ctx_for_copy = {} if ctx_for_copy is None else ctx_for_copy.copy()
 
         self._prev_timestep = None  # for first-block cache
         self._cache_context = None
@@ -248,6 +251,12 @@ class ComfyFluxWrapper(nn.Module):
             # A more robust caching strategy
             cache_invalid = False
 
+            # Check if input shape or text context shape has changed
+            current_shape = (img.shape, context.shape)
+            if getattr(self, "_prev_shape", None) != current_shape:
+                cache_invalid = True
+            self._prev_shape = current_shape
+
             # Check if timestamps have changed or are out of valid range
             if self._prev_timestep is None:
                 cache_invalid = True
@@ -257,8 +266,6 @@ class ComfyFluxWrapper(nn.Module):
             if cache_invalid:
                 self._cache_context = create_cache_context()
 
-            # Update the previous timestamp
-            self._prev_timestep = timestep_float
             with cache_context(self._cache_context):
                 if self.customized_forward is None:
                     out = model(
@@ -331,7 +338,7 @@ class ComfyFluxWrapper(nn.Module):
         return out
 
 
-def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, ModelPatcher]:
+def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, ModelPatcherBase]:
     """
     Duplicates a ComfyFluxWrapper object with it's initialization context such as comfy_config, model_config, device and device_id.
 
@@ -360,5 +367,5 @@ def copy_with_ctx(model_wrapper: ComfyFluxWrapper) -> Tuple[ComfyFluxWrapper, Mo
     )
     model_base = ctx_for_copy["model_config"].get_model({})
     model_base.diffusion_model = ret_model_wrapper
-    ret_model = ModelPatcher(model_base, ctx_for_copy["device"], ctx_for_copy["device_id"])
+    ret_model = ModelPatcherBase(model_base, ctx_for_copy["device"], ctx_for_copy["device"])
     return ret_model_wrapper, ret_model

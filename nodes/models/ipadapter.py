@@ -4,7 +4,6 @@ to FLUX pipelines, enabling image-based conditioning for generative models.
 """
 
 import logging
-import os
 from typing import Any, List, Optional
 
 import torch
@@ -16,9 +15,6 @@ from nunchaku.models.ip_adapter.utils import undo_all_mods_on_transformer
 
 from .utils import set_extra_config_model_path
 
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 

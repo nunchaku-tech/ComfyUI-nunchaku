@@ -2,25 +2,20 @@
 This module provides the :class:`NunchakuQwenImageDiTLoader` class for loading Nunchaku Qwen-Image models.
 """
 
+import gc
 import json
 import logging
-import os
 
 import comfy.utils
 import torch
 from comfy import model_detection, model_management
 
-from nunchaku.utils import check_hardware_compatibility, get_gpu_memory, get_precision_from_quantization_config
+from nunchaku.utils import check_hardware_compatibility, get_precision_from_quantization_config
 
 from ...model_configs.qwenimage import NunchakuQwenImage
 from ...model_patcher.common import NunchakuModelPatcher
-from ..utils import get_filename_list, get_full_path_or_raise
+from ..utils import get_filename_list, get_full_path_or_raise, get_nunchaku_model_list, get_nunchaku_model_full_path
 
-# Get log level from environment variable (default to INFO)
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -117,6 +112,11 @@ class NunchakuQwenImageDiTLoader:
         Node title ("Nunchaku Qwen-Image DiT Loader").
     """
 
+    def __init__(self):
+        self.model = None
+        self.model_path = None
+        self.cpu_offload = None
+
     @classmethod
     def INPUT_TYPES(s):
         """
@@ -130,7 +130,7 @@ class NunchakuQwenImageDiTLoader:
         return {
             "required": {
                 "model_name": (
-                    get_filename_list("diffusion_models"),
+                    get_nunchaku_model_list(),
                     {"tooltip": "The Nunchaku Qwen-Image model."},
                 ),
                 "cpu_offload": (
@@ -195,16 +195,17 @@ class NunchakuQwenImageDiTLoader:
         tuple
             A tuple containing the loaded and patched model.
         """
-        model_path = get_full_path_or_raise("diffusion_models", model_name)
-        sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+        model_path = get_nunchaku_model_full_path(model_name)
 
         if cpu_offload == "auto":
-            if get_gpu_memory() < 15:  # 15GB threshold
+            device = model_management.get_torch_device()
+            vram_for_weights = model_management.maximum_vram_for_weights(device)
+            if vram_for_weights < 12 * 1024**3:  # less than ~12 GiB available for weights
                 cpu_offload_enabled = True
-                logger.info("VRAM < 15GiB, enabling CPU offload")
+                logger.info("VRAM for weights < 12GiB, enabling CPU offload")
             else:
                 cpu_offload_enabled = False
-                logger.info("VRAM > 15GiB, disabling CPU offload")
+                logger.info("VRAM for weights >= 12GiB, disabling CPU offload")
         elif cpu_offload == "enable":
             cpu_offload_enabled = True
             logger.info("Enabling CPU offload")
@@ -213,14 +214,32 @@ class NunchakuQwenImageDiTLoader:
             cpu_offload_enabled = False
             logger.info("Disabling CPU offload")
 
-        model = load_diffusion_model_state_dict(
-            sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}
-        )
+        if (
+            self.model_path != model_path
+            or self.cpu_offload != cpu_offload_enabled
+        ):
+            if self.model is not None:
+                model_size = comfy.model_management.module_size(self.model.model.diffusion_model)
+                model_obj = self.model
+                self.model = None
+                model_obj.model.diffusion_model.to("cpu")
+                del model_obj
+                gc.collect()
+                comfy.model_management.cleanup_models_gc()
+                comfy.model_management.soft_empty_cache()
+                comfy.model_management.free_memory(model_size, model_management.get_torch_device())
+
+            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+            self.model = load_diffusion_model_state_dict(
+                sd, metadata=metadata, model_options={"cpu_offload_enabled": cpu_offload_enabled}
+            )
+            self.model_path = model_path
+            self.cpu_offload = cpu_offload_enabled
 
         if cpu_offload_enabled:
             assert use_pin_memory in ["enable", "disable"], "Invalid use_pin_memory option"
-            model.model.diffusion_model.set_offload(
+            self.model.model.diffusion_model.set_offload(
                 cpu_offload_enabled, num_blocks_on_gpu=num_blocks_on_gpu, use_pin_memory=use_pin_memory == "enable"
             )
 
-        return (model,)
+        return (self.model,)

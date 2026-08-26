@@ -5,6 +5,10 @@ This module provides the :class:`NunchakuZImageDiTLoader` class for loading Nunc
 import json
 import logging
 
+from typing import Dict
+
+_module_cache: Dict[str, object] = {}
+
 import comfy.utils
 import torch
 from comfy import model_detection, model_management
@@ -14,7 +18,7 @@ from nunchaku.utils import check_hardware_compatibility, get_precision_from_quan
 
 from ...model_configs.zimage import NunchakuZImage
 from ...model_patcher.zimage import ZImageModelPatcher
-from ..utils import get_filename_list, get_full_path_or_raise
+from ..utils import get_filename_list, get_full_path_or_raise, get_nunchaku_model_list, get_nunchaku_model_full_path
 
 
 def _patch_state_dict(state_dict: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
@@ -171,6 +175,10 @@ class NunchakuZImageDiTLoader:
         Node title ("Nunchaku Z-Image DiT Loader").
     """
 
+    def __init__(self):
+        self.model = None
+        self.model_path = None
+
     @classmethod
     def INPUT_TYPES(s):
         """
@@ -184,7 +192,7 @@ class NunchakuZImageDiTLoader:
         return {
             "required": {
                 "model_name": (
-                    get_filename_list("diffusion_models"),
+                    get_nunchaku_model_list(),
                     {"tooltip": "The Nunchaku Z-Image model."},
                 ),
             },
@@ -209,9 +217,15 @@ class NunchakuZImageDiTLoader:
         tuple
             A tuple containing the loaded and patched model.
         """
-        model_path = get_full_path_or_raise("diffusion_models", model_name)
-        sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+        model_path = get_nunchaku_model_full_path(model_name)
 
-        model = _load(sd, metadata=metadata)
+        if model_path not in _module_cache or self.model_path != model_path:
+            sd, metadata = comfy.utils.load_torch_file(model_path, return_metadata=True)
+            self.model = _load(sd, metadata=metadata)
+            self.model_path = model_path
+            _module_cache[model_path] = self.model
+        else:
+            self.model = _module_cache[model_path]
+            self.model_path = model_path
 
-        return (model,)
+        return (self.model,)

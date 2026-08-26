@@ -14,6 +14,31 @@
 
 This repository provides the ComfyUI plugin for [**Nunchaku**](https://github.com/nunchaku-ai/nunchaku), an efficient inference engine for 4-bit neural networks quantized with [SVDQuant](http://arxiv.org/abs/2411.05007). For the quantization library, check out [DeepCompressor](https://github.com/nunchaku-ai/deepcompressor).
 
+> [!NOTE]
+> **Fork Announcement**: This repository is a community-maintained fork designed to continue the legacy of **Nunchaku** for ComfyUI. It maintains ongoing support, compatibility with upstream ComfyUI updates, stability enhancements, and performance optimizations.
+>
+> ### Key Fork Improvements & Changes
+>
+> - **ComfyUI Latest Version Compatibility**:
+>   - Fixed compatibility for recent ComfyUI releases (e.g., updated `apply_rope1` API, `ModelPatcherDynamic` overrides, and `offload_device` type handling).
+>   - Replaced dead `comfy.model_downloader`/`comfy_compatibility` imports with `folder_paths` registration — model folders are now discovered by ComfyUI's filesystem scanner.
+>   - Moved `string_to_seed` import from deprecated `comfy.model_patcher` to `comfy.utils` (upstream emits deprecation warning).
+>   - Replaced manual `is_turing()` GPU loop with `comfy.model_management.flash_attention_enabled()` for portable attention option filtering.
+> - **VRAM & Memory Management**:
+>   - Replaced hardcoded 14 GiB threshold with `maximum_vram_for_weights()` API across all model loaders.
+>   - Wired pin management methods (`pin_weight_to_device`, `unpin_weight`, `unpin_all_weights`) from no-ops to `comfy.model_management.pin_memory`/`unpin_memory`.
+>   - Added `register_load_device()` call after the `ModelPatcherDynamic.__init__` HostBuffer bypass for proper dynamic pather interaction.
+>   - Added no-op stubs for `patch_cached_hook_weights` and `patch_hook_weight_to_device` required by the new `ModelPatcherDynamic`.
+> - **Model Caching & Performance**:
+>   - Added module-level model caching for Z-Image loader — models now persist across workflow executions instead of reloading every invocation.
+>   - Switched FLUX loader from plain `ModelPatcher` to `NunchakuModelPatcher` for consistent dynamic VRAM management.
+> - **Bug Fixes**:
+>   - Added `logging.warning` when missing weight scales (`wcscales`) are filled with ones in Qwen-Image — no more silent wrong outputs.
+>   - Wrapped `folder_paths.get_folder_paths()` in `try/except KeyError` for PuLID node — graceful fallback when insightface/facexlib folders aren't registered.
+>   - Fixed deep vs shallow cloning issue for `svdq_backup` in Z-Image model patchers.
+>   - Added support for `index_timestep_zero` in Qwen-Image-Edit.
+>   - Cleaned up deprecated nodes and removed redundant timestep state tracking.
+
 Join our user groups on [**Discord**](https://discord.gg/Wk6PnwX9Sm) and [**WeChat**](https://huggingface.co/datasets/nunchaku-ai/cdn/resolve/main/nunchaku/assets/wechat.jpg) for discussions—details [here](https://github.com/nunchaku-ai/nunchaku/issues/149). If you have any questions, run into issues, or are interested in contributing, feel free to share your thoughts with us!
 
 # Nunchaku ComfyUI Plugin
