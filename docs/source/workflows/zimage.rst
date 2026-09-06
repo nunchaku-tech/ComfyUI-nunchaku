@@ -8,13 +8,13 @@ nunchaku-z-image-turbo.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-z-image-turbo.png
     :alt: nunchaku-z-image-turbo.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo.json
 
 Text-to-image workflow using the Nunchaku Z-Image-Turbo model.
 
 **Links:**
 
-- Workflow: :download:`nunchaku-z-image-turbo.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo.json>`
+- Workflow: :download:`nunchaku-z-image-turbo.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo.json>`
 - Nunchaku Z-Image-Turbo: :download:`Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-z-image-turbo>` or :download:`ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-z-image-turbo>`
   (Place in ``models/diffusion_models``)
 
@@ -26,7 +26,7 @@ nunchaku-z-image-turbo-lora.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-z-image-turbo-lora.png
     :alt: nunchaku-z-image-turbo-lora.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-lora.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-lora.json
 
 Text-to-image workflow using the Nunchaku Z-Image-Turbo model, with one or multiple LoRAs loaded by native Lora Loader provided by ComfyUI.
 
@@ -37,7 +37,7 @@ Text-to-image workflow using the Nunchaku Z-Image-Turbo model, with one or multi
 
 **Links:**
 
-- Workflow: :download:`nunchaku-z-image-turbo-lora.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-lora.json>`
+- Workflow: :download:`nunchaku-z-image-turbo-lora.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-lora.json>`
 - Nunchak Z-Image-Turbo: :download:`Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-z-image-turbo>` or :download:`ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-z-image-turbo>`
   (Place in ``models/diffusion_models``)
 
@@ -48,7 +48,7 @@ nunchaku-z-image-turbo-controlnet.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-z-image-turbo-controlnet.png
     :alt: nunchaku-z-image-turbo-controlnet.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-controlnet.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-controlnet.json
 
 Text-to-image workflow using the Nunchaku Z-Image-Turbo model with official controlnet (https://huggingface.co/alibaba-pai/Z-Image-Turbo-Fun-Controlnet-Union).
 
@@ -58,7 +58,7 @@ Text-to-image workflow using the Nunchaku Z-Image-Turbo model with official cont
 
 **Links:**
 
-- Workflow: :download:`nunchaku-z-image-turbo-controlnet.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-controlnet.json>`
+- Workflow: :download:`nunchaku-z-image-turbo-controlnet.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-z-image-turbo-controlnet.json>`
 - Nunchak Z-Image-Turbo: :download:`Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-z-image-turbo>` or :download:`ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-z-image-turbo>`
   (Place in ``models/diffusion_models``)
 

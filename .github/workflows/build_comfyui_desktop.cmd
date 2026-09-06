@@ -50,7 +50,7 @@ python -m pip install uv || (
 
 REM 2. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
-git clone https://github.com/nunchaku-tech/desktop.git || (
+git clone https://github.com/nunchux-ai/desktop.git || (
     echo ERROR: Failed to clone desktop repository
     exit /b 1
 )
@@ -98,7 +98,7 @@ xcopy /E /I /Y /H ..\ComfyUI-nunchaku assets\ComfyUI\custom_nodes\ComfyUI-nuncha
     exit /b 1
 )
 
-set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
+set NUNCHAKU_URL=https://github.com/nunchux-ai/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
 
 (
 echo torch==%TORCH_VERSION%+%CUDA_PIP_INDEX%

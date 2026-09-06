@@ -37,7 +37,7 @@ jobs:
           pip install uv
           echo "Installing dependencies"
           cd ..
-          git clone https://github.com/nunchaku-ai/nunchaku.git
+          git clone https://github.com/nunchux-ai/nunchaku.git
           cd nunchaku
           git log -1 --oneline
           git submodule init

@@ -94,7 +94,7 @@ def main():
         "supported_python": ["cp310", "cp311", "cp312", "cp313"],
         "filename_template": "nunchaku-{version}+{torch_version}-{python_version}-{python_version}-{platform}.whl",
         "url_templates": {
-            "github": "https://github.com/nunchaku-tech/nunchaku/releases/download/{version_tag}/{filename}",
+            "github": "https://github.com/nunchux-ai/nunchaku/releases/download/{version_tag}/{filename}",
             "huggingface": "https://huggingface.co/nunchaku-tech/nunchaku/resolve/main/{filename}",
             "modelscope": "https://modelscope.cn/models/nunchaku-tech/nunchaku/resolve/master/{filename}",
         },

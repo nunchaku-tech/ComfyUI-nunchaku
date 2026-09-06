@@ -8,13 +8,13 @@ nunchaku-flux.1-dev-pulid.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-dev-pulid.png
     :alt: nunchaku-flux.1-dev-pulid.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-pulid.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-pulid.json
 
 Identity-preserving image generation workflow using `PuLID <paper_pulid_>`_ and the Nunchaku FLUX.1-dev model.
 
 **Links:**
 
-- Workflow: :download:`nunchaku-flux.1-dev-pulid.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-pulid.json>`
+- Workflow: :download:`nunchaku-flux.1-dev-pulid.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-pulid.json>`
 - Nunchaku FLUX.1-dev: :download:`Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>` or :download:`ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`
   (Place in ``models/diffusion_models``)
 - PuLID weights: :download:`Hugging Face <https://huggingface.co/guozinan/PuLID/resolve/main/pulid_flux_v0.9.1.safetensors>`

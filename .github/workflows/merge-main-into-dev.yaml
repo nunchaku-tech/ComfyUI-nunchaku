@@ -8,7 +8,7 @@ permissions:
 jobs:
   merge-main-into-dev:
     runs-on: ubuntu-latest
-    if: github.repository == 'nunchaku-ai/ComfyUI-nunchaku'
+    if: github.repository == 'nunchux-ai/ComfyUI-nunchaku'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4

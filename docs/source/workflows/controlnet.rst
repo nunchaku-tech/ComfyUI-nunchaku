@@ -8,13 +8,13 @@ nunchaku-flux.1-dev-controlnet-union-pro2.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-dev-controlnet-union-pro2.png
     :alt: nunchaku-flux.1-dev-controlnet-union-pro2.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-union-pro2.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-union-pro2.json
 
 Workflow for advanced image generation and control using the FLUX.1-ControlNet-Union-Pro-2.0 model with Nunchaku FLUX.1-dev.
 
 **Links:**
 
-- Workflow: :download:`nunchaku-flux.1-dev-controlnet-union-pro2.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-union-pro2.json>`
+- Workflow: :download:`nunchaku-flux.1-dev-controlnet-union-pro2.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-union-pro2.json>`
 - Nunchaku FLUX.1-dev: :download:`Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>`
   or :download:`ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`
   (Place in ``models/diffusion_models``)
@@ -32,13 +32,13 @@ nunchaku-flux.1-dev-controlnet-upscaler.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-dev-controlnet-upscaler.png
     :alt: nunchaku-flux.1-dev-controlnet-upscaler.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-upscaler.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-upscaler.json
 
 Workflow for upscaling images with fine control using the FLUX.1-ControlNet-Upscaler model and Nunchaku FLUX.1-dev.
 
 **Links:**
 
-- Workflow: :download:`nunchaku-flux.1-controlnet-upscaler.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-upscaler.json>`
+- Workflow: :download:`nunchaku-flux.1-controlnet-upscaler.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-dev-controlnet-upscaler.json>`
 - Nunchaku FLUX.1-dev: :download:`Hugging Face <https://huggingface.co/nunchaku-tech/nunchaku-flux.1-dev>` or :download:`ModelScope <https://modelscope.cn/models/nunchaku-tech/nunchaku-flux.1-dev>`
   (Place in ``models/diffusion_models``)
 - FLUX.1-ControlNet-Upscaler: :download:`Hugging Face <https://huggingface.co/jasperai/Flux.1-dev-Controlnet-Upscaler/blob/main/diffusion_pytorch_model.safetensors>`

@@ -8,13 +8,13 @@ nunchaku-flux.1-ip-adapter.json
 
 .. image:: https://huggingface.co/datasets/nunchaku-tech/cdn/resolve/main/ComfyUI-nunchaku/workflows/nunchaku-flux.1-ip-adapter.png
     :alt: nunchaku-flux.1-ip-adapter.json
-    :target: https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-ip-adapter.json
+    :target: https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-ip-adapter.json
 
 Image-based prompting workflow using `IP-Adapter <https://huggingface.co/XLabs-AI/flux-ip-adapter-v2>`__ and the Nunchaku FLUX.1-dev model.
 
 **Links:**
 
-- Workflow: :download:`nunchaku-flux.1-ip-adapter.json <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-ip-adapter.json>`
+- Workflow: :download:`nunchaku-flux.1-ip-adapter.json <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/example_workflows/nunchaku-flux.1-ip-adapter.json>`
 - Example input image: :download:`monalisa.jpg <https://huggingface.co/datasets/nunchaku-tech/test-data/resolve/main/ComfyUI-nunchaku/inputs/monalisa.jpg>`
 
 .. warning::

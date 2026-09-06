@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   update-version-file:
-    if: github.repository == 'nunchaku-ai/ComfyUI-nunchaku'
+    if: github.repository == 'nunchux-ai/ComfyUI-nunchaku'
     name: Build and Upload Versions File
     runs-on: ubuntu-latest
     steps:

@@ -8,7 +8,7 @@ This module implements the Nunchaku Qwen-Image model and related components.
 .. warning::
 
     There is a sage-attention dispatch bug that may cause black images until the upstream issue is fixed.
-    See: https://github.com/comfyanonymous/ComfyUI/issues/9773
+    See: https://github.com/Comfy-Org/ComfyUI/issues/9773
 """
 
 import gc
