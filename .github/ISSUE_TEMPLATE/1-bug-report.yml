@@ -11,7 +11,7 @@ body:
         - label: 1. I have searched for related issues and FAQs (https://nunchaku.tech/docs/nunchaku/faq/faq.html) but was unable to find a solution.
         - label: 2. The issue persists in the latest version.
         - label: 3. Please note that without environment information and a minimal reproducible example, it will be difficult for us to reproduce and address the issue, which may delay our response.
-        - label: 4. If your report is a question rather than a bug, please submit it as a discussion at https://github.com/nunchaku-tech/ComfyUI-nunchaku/discussions/new/choose. Otherwise, this issue will be closed.
+        - label: 4. If your report is a question rather than a bug, please submit it as a discussion at https://github.com/nunchux-ai/ComfyUI-nunchaku/discussions/new/choose. Otherwise, this issue will be closed.
         - label: 5. I will do my best to describe the issue in English.
   - type: textarea
     attributes:

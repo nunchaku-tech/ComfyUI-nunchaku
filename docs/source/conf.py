@@ -65,8 +65,8 @@ napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 extlinks = {
-    "nunchaku-issue": ("https://github.com/mit-han-lab/nunchaku/issues/%s", "nunchaku#%s"),
-    "comfyui-issue": ("https://github.com/mit-han-lab/ComfyUI-nunchaku/issues/%s", "ComfyUI-nunchaku#%s"),
+    "nunchaku-issue": ("https://github.com/nunchux-ai/nunchaku/issues/%s", "nunchaku#%s"),
+    "comfyui-issue": ("https://github.com/nunchux-ai/ComfyUI-nunchaku/issues/%s", "ComfyUI-nunchaku#%s"),
 }
 
 intersphinx_mapping = {
@@ -74,7 +74,7 @@ intersphinx_mapping = {
 }
 
 html_theme_options = {
-    "repository_url": "https://github.com/nunchaku-tech/ComfyUI-nunchaku",
+    "repository_url": "https://github.com/nunchux-ai/ComfyUI-nunchaku",
     "repository_branch": "main",
     "path_to_docs": "docs/source",
     "use_repository_button": True,

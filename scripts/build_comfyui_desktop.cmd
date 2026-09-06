@@ -53,7 +53,7 @@ nvm use %NODE_VERSION%
 REM 4. Clone ComfyUI desktop repo
 echo Cloning ComfyUI Desktop...
 cd %WORK_DIR%
-git clone https://github.com/nunchaku-tech/desktop.git
+git clone https://github.com/nunchux-ai/desktop.git
 cd desktop
 
 REM 5. Install Yarn using npm
@@ -75,9 +75,9 @@ call yarn make:assets
 REM 7. Overwrite override.txt with torch 2.7 + custom nunchaku wheel
 echo Writing override.txt...
 
-git clone https://github.com/nunchaku-tech/ComfyUI-nunchaku.git assets/ComfyUI/custom_nodes/ComfyUI-nunchaku
+git clone https://github.com/nunchux-ai/ComfyUI-nunchaku.git assets/ComfyUI/custom_nodes/ComfyUI-nunchaku
 
-set NUNCHAKU_URL=https://github.com/nunchaku-tech/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
+set NUNCHAKU_URL=https://github.com/nunchux-ai/nunchaku/releases/download/v%NUNCHAKU_VERSION%/nunchaku-%NUNCHAKU_VERSION%+torch%TORCH_VERSION%-cp%PYTHON_VERSION_STR%-cp%PYTHON_VERSION_STR%-win_amd64.whl
 
 (
 echo torch==%TORCH_VERSION%+%CUDA_PIP_INDEX%

@@ -61,7 +61,7 @@ jobs:
           conda install -c conda-forge gxx=11 gcc=11 libsndfile -y
           cd ..
           rm -rf nunchaku
-          git clone --recurse-submodules https://github.com/nunchaku-ai/nunchaku.git
+          git clone --recurse-submodules https://github.com/nunchux-ai/nunchaku.git
           cd nunchaku
           pip install uv
           uv pip install torch==2.8 torchvision==0.23 --index-url https://download.pytorch.org/whl/cu128

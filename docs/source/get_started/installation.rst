@@ -69,7 +69,7 @@ You can easily use `comfy-cli <github_comfy-cli_>`_ to run ComfyUI with Nunchaku
    .. code-block:: shell
 
       cd custom_nodes
-      git clone https://github.com/mit-han-lab/ComfyUI-nunchaku nunchaku_nodes
+      git clone https://github.com/nunchux-ai/ComfyUI-nunchaku nunchaku_nodes
 
 .. _install-nunchaku-backend:
 
@@ -87,7 +87,7 @@ Option 2: Nunchaku Pre-installed ComfyUI Desktop (Windows Only, Experimental for
 Starting from **v1.0.2**, we provide a packaged version of ComfyUI that comes with ComfyUI-Manager and ComfyUI-Nunchaku built-in,
 eliminating the need to download any additional dependencies. This is the easiest way to get started on Windows:
 
-1. Download the packaged ComfyUI zip file from our `GitHub releases <https://github.com/nunchaku-tech/ComfyUI-nunchaku/releases>`__. Choose the appropriate PyTorch version for your system (e.g., torch2.7, torch2.8, or torch2.9).
+1. Download the packaged ComfyUI zip file from our `GitHub releases <https://github.com/nunchux-ai/ComfyUI-nunchaku/releases>`__. Choose the appropriate PyTorch version for your system (e.g., torch2.7, torch2.8, or torch2.9).
 
 2. Extract the zip file to your working directory (we recommend extracting it under ``C:\Program Files`` on Windows).
 
@@ -140,7 +140,7 @@ Step 1: Install ComfyUI LTS and ComfyUI-nunchaku
 
     .. code-block:: shell
 
-       uv pip install "nunchaku@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
+       uv pip install "nunchaku@git+https://github.com/nunchux-ai/ComfyUI-nunchaku.git"
 
     Then manually install the Nunchaku backend wheel following :ref:`install-nunchaku-backend`.
 
@@ -148,7 +148,7 @@ Step 1: Install ComfyUI LTS and ComfyUI-nunchaku
 
     .. code-block:: shell
 
-       uv pip install "nunchaku[torch28]@git+https://github.com/mit-han-lab/ComfyUI-nunchaku.git"
+       uv pip install "nunchaku[torch28]@git+https://github.com/nunchux-ai/ComfyUI-nunchaku.git"
 
 To run ComfyUI, execute the following from your workspace directory:
 

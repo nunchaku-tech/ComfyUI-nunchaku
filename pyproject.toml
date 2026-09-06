@@ -6,10 +6,10 @@ requires = [ "setuptools>=61", "wheel" ]
 [project]
 name = "ComfyUI-nunchaku"
 version = "1.2.1"
-description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchaku-tech/nunchaku"
+description = "Nunchaku ComfyUI Node. Nunchaku is a high-performance inference engine optimized for low-bit neural networks. See more details: https://github.com/nunchux-ai/nunchaku"
 license = { file = "LICENCE.txt" }
 requires-python = ">=3.10,<3.14"
-#  Used by Comfy Registry https://comfyregistry.org
+#  Used by Comfy Registry https://registry.comfy.org
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
@@ -46,7 +46,7 @@ optional-dependencies.ci = [
   "timm",
   "torchmetrics",
 ]
-optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchaku-tech/nunchaku.git" ]
+optional-dependencies.compile = [ "nunchaku @ git+https://github.com/nunchux-ai/nunchaku.git" ]
 optional-dependencies.dev = [
   "black",
   "comfyui @ git+https://github.com/hiddenswitch/ComfyUI.git",
@@ -85,7 +85,7 @@ optional-dependencies.torch27 = [ "nunchaku==1.0.1+torch2.7; sys_platform!='darw
 optional-dependencies.torch28 = [ "nunchaku==1.0.1+torch2.8; sys_platform!='darwin'", "torch>=2.8,<2.9" ]
 # when working with pre-release torch, we don't know what the version string will be, so let's omit it
 optional-dependencies.torchpre = [ "nunchaku==1.0.1+torch2.10; sys_platform!='darwin'" ]
-urls.Repository = "https://github.com/nunchaku-tech/ComfyUI-nunchaku"
+urls.Repository = "https://github.com/nunchux-ai/ComfyUI-nunchaku"
 entry-points."comfyui.custom_nodes".comfyui_nunchaku = "comfyui_nunchaku"
 
 [tool.setuptools]

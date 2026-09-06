@@ -11,7 +11,7 @@
 ## Checklist
 
 - [ ] Code is formatted using Pre-Commit hooks (run `pre-commit run --all-files`).
-- [ ] Relevant unit tests are added in the [`tests/workflows`](../tests/workflows) directory following the guidance in the [Contribution Guide](https://nunchaku.tech/docs/comfyui-nunchaku/developer/contribution_guide.html).
+- [ ] Relevant unit tests are added in the [`tests/workflows`](../tests/workflows) directory following the guidance in the [Contribution Guide](https://nunchaku.tech/docs/ComfyUI-nunchaku/developer/contribution_guide.html).
 - [ ] Reference images are uploaded to PR comments and URLs are added to `test_cases.json`.
 - [ ] Additional test data (if needed) is registered in [`test_data/inputs.yaml`](../test_data/inputs.yaml).
 - [ ] Additional models (if needed) are registered in [`scripts/download_models.py`](../scripts/download_models.py) and [`test_data/models.yaml`](../test_data/models.yaml).

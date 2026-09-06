@@ -173,12 +173,12 @@ To add a test case:
    If your test requires additional input images or models:
 
    - Upload input images to a GitHub PR comment to get a public URL
-   - Register the URLs in `test_data/inputs.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/inputs.yaml>`__
-   - If new models are required, update `scripts/download_models.py <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/scripts/download_models.py>`__ and `test_data/models.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/models.yaml>`__
+   - Register the URLs in `test_data/inputs.yaml <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/test_data/inputs.yaml>`__
+   - If new models are required, update `scripts/download_models.py <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/scripts/download_models.py>`__ and `test_data/models.yaml <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/test_data/models.yaml>`__
 
 5. Register Additional Custom Nodes (if needed)
 
-   If your test requires additional ComfyUI custom nodes, register them in `test_data/custom_nodes.yaml <https://github.com/nunchaku-tech/ComfyUI-nunchaku/blob/main/test_data/custom_nodes.yaml>`__:
+   If your test requires additional ComfyUI custom nodes, register them in `test_data/custom_nodes.yaml <https://github.com/nunchux-ai/ComfyUI-nunchaku/blob/main/test_data/custom_nodes.yaml>`__:
 
    .. code-block:: yaml
 
