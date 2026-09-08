@@ -59,13 +59,15 @@ def fuse_to_svdquant_linear(comfy_linear1: nn.Linear, comfy_linear2: nn.Linear, 
     """
     assert comfy_linear1.in_features == comfy_linear2.in_features
     assert comfy_linear1.bias is None and comfy_linear2.bias is None
-    torch_dtype = kwargs.pop("torch_dtype", comfy_linear1.weight.dtype)
+    torch_dtype = kwargs.pop("torch_dtype") if "torch_dtype" in kwargs else comfy_linear1.weight.dtype
+    import comfy.model_management
+    device = comfy_linear1.weight.device if comfy_linear1.weight is not None else comfy.model_management.get_torch_device()
     svdq_linear = SVDQW4A4Linear(
         comfy_linear1.in_features,
         comfy_linear1.out_features + comfy_linear2.out_features,
         bias=False,
         torch_dtype=torch_dtype,
-        device=comfy_linear1.weight.device,
+        device=device,
         **kwargs,
     )
     add_comfy_cast_weights_attr(svdq_linear, comfy_linear1)

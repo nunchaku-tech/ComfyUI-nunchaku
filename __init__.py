@@ -141,11 +141,31 @@ except ImportError:
     logger.exception("Nodes `NunchakuFluxIPAdapterApply` and `NunchakuIPAdapterLoader` import failed:")
 
 try:
+    from .nodes.models.flux2 import NunchakuFlux2DiTLoader
+
+    NODE_CLASS_MAPPINGS["NunchakuFlux2DiTLoader"] = NunchakuFlux2DiTLoader
+except ImportError:
+    logger.exception("Node `NunchakuFlux2DiTLoader` import failed:")
+
+try:
     from .nodes.models.zimage import NunchakuZImageDiTLoader
 
     NODE_CLASS_MAPPINGS["NunchakuZImageDiTLoader"] = NunchakuZImageDiTLoader
 except ImportError:
     logger.exception("Nodes `NunchakuZImageDiTLoader` import failed:")
+
+try:
+    from .nodes.models.qwen_text_encoder import (
+        NunchakuQwen3TextEncoderLoader,
+        NunchakuQwenImageTextEncoderLoader,
+        NunchakuQwenImageEditEncoderLoader,
+    )
+
+    NODE_CLASS_MAPPINGS["NunchakuQwen3TextEncoderLoader"] = NunchakuQwen3TextEncoderLoader
+    NODE_CLASS_MAPPINGS["NunchakuQwenImageTextEncoderLoader"] = NunchakuQwenImageTextEncoderLoader
+    NODE_CLASS_MAPPINGS["NunchakuQwenImageEditEncoderLoader"] = NunchakuQwenImageEditEncoderLoader
+except ImportError:
+    logger.exception("Nodes `NunchakuQwen3TextEncoderLoader`, `NunchakuQwenImageTextEncoderLoader`, `NunchakuQwenImageEditEncoderLoader` import failed:")
 
 try:
     from .nodes.tools.merge_safetensors import NunchakuModelMerger
